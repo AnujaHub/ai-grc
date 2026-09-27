@@ -1,0 +1,55 @@
+@import "tailwindcss";
+
+@theme {
+  --color-paper: #f7f7f5;
+  --color-paper-dark: #efeee9;
+  --color-ink: #16233d;
+  --color-ink-soft: #4a5568;
+  --color-line: #e2e0d8;
+
+  --color-accent: #0f6b5c;
+  --color-accent-soft: #e3efec;
+  --color-warning: #b3541e;
+  --color-warning-soft: #f6e9de;
+  --color-danger: #9b2c2c;
+  --color-danger-soft: #f5e6e6;
+
+  --font-display: "Newsreader", Georgia, serif;
+  --font-sans: "Public Sans", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+}
+
+body {
+  font-family: var(--font-sans);
+  color: var(--color-ink);
+  background-color: var(--color-paper);
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+.font-display {
+  font-family: var(--font-display);
+}
+
+.font-mono {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-thumb {
+  background-color: #d4d2c8;
+  border-radius: 10px;
+}
+
+button, a, input, select, textarea {
+  transition: border-color 0.15s ease, background-color 0.15s ease, color 0.15s ease;
+}
+
+/* Focus clavier visible, accessibilité */
+input:focus-visible, select:focus-visible, button:focus-visible, textarea:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
