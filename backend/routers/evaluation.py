@@ -27,7 +27,7 @@ SCORE_PAR_REPONSE = {
 def create_evaluation(
     data: EvaluationCreate,
     db: Session = Depends(get_db),
-    current_user: Utilisateur = Depends(require_roles("administrateur", "responsable_conformite"))
+    current_user: Utilisateur = Depends(require_roles("super_admin", "administrateur", "responsable_conformite"))
 ):
     if data.type_evaluation == "Systeme_IA" and not data.systeme_ia_id:
         raise HTTPException(status_code=400, detail="systeme_ia_id est requis pour une évaluation de type Systeme_IA")
@@ -78,7 +78,7 @@ def repondre_a_une_clause(
     evaluation_id: UUID,
     data: ReponseCreate,
     db: Session = Depends(get_db),
-    current_user: Utilisateur = Depends(require_roles("administrateur", "responsable_conformite"))
+    current_user: Utilisateur = Depends(require_roles("super_admin", "administrateur", "responsable_conformite"))
 ):
     evaluation = db.query(Evaluation).filter(Evaluation.id == evaluation_id).first()
     if not evaluation:
@@ -114,7 +114,7 @@ def repondre_a_une_clause(
 def finaliser_evaluation(
     evaluation_id: UUID,
     db: Session = Depends(get_db),
-    current_user: Utilisateur = Depends(require_roles("administrateur", "responsable_conformite"))
+    current_user: Utilisateur = Depends(require_roles("super_admin", "administrateur", "responsable_conformite"))
 ):
     evaluation = db.query(Evaluation).filter(Evaluation.id == evaluation_id).first()
     if not evaluation:

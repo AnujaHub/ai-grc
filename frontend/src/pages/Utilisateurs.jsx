@@ -5,9 +5,9 @@ import { getUtilisateurs, creerUtilisateur, modifierUtilisateur } from '../servi
 import { getOrganisations } from '../services/organisationService'
 
 const ROLES = [
-  { valeur: 'administrateur', label: 'Administrateur' },
-  { valeur: 'responsable_conformite', label: 'Responsable conformité' },
-  { valeur: 'auditeur', label: 'Auditeur' },
+  { valeur: 'administrateur', label: 'Administrator' },
+  { valeur: 'responsable_conformite', label: 'Compliance officer' },
+  { valeur: 'auditeur', label: 'Auditor' },
   { valeur: 'manager', label: 'Manager' },
 ]
 
@@ -30,7 +30,7 @@ function Utilisateurs() {
       setUtilisateurs(utilisateursData)
       setOrganisations(orgsData)
     } catch (err) {
-      setErreur('Accès refusé — cette page est réservée aux administrateurs.')
+      setErreur('Access denied — this page is restricted to administrators.')
     }
   }
 
@@ -45,7 +45,7 @@ function Utilisateurs() {
       setRole('responsable_conformite'); setOrganisationId('')
       chargerDonnees()
     } catch (err) {
-      setErreur('Erreur lors de la création (email déjà utilisé ?)')
+      setErreur('Creation failed (the email may already be in use).')
     }
   }
 
@@ -54,7 +54,7 @@ function Utilisateurs() {
       await modifierUtilisateur(utilisateurId, { role: nouveauRole })
       chargerDonnees()
     } catch (err) {
-      alert('Erreur lors de la modification du rôle')
+      alert('Role update failed')
     }
   }
 
@@ -63,7 +63,7 @@ function Utilisateurs() {
       await modifierUtilisateur(utilisateurId, { statut: nouveauStatut })
       chargerDonnees()
     } catch (err) {
-      alert('Erreur lors de la modification du statut')
+      alert('Status update failed')
     }
   }
 
@@ -84,21 +84,21 @@ function Utilisateurs() {
     <div className="min-h-screen bg-paper">
       <Navbar />
       <div className="max-w-7xl mx-auto px-6 py-8">
-        <h1 className="font-display text-2xl text-ink mb-6">Gestion des utilisateurs</h1>
+        <h1 className="font-display text-2xl text-ink mb-6">User management</h1>
 
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="bg-white border border-line p-6 mb-6">
-          <h2 className="text-xs font-semibold uppercase tracking-wide text-ink-soft mb-4">Créer un compte utilisateur</h2>
+          <h2 className="text-xs font-semibold uppercase tracking-wide text-ink-soft mb-4">Create a user account</h2>
           <form onSubmit={handleSubmit} className="space-y-3">
             <div className="flex flex-wrap gap-3">
-              <input type="text" placeholder="Prénom" value={prenom} onChange={(e) => setPrenom(e.target.value)} required
+              <input type="text" placeholder="First name" value={prenom} onChange={(e) => setPrenom(e.target.value)} required
                 className="flex-1 min-w-[140px] px-3 py-2 border border-line focus:border-accent outline-none bg-paper text-sm" />
-              <input type="text" placeholder="Nom" value={nom} onChange={(e) => setNom(e.target.value)} required
+              <input type="text" placeholder="Last name" value={nom} onChange={(e) => setNom(e.target.value)} required
                 className="flex-1 min-w-[140px] px-3 py-2 border border-line focus:border-accent outline-none bg-paper text-sm" />
               <input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} required
                 className="flex-1 min-w-[200px] px-3 py-2 border border-line focus:border-accent outline-none bg-paper text-sm" />
             </div>
             <div className="flex flex-wrap gap-3">
-              <input type="password" placeholder="Mot de passe temporaire" value={motDePasse} onChange={(e) => setMotDePasse(e.target.value)} required
+              <input type="password" placeholder="Temporary password" value={motDePasse} onChange={(e) => setMotDePasse(e.target.value)} required
                 className="flex-1 min-w-[180px] px-3 py-2 border border-line focus:border-accent outline-none bg-paper text-sm" />
               <select value={role} onChange={(e) => setRole(e.target.value)}
                 className="px-3 py-2 border border-line focus:border-accent outline-none bg-paper text-sm">
@@ -106,11 +106,11 @@ function Utilisateurs() {
               </select>
               <select value={organisationId} onChange={(e) => setOrganisationId(e.target.value)}
                 className="px-3 py-2 border border-line focus:border-accent outline-none bg-paper text-sm">
-                <option value="">— Organisation (optionnel) —</option>
+                <option value="">— Organization (optional) —</option>
                 {organisations.map((org) => <option key={org.id} value={org.id}>{org.nom}</option>)}
               </select>
               <button type="submit" className="px-5 py-2 bg-ink text-white text-sm font-medium cursor-pointer hover:bg-[#0d1729]">
-                Créer le compte
+                Create account
               </button>
             </div>
           </form>
@@ -121,11 +121,11 @@ function Utilisateurs() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-line text-left">
-                <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-ink-soft">Nom</th>
+                <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-ink-soft">Name</th>
                 <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-ink-soft">Email</th>
-                <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-ink-soft">Organisation</th>
-                <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-ink-soft">Rôle</th>
-                <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-ink-soft">Statut</th>
+                <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-ink-soft">Organization</th>
+                <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-ink-soft">Role</th>
+                <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-ink-soft">Status</th>
               </tr>
             </thead>
             <tbody>
@@ -149,8 +149,8 @@ function Utilisateurs() {
                       onChange={(e) => handleChangeStatut(u.id, e.target.value)}
                       className="px-2 py-1 border border-line text-xs bg-paper focus:border-accent outline-none"
                     >
-                      <option value="actif">Actif</option>
-                      <option value="inactif">Inactif</option>
+                      <option value="actif">Active</option>
+                      <option value="inactif">Inactive</option>
                     </select>
                   </td>
                 </tr>

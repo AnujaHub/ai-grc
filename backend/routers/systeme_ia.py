@@ -15,7 +15,7 @@ router = APIRouter(prefix="/systemes-ia", tags=["Systèmes IA"])
 def create_systeme_ia(
     systeme: SystemeIACreate,
     db: Session = Depends(get_db),
-    current_user: Utilisateur = Depends(require_roles("administrateur", "responsable_conformite"))
+    current_user: Utilisateur = Depends(require_roles("super_admin", "administrateur", "responsable_conformite"))
 ):
     nouveau_systeme = SystemeIA(**systeme.dict())
     db.add(nouveau_systeme)

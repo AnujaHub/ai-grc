@@ -26,7 +26,7 @@ def upload_preuve(
     description: Optional[str] = Form(None),
     fichier: UploadFile = File(...),
     db: Session = Depends(get_db),
-    current_user: Utilisateur = Depends(require_roles("administrateur", "responsable_conformite"))
+    current_user: Utilisateur = Depends(require_roles("super_admin", "administrateur", "responsable_conformite"))
 ):
     # Vérifie que la réponse existe
     reponse = db.query(Reponse).filter(Reponse.id == reponse_id).first()
@@ -100,7 +100,7 @@ def telecharger_preuve(
 def supprimer_preuve(
     preuve_id: UUID,
     db: Session = Depends(get_db),
-    current_user: Utilisateur = Depends(require_roles("administrateur", "responsable_conformite"))
+    current_user: Utilisateur = Depends(require_roles("super_admin", "administrateur", "responsable_conformite"))
 ):
     preuve = db.query(Preuve).filter(Preuve.id == preuve_id).first()
     if not preuve:

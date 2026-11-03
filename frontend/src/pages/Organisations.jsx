@@ -32,7 +32,7 @@ function Organisations() {
       setNom(''); setSecteur(''); setPays('')
       chargerOrganisations()
     } catch (err) {
-      setErreur('Erreur lors de la création')
+      setErreur('Creation failed')
     }
   }
 
@@ -40,7 +40,7 @@ function Organisations() {
     <div className="min-h-screen bg-paper">
       <Navbar />
       <div className="max-w-7xl mx-auto px-6 py-8">
-        <h1 className="font-display text-2xl text-ink mb-6">Organisations</h1>
+        <h1 className="font-display text-2xl text-ink mb-6">Organizations</h1>
 
         {peutCreer && (
         <motion.div
@@ -49,23 +49,23 @@ function Organisations() {
           className="bg-white border border-line p-6 mb-6"
         >
           <h2 className="text-xs font-semibold uppercase tracking-wide text-ink-soft mb-4">
-            Enregistrer une organisation
+            Register an organization
           </h2>
           <form onSubmit={handleSubmit} className="flex flex-wrap gap-3">
             <input
-              type="text" placeholder="Nom" value={nom} onChange={(e) => setNom(e.target.value)} required
+              type="text" placeholder="Name" value={nom} onChange={(e) => setNom(e.target.value)} required
               className="flex-1 min-w-[180px] px-3 py-2 border border-line focus:border-accent outline-none bg-paper text-sm"
             />
             <input
-              type="text" placeholder="Secteur" value={secteur} onChange={(e) => setSecteur(e.target.value)}
+              type="text" placeholder="Sector" value={secteur} onChange={(e) => setSecteur(e.target.value)}
               className="flex-1 min-w-[150px] px-3 py-2 border border-line focus:border-accent outline-none bg-paper text-sm"
             />
             <input
-              type="text" placeholder="Pays" value={pays} onChange={(e) => setPays(e.target.value)}
+              type="text" placeholder="Country" value={pays} onChange={(e) => setPays(e.target.value)}
               className="flex-1 min-w-[130px] px-3 py-2 border border-line focus:border-accent outline-none bg-paper text-sm"
             />
             <button type="submit" className="px-5 py-2 bg-ink text-white text-sm font-medium cursor-pointer hover:bg-[#0d1729]">
-              Ajouter
+              Add
             </button>
           </form>
           {erreur && <p className="text-danger text-sm mt-3">{erreur}</p>}
@@ -81,10 +81,10 @@ function Organisations() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-line text-left">
-                <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-ink-soft">Nom</th>
+                <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-ink-soft">Name</th>
                 <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-ink-soft">Secteur</th>
                 <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-ink-soft">Pays</th>
-                <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-ink-soft font-mono">Créée le</th>
+                <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-ink-soft font-mono">Created on</th>
                 <th className="px-4 py-3"></th>
               </tr>
             </thead>
@@ -110,7 +110,7 @@ function Organisations() {
               {organisations.length === 0 && (
                 <tr>
                   <td colSpan="5" className="px-4 py-8 text-center text-ink-soft text-sm">
-                    Aucune organisation enregistrée pour le moment.
+                    No organizations registered yet.
                   </td>
                 </tr>
               )}

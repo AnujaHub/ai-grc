@@ -2,7 +2,7 @@ import { motion } from 'framer-motion'
 
 function CachetConformite({ score, taille = 130 }) {
   const couleur = score >= 70 ? '#0f6b5c' : score >= 40 ? '#b3541e' : '#9b2c2c'
-  const libelle = score >= 70 ? 'CONFORME' : score >= 40 ? 'À SURVEILLER' : 'CRITIQUE'
+  const libelle = score >= 70 ? 'COMPLIANT' : score >= 40 ? 'MONITOR' : 'CRITICAL'
 
   return (
     <motion.div

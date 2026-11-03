@@ -1,0 +1,26 @@
+const DISPLAY_LABELS = {
+  Faible: 'Low',
+  'Très faible': 'Very low',
+  Moyen: 'Medium',
+  Modéré: 'Moderate',
+  Élevé: 'High',
+  Élevée: 'High',
+  Critique: 'Critical',
+  'Très rare': 'Very rare',
+  Rare: 'Rare',
+  Possible: 'Possible',
+  Probable: 'Likely',
+  'Quasi certaine': 'Almost certain',
+  'En cours': 'In progress',
+  Terminée: 'Completed',
+  Ouverte: 'Open',
+  Conforme: 'Compliant',
+  'Partiellement conforme': 'Partially compliant',
+  'Non conforme': 'Non-compliant',
+  'Non applicable': 'Not applicable',
+  'Non liée': 'Not linked',
+  Actif: 'Active',
+  Inactif: 'Inactive',
+}
+
+export const displayLabel = (value) => DISPLAY_LABELS[value] || value

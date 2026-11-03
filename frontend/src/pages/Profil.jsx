@@ -4,8 +4,9 @@ import Navbar from '../components/Navbar'
 import { getMonProfil, changerMotDePasse } from '../services/authService'
 
 const LIBELLE_ROLE = {
+  super_admin: 'Super admin',
   administrateur: 'Administrateur',
-  responsable_conformite: 'Responsable conformité',
+  responsable_conformite: 'Compliance officer',
   auditeur: 'Auditeur',
   manager: 'Manager',
 }
@@ -74,11 +75,11 @@ function Profil() {
 
           <div className="grid grid-cols-2 gap-4 mt-6 pt-6 border-t border-line">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-wide text-ink-soft mb-1">Rôle</p>
+              <p className="text-xs font-semibold uppercase tracking-wide text-ink-soft mb-1">Role</p>
               <p className="text-ink text-sm">{LIBELLE_ROLE[profil.role] || profil.role}</p>
             </div>
             <div>
-              <p className="text-xs font-semibold uppercase tracking-wide text-ink-soft mb-1">Statut</p>
+              <p className="text-xs font-semibold uppercase tracking-wide text-ink-soft mb-1">Status</p>
               <p className="text-ink text-sm capitalize">{profil.statut}</p>
             </div>
             <div className="col-span-2">
@@ -140,7 +141,7 @@ function Profil() {
               </button>
               {succes && (
                 <motion.span initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-accent text-sm font-medium">
-                  ✓ Mot de passe modifié
+                  ✓ Password changed
                 </motion.span>
               )}
             </div>

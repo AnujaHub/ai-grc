@@ -35,7 +35,7 @@ function Rapports() {
     try {
       await telechargerRapport(rapportId)
     } catch (err) {
-      alert('Erreur lors du téléchargement')
+      alert('Download failed')
     } finally {
       setTelechargementEnCours(null)
     }
@@ -65,23 +65,23 @@ function Rapports() {
     <div className="min-h-screen bg-paper">
       <Navbar />
       <div className="max-w-7xl mx-auto px-6 py-8">
-        <h1 className="font-display text-2xl text-ink mb-6">Rapports générés</h1>
+        <h1 className="font-display text-2xl text-ink mb-6">Generated reports</h1>
 
         {erreur && <p className="text-danger text-sm mb-4">{erreur}</p>}
 
         {rapports.length === 0 ? (
           <p className="text-ink-soft text-sm">
-            Aucun rapport généré pour le moment. Ouvre une évaluation terminée et clique sur « Générer le rapport PDF ».
+            No reports generated yet. Open a completed assessment and click “Generate PDF report”.
           </p>
         ) : (
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="bg-white border border-line">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-line text-left">
-                  <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-ink-soft">Organisation</th>
-                  <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-ink-soft">Cible évaluée</th>
+                  <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-ink-soft">Organization</th>
+                  <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-ink-soft">Assessed target</th>
                   <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-ink-soft">Score</th>
-                  <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-ink-soft font-mono">Généré le</th>
+                  <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-ink-soft font-mono">Generated on</th>
                   <th className="px-4 py-3"></th>
                 </tr>
               </thead>
@@ -99,14 +99,14 @@ function Rapports() {
                           onClick={() => handleVisualiser(rapport.id)}
                           className="text-xs font-medium text-ink-soft hover:text-ink hover:underline cursor-pointer"
                         >
-                          Visualiser
+                          View
                         </button>
                         <button
                           onClick={() => handleTelecharger(rapport.id)}
                           disabled={telechargementEnCours === rapport.id}
                           className="text-xs font-medium text-accent hover:underline cursor-pointer disabled:opacity-50"
                         >
-                          {telechargementEnCours === rapport.id ? 'Téléchargement...' : 'Télécharger ↓'}
+                          {telechargementEnCours === rapport.id ? 'Downloading...' : 'Download ↓'}
                         </button>
                       </td>
                     </tr>

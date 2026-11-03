@@ -15,16 +15,29 @@ function GestionPreuves({ reponseId }) {
   const [erreur, setErreur] = useState('')
   const [analyseEnCours, setAnalyseEnCours] = useState(null)
 
-  useEffect(() => { if (reponseId) chargerPreuves() }, [reponseId])
-
   const chargerPreuves = async () => {
     try {
       const data = await getPreuvesPourReponse(reponseId)
       setPreuves(data)
-    } catch (err) {
+    } catch {
       setErreur('Impossible de charger les preuves')
     }
   }
+
+  useEffect(() => {
+    if (!reponseId) return
+
+    const chargerInitialement = async () => {
+      try {
+        const data = await getPreuvesPourReponse(reponseId)
+        setPreuves(data)
+      } catch {
+        setErreur('Impossible de charger les preuves')
+      }
+    }
+
+    chargerInitialement()
+  }, [reponseId])
 
   const handleUpload = async (e) => {
     e.preventDefault()
@@ -33,7 +46,7 @@ function GestionPreuves({ reponseId }) {
       await uploadPreuve(reponseId, fichier, description)
       setFichier(null); setDescription('')
       chargerPreuves()
-    } catch (err) {
+    } catch {
       setErreur('Erreur lors de l\'envoi du fichier (format ou taille invalide)')
     }
   }
@@ -43,7 +56,7 @@ function GestionPreuves({ reponseId }) {
     try {
       await supprimerPreuve(preuveId)
       chargerPreuves()
-    } catch (err) {
+    } catch {
       alert('Erreur lors de la suppression')
     }
   }
@@ -70,8 +83,8 @@ function GestionPreuves({ reponseId }) {
       document.body.appendChild(link)
       link.click()
       link.remove()
-    } catch (err) {
-      alert('Erreur lors du téléchargement')
+    } catch {
+      alert('Download failed')
     }
   }
 
@@ -97,11 +110,11 @@ function GestionPreuves({ reponseId }) {
                       disabled={analyseEnCours === p.id}
                       className="text-xs text-ink-soft hover:text-ink cursor-pointer disabled:opacity-50"
                     >
-                      {analyseEnCours === p.id ? 'Analyse...' : p.analyse_verdict ? 'Ré-analyser' : 'Analyser (IA)'}
+                      {analyseEnCours === p.id ? 'Analyzing...' : p.analyse_verdict ? 'Analyze again' : 'Analyze (AI)'}
                     </button>
                   )}
                   <button onClick={() => handleTelecharger(p.id, p.nom_fichier)} className="text-xs text-accent hover:underline cursor-pointer">
-                    Télécharger
+                    Download
                   </button>
                   <button onClick={() => handleDelete(p.id)} className="text-xs text-danger hover:underline cursor-pointer">
                     Supprimer

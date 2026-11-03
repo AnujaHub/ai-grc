@@ -13,7 +13,7 @@ router = APIRouter(prefix="/utilisateurs", tags=["Gestion des utilisateurs"])
 @router.get("/", response_model=List[UtilisateurListOut])
 def lister_utilisateurs(
     db: Session = Depends(get_db),
-    current_user: Utilisateur = Depends(require_roles("administrateur"))
+    current_user: Utilisateur = Depends(require_roles("super_admin", "administrateur"))
 ):
     return db.query(Utilisateur).all()
 
@@ -22,7 +22,7 @@ def lister_utilisateurs(
 def creer_utilisateur(
     data: UtilisateurAdminCreate,
     db: Session = Depends(get_db),
-    current_user: Utilisateur = Depends(require_roles("administrateur"))
+    current_user: Utilisateur = Depends(require_roles("super_admin", "administrateur"))
 ):
     existant = db.query(Utilisateur).filter(Utilisateur.email == data.email).first()
     if existant:
@@ -47,7 +47,7 @@ def modifier_utilisateur(
     utilisateur_id: UUID,
     data: UtilisateurUpdate,
     db: Session = Depends(get_db),
-    current_user: Utilisateur = Depends(require_roles("administrateur"))
+    current_user: Utilisateur = Depends(require_roles("super_admin", "administrateur"))
 ):
     utilisateur = db.query(Utilisateur).filter(Utilisateur.id == utilisateur_id).first()
     if not utilisateur:

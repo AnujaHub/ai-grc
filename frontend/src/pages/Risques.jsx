@@ -7,6 +7,7 @@ import { getEvaluations } from '../services/evaluationService'
 import { getSystemesIA } from '../services/systemeIaService'
 import { getOrganisations } from '../services/organisationService'
 import { peutEditer } from '../utils/permissions'
+import { displayLabel } from '../utils/displayLabels'
 
 const COULEUR_NIVEAU = {
   'Élevé': 'bg-danger-soft text-danger',
@@ -42,7 +43,7 @@ function Risques() {
       setSystemes(systemesData)
       setOrganisations(orgsData)
     } catch (err) {
-      setErreur('Impossible de charger les données')
+      setErreur('Unable to load data')
     }
   }
 
@@ -53,7 +54,7 @@ function Risques() {
       setTitre(''); setDescription(''); setCategorie(''); setImpact('Moyen'); setProbabilite('Moyen'); setEvaluationId('')
       chargerDonnees()
     } catch (err) {
-      setErreur('Erreur lors de la création du risque')
+      setErreur('Risk creation failed')
     }
   }
 
@@ -62,7 +63,7 @@ function Risques() {
       await updateStatutRisque(risqueId, nouveauStatut)
       chargerDonnees()
     } catch (err) {
-      alert('Erreur lors de la mise à jour du statut')
+      alert('Status update failed')
     }
   }
 
@@ -78,7 +79,7 @@ function Risques() {
       return org ? `🏢 ${org.nom} (gouvernance)` : 'Organisation inconnue'
     }
     const systeme = getSystemeParId(evaluation.systeme_ia_id)
-    return systeme ? systeme.nom : 'Système inconnu'
+    return systeme ? systeme.nom : 'Unknown system'
   }
 
   const getNomOrganisationPourRisque = (risque) => {
@@ -102,49 +103,49 @@ function Risques() {
     <div className="min-h-screen bg-paper">
       <Navbar />
       <div className="max-w-7xl mx-auto px-6 py-8">
-        <h1 className="font-display text-2xl text-ink mb-6">Registre des risques</h1>
+        <h1 className="font-display text-2xl text-ink mb-6">Risk register</h1>
 
         {autorise && (
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="bg-white border border-line p-6 mb-6">
-          <h2 className="text-xs font-semibold uppercase tracking-wide text-ink-soft mb-4">Identifier un nouveau risque</h2>
+          <h2 className="text-xs font-semibold uppercase tracking-wide text-ink-soft mb-4">Identify a new risk</h2>
           <form onSubmit={handleSubmit} className="space-y-3">
             <select value={evaluationId} onChange={(e) => setEvaluationId(e.target.value)} required
               className="px-3 py-2 border border-line focus:border-accent outline-none bg-paper text-sm w-full sm:w-auto">
-              <option value="">— Lié à quelle évaluation —</option>
+              <option value="">— Link to an assessment —</option>
               {evaluations.map((ev) => (
                 <option key={ev.id} value={ev.id}>
                   {ev.type_evaluation === 'Organisation'
                     ? `${getOrganisationParId(ev.organisation_id)?.nom || '?'} (gouvernance)`
-                    : (getSystemeParId(ev.systeme_ia_id)?.nom || '?')} — {ev.statut}
+                    : (getSystemeParId(ev.systeme_ia_id)?.nom || '?')} — {displayLabel(ev.statut)}
                 </option>
               ))}
             </select>
 
             <div className="flex flex-wrap gap-3">
-              <input type="text" placeholder="Titre du risque" value={titre} onChange={(e) => setTitre(e.target.value)} required
+              <input type="text" placeholder="Risk title" value={titre} onChange={(e) => setTitre(e.target.value)} required
                 className="flex-1 min-w-[220px] px-3 py-2 border border-line focus:border-accent outline-none bg-paper text-sm" />
-              <input type="text" placeholder="Catégorie" value={categorie} onChange={(e) => setCategorie(e.target.value)}
+              <input type="text" placeholder="Category" value={categorie} onChange={(e) => setCategorie(e.target.value)}
                 className="flex-1 min-w-[160px] px-3 py-2 border border-line focus:border-accent outline-none bg-paper text-sm" />
             </div>
 
-            <textarea placeholder="Description du risque" value={description} onChange={(e) => setDescription(e.target.value)}
+            <textarea placeholder="Risk description" value={description} onChange={(e) => setDescription(e.target.value)}
               className="w-full px-3 py-2 border border-line focus:border-accent outline-none bg-paper text-sm min-h-[70px]" />
 
             <div className="flex flex-wrap gap-3 items-center">
               <label className="text-sm text-ink-soft">Impact
                 <select value={impact} onChange={(e) => setImpact(e.target.value)}
                   className="ml-2 px-3 py-1.5 border border-line focus:border-accent outline-none bg-paper text-sm">
-                  <option value="Faible">Faible</option><option value="Moyen">Moyen</option><option value="Élevé">Élevé</option>
+                  <option value="Faible">Low</option><option value="Moyen">Medium</option><option value="Élevé">High</option>
                 </select>
               </label>
-              <label className="text-sm text-ink-soft">Probabilité
+              <label className="text-sm text-ink-soft">Probability
                 <select value={probabilite} onChange={(e) => setProbabilite(e.target.value)}
                   className="ml-2 px-3 py-1.5 border border-line focus:border-accent outline-none bg-paper text-sm">
-                  <option value="Faible">Faible</option><option value="Moyen">Moyen</option><option value="Élevée">Élevée</option>
+                  <option value="Faible">Low</option><option value="Moyen">Medium</option><option value="Élevée">High</option>
                 </select>
               </label>
               <button type="submit" className="px-5 py-2 bg-ink text-white text-sm font-medium cursor-pointer hover:bg-[#0d1729]">
-                Ajouter le risque
+                Add risk
               </button>
             </div>
           </form>
@@ -153,7 +154,7 @@ function Risques() {
         )}
 
         {Object.keys(risquesParSysteme).length === 0 && (
-          <p className="text-ink-soft text-sm">Aucun risque identifié pour le moment.</p>
+          <p className="text-ink-soft text-sm">No risks identified yet.</p>
         )}
 
         {Object.entries(risquesParSysteme).map(([nomSysteme, risquesDuGroupe], idx) => (
@@ -173,10 +174,10 @@ function Risques() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-line text-left">
-                    <th className="px-4 py-2.5 text-xs font-semibold uppercase tracking-wide text-ink-soft">Titre</th>
-                    <th className="px-4 py-2.5 text-xs font-semibold uppercase tracking-wide text-ink-soft">Catégorie</th>
+                    <th className="px-4 py-2.5 text-xs font-semibold uppercase tracking-wide text-ink-soft">Title</th>
+                    <th className="px-4 py-2.5 text-xs font-semibold uppercase tracking-wide text-ink-soft">Category</th>
                     <th className="px-4 py-2.5 text-xs font-semibold uppercase tracking-wide text-ink-soft">Niveau</th>
-                    <th className="px-4 py-2.5 text-xs font-semibold uppercase tracking-wide text-ink-soft">Statut</th>
+                    <th className="px-4 py-2.5 text-xs font-semibold uppercase tracking-wide text-ink-soft">Status</th>
                     <th className="px-4 py-2.5"></th>
                   </tr>
                 </thead>
@@ -187,7 +188,7 @@ function Risques() {
                       <td className="px-4 py-2.5 text-ink-soft">{r.categorie || '—'}</td>
                       <td className="px-4 py-2.5">
                         <span className={`px-2 py-0.5 text-xs font-mono font-medium ${COULEUR_NIVEAU[r.niveau_risque] || ''}`}>
-                          {r.niveau_risque}
+                          {displayLabel(r.niveau_risque)}
                         </span>
                       </td>
                       <td className="px-4 py-2.5">

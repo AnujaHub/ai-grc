@@ -7,7 +7,7 @@ function Logo({ taille = 'normal' }) {
         <span className="font-mono text-[10px] font-semibold text-ink">42001</span>
       </div>
       <span className={`font-display ${tailleTitre} text-ink leading-none`}>
-        Registre <span className="italic text-accent">Conformité IA</span>
+        <span className="italic text-accent">AI Compliance Register</span>
       </span>
     </div>
   )

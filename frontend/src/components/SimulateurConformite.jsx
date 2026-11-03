@@ -71,7 +71,7 @@ function SimulateurConformite({ reponses, chapitresFiltres }) {
         <div className="text-left">
           <p className="font-display text-lg text-ink">Simulateur « Et si... »</p>
           <p className="text-ink-soft text-xs mt-0.5">
-            Estime l'impact de la correction des non-conformités sur ton score
+            Estimate how fixing non-conformities would affect your score
           </p>
         </div>
         <span className="font-mono text-ink-soft text-sm">{ouvert ? '−' : '+'}</span>
@@ -89,7 +89,7 @@ function SimulateurConformite({ reponses, chapitresFiltres }) {
             <div className="px-6 pb-6 border-t border-line pt-6">
               <div className="flex items-center justify-center gap-8 mb-8">
                 <div className="text-center">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-ink-soft mb-2">Score actuel</p>
+                  <p className="text-xs font-semibold uppercase tracking-wide text-ink-soft mb-2">Current score</p>
                   <CachetConformite score={scoreActuel} taille={90} />
                 </div>
 
@@ -108,13 +108,13 @@ function SimulateurConformite({ reponses, chapitresFiltres }) {
                 </div>
 
                 <div className="text-center">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-ink-soft mb-2">Score projeté</p>
+                  <p className="text-xs font-semibold uppercase tracking-wide text-ink-soft mb-2">Projected score</p>
                   <CachetConformite score={scoreProjete} taille={90} />
                 </div>
               </div>
 
               <p className="text-xs font-semibold uppercase tracking-wide text-ink-soft mb-3">
-                Cocher les non-conformités à corriger (simulation)
+                Select non-conformities to fix (simulation)
               </p>
               <div className="space-y-2 max-h-72 overflow-y-auto pr-2">
                 {clausesEnEcart.map((clause) => (

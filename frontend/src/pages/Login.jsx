@@ -40,15 +40,15 @@ function Login() {
         </div>
 
         <div className="bg-white border border-line p-8">
-          <h1 className="font-display text-xl text-ink mb-1">Accès au registre</h1>
+          <h1 className="font-display text-xl text-ink mb-1">Register access</h1>
           <p className="text-ink-soft text-sm mb-6">
-            Identifiez-vous pour consulter votre dossier de conformité
+            Sign in to access your compliance workspace
           </p>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="block text-xs font-semibold uppercase tracking-wide text-ink-soft mb-1.5">
-                Adresse e-mail
+                Email address
               </label>
               <input
                 type="email"
@@ -62,7 +62,7 @@ function Login() {
 
             <div>
               <label className="block text-xs font-semibold uppercase tracking-wide text-ink-soft mb-1.5">
-                Mot de passe
+                Password
               </label>
               <input
                 type="password"
@@ -85,13 +85,13 @@ function Login() {
               disabled={chargement}
               className="w-full bg-ink hover:bg-[#0d1729] disabled:opacity-60 disabled:cursor-not-allowed text-white font-medium py-2.5 cursor-pointer"
             >
-              {chargement ? 'Connexion...' : 'Se connecter'}
+              {chargement ? 'Signing in...' : 'Sign in'}
             </button>
           </form>
         </div>
 
         <p className="text-center text-xs text-ink-soft mt-6 font-mono">
-          ISO/IEC 42001 — Gouvernance des systèmes d'IA
+          ISO/IEC 42001 — AI governance
         </p>
       </motion.div>
     </div>

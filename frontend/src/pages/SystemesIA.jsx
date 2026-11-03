@@ -4,6 +4,7 @@ import Navbar from '../components/Navbar'
 import { getSystemesIA, createSystemeIA } from '../services/systemeIaService'
 import { getOrganisations } from '../services/organisationService'
 import { peutEditer } from '../utils/permissions'
+import { displayLabel } from '../utils/displayLabels'
 
 const BADGE_CRITICITE = {
   Faible: 'bg-accent-soft text-accent',
@@ -31,7 +32,7 @@ function SystemesIA() {
       setSystemes(systemesData)
       setOrganisations(orgsData)
     } catch (err) {
-      setErreur('Impossible de charger les données')
+      setErreur('Unable to load data')
     }
   }
 
@@ -48,7 +49,7 @@ function SystemesIA() {
       setDomaineUtilisation(''); setNiveauCriticite('Moyen'); setOrganisationId('')
       chargerDonnees()
     } catch (err) {
-      setErreur('Erreur lors de la création du système IA')
+      setErreur('AI system creation failed')
     }
   }
 
@@ -58,31 +59,31 @@ function SystemesIA() {
     <div className="min-h-screen bg-paper">
       <Navbar />
       <div className="max-w-7xl mx-auto px-6 py-8">
-        <h1 className="font-display text-2xl text-ink mb-6">Inventaire des systèmes d'IA</h1>
+        <h1 className="font-display text-2xl text-ink mb-6">AI system inventory</h1>
 
         {autorise && (
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="bg-white border border-line p-6 mb-6">
-          <h2 className="text-xs font-semibold uppercase tracking-wide text-ink-soft mb-4">Enregistrer un système IA</h2>
+          <h2 className="text-xs font-semibold uppercase tracking-wide text-ink-soft mb-4">Register an AI system</h2>
           <form onSubmit={handleSubmit} className="space-y-3">
             <div className="flex flex-wrap gap-3">
               <select
                 value={organisationId} onChange={(e) => setOrganisationId(e.target.value)} required
                 className="px-3 py-2 border border-line focus:border-accent outline-none bg-paper text-sm"
               >
-                <option value="">— Organisation —</option>
+                <option value="">— Organization —</option>
                 {organisations.map((org) => <option key={org.id} value={org.id}>{org.nom}</option>)}
               </select>
               <input
-                type="text" placeholder="Nom du système" value={nom} onChange={(e) => setNom(e.target.value)} required
+                type="text" placeholder="System name" value={nom} onChange={(e) => setNom(e.target.value)} required
                 className="flex-1 min-w-[180px] px-3 py-2 border border-line focus:border-accent outline-none bg-paper text-sm"
               />
               <select
                 value={niveauCriticite} onChange={(e) => setNiveauCriticite(e.target.value)}
                 className="px-3 py-2 border border-line focus:border-accent outline-none bg-paper text-sm"
               >
-                <option value="Faible">Criticité faible</option>
-                <option value="Moyen">Criticité moyenne</option>
-                <option value="Élevé">Criticité élevée</option>
+                <option value="Faible">Low criticality</option>
+                <option value="Moyen">Medium criticality</option>
+                <option value="Élevé">High criticality</option>
               </select>
             </div>
             <div className="flex flex-wrap gap-3">
@@ -91,15 +92,15 @@ function SystemesIA() {
                 className="flex-1 min-w-[200px] px-3 py-2 border border-line focus:border-accent outline-none bg-paper text-sm"
               />
               <input
-                type="text" placeholder="Propriétaire" value={proprietaire} onChange={(e) => setProprietaire(e.target.value)}
+                type="text" placeholder="Owner" value={proprietaire} onChange={(e) => setProprietaire(e.target.value)}
                 className="flex-1 min-w-[160px] px-3 py-2 border border-line focus:border-accent outline-none bg-paper text-sm"
               />
               <input
-                type="text" placeholder="Domaine d'utilisation" value={domaineUtilisation} onChange={(e) => setDomaineUtilisation(e.target.value)}
+                type="text" placeholder="Use domain" value={domaineUtilisation} onChange={(e) => setDomaineUtilisation(e.target.value)}
                 className="flex-1 min-w-[160px] px-3 py-2 border border-line focus:border-accent outline-none bg-paper text-sm"
               />
               <button type="submit" className="px-5 py-2 bg-ink text-white text-sm font-medium cursor-pointer hover:bg-[#0d1729]">
-                Ajouter
+                Add
               </button>
             </div>
           </form>
@@ -111,11 +112,11 @@ function SystemesIA() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-line text-left">
-                <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-ink-soft">Nom</th>
-                <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-ink-soft">Domaine</th>
-                <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-ink-soft">Criticité</th>
-                <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-ink-soft">Organisation</th>
-                <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-ink-soft">Statut</th>
+                <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-ink-soft">Name</th>
+                <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-ink-soft">Domain</th>
+                <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-ink-soft">Criticality</th>
+                <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-ink-soft">Organization</th>
+                <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-ink-soft">Status</th>
               </tr>
             </thead>
             <tbody>
@@ -128,17 +129,17 @@ function SystemesIA() {
                   <td className="px-4 py-3 text-ink-soft">{sys.domaine_utilisation || '—'}</td>
                   <td className="px-4 py-3">
                     <span className={`px-2 py-0.5 text-xs font-mono font-medium ${BADGE_CRITICITE[sys.niveau_criticite] || ''}`}>
-                      {sys.niveau_criticite}
+                      {displayLabel(sys.niveau_criticite)}
                     </span>
                   </td>
                   <td className="px-4 py-3 text-ink-soft">{getNomOrganisation(sys.organisation_id)}</td>
-                  <td className="px-4 py-3 text-ink-soft font-mono text-xs">{sys.statut}</td>
+                  <td className="px-4 py-3 text-ink-soft font-mono text-xs">{displayLabel(sys.statut)}</td>
                 </tr>
               ))}
               {systemes.length === 0 && (
                 <tr>
                   <td colSpan="5" className="px-4 py-8 text-center text-ink-soft text-sm">
-                    Aucun système IA enregistré pour le moment.
+                    No AI systems registered yet.
                   </td>
                 </tr>
               )}

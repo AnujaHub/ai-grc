@@ -79,24 +79,24 @@ function Dashboard() {
     return (
       <div>
         <Navbar />
-        <div className="max-w-7xl mx-auto px-6 py-10 text-ink-soft font-mono text-sm">Chargement...</div>
+        <div className="max-w-7xl mx-auto px-6 py-10 text-ink-soft font-mono text-sm">Loading...</div>
       </div>
     )
   }
 
   const donneesRisques = [
-    { name: 'Élevé', value: stats.risques.eleve },
-    { name: 'Moyen', value: stats.risques.moyen },
-    { name: 'Faible', value: stats.risques.faible },
+    { name: 'High', value: stats.risques.eleve },
+    { name: 'Medium', value: stats.risques.moyen },
+    { name: 'Low', value: stats.risques.faible },
   ]
   const donneesEvaluations = [
-    { name: 'Terminées', valeur: stats.nb_evaluations_terminees },
-    { name: 'En cours', valeur: stats.nb_evaluations_en_cours },
+    { name: 'Completed', valeur: stats.nb_evaluations_terminees },
+    { name: 'In progress', valeur: stats.nb_evaluations_en_cours },
   ]
   const donneesActions = [
-    { name: 'Ouvertes', valeur: stats.actions_correctives.ouvertes },
-    { name: 'Terminées', valeur: stats.actions_correctives.terminees },
-    { name: 'En retard', valeur: stats.actions_correctives.en_retard },
+    { name: 'Open', valeur: stats.actions_correctives.ouvertes },
+    { name: 'Completed', valeur: stats.actions_correctives.terminees },
+    { name: 'Overdue', valeur: stats.actions_correctives.en_retard },
   ]
 
   return (
@@ -118,13 +118,13 @@ function Dashboard() {
         </div>
 
         <div className="mb-6 flex items-center gap-3">
-          <label className="text-xs font-semibold uppercase tracking-wide text-ink-soft">Organisation</label>
+          <label className="text-xs font-semibold uppercase tracking-wide text-ink-soft">Organization</label>
           <select
             value={organisationId}
             onChange={(e) => setOrganisationId(e.target.value)}
             className="px-3 py-2 border border-line text-sm focus:border-accent outline-none bg-white"
           >
-            <option value="">Toutes les organisations</option>
+            <option value="">All organizations</option>
             {organisations.map((org) => (
               <option key={org.id} value={org.id}>{org.nom}</option>
             ))}
@@ -132,11 +132,11 @@ function Dashboard() {
         </div>
 
         <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 mb-4">
-          <StatCard titre="Organisations" valeur={stats.nb_organisations} delai={0} />
-          <StatCard titre="Systèmes IA" valeur={stats.nb_systemes_ia} delai={0.05} />
-          <StatCard titre="Évaluations" valeur={stats.nb_evaluations} delai={0.1} />
-          <StatCard titre="Risques ouverts" valeur={stats.risques.ouverts} couleur="danger" delai={0.15} />
-          <StatCard titre="Actions en retard" valeur={stats.actions_correctives.en_retard} couleur="warning" delai={0.2} />
+          <StatCard titre="Organizations" valeur={stats.nb_organisations} delai={0} />
+          <StatCard titre="AI systems" valeur={stats.nb_systemes_ia} delai={0.05} />
+          <StatCard titre="Assessments" valeur={stats.nb_evaluations} delai={0.1} />
+          <StatCard titre="Open risks" valeur={stats.risques.ouverts} couleur="danger" delai={0.15} />
+          <StatCard titre="Overdue actions" valeur={stats.actions_correctives.en_retard} couleur="warning" delai={0.2} />
         </div>
 
         <div className="mb-8">
@@ -144,7 +144,7 @@ function Dashboard() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
-          <CarteGraphique titre="Répartition des risques par niveau" delai={0.1}>
+          <CarteGraphique titre="Risk distribution by level" delai={0.1}>
             <ResponsiveContainer width="100%" height={250}>
               <PieChart>
                 <Pie data={donneesRisques} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={0} outerRadius={85}>
@@ -158,9 +158,9 @@ function Dashboard() {
             </ResponsiveContainer>
           </CarteGraphique>
 
-          <CarteGraphique titre="Score de conformité par système IA" delai={0.15}>
+          <CarteGraphique titre="AI system compliance score" delai={0.15}>
             {scoresParSysteme.length === 0 ? (
-              <p className="text-ink-soft text-sm py-16 text-center">Aucune évaluation terminée pour le moment.</p>
+              <p className="text-ink-soft text-sm py-16 text-center">No completed assessments yet.</p>
             ) : (
               <ResponsiveContainer width="100%" height={250}>
                 <BarChart data={scoresParSysteme}>
@@ -176,7 +176,7 @@ function Dashboard() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-          <CarteGraphique titre="Statut des évaluations" delai={0.2}>
+          <CarteGraphique titre="Assessment status" delai={0.2}>
             <ResponsiveContainer width="100%" height={220}>
               <BarChart data={donneesEvaluations}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e0d8" />
@@ -200,9 +200,9 @@ function Dashboard() {
             </ResponsiveContainer>
           </CarteGraphique>
 
-          <CarteGraphique titre="Non-conformités par département" delai={0.3}>
+          <CarteGraphique titre="Non-conformities by department" delai={0.3}>
             {nonConformitesParDept.length === 0 ? (
-              <p className="text-ink-soft text-sm py-14 text-center">Aucune non-conformité détectée.</p>
+              <p className="text-ink-soft text-sm py-14 text-center">No non-conformities detected.</p>
             ) : (
               <ResponsiveContainer width="100%" height={220}>
                 <BarChart data={nonConformitesParDept}>

@@ -30,6 +30,7 @@ from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError
 from sqlalchemy.orm import Session
 from database import get_db
+from models.utilisateur import Utilisateur
 
 # Indique à FastAPI où se trouve la route de login (pour la doc /docs)
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/token")

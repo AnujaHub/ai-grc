@@ -12,11 +12,11 @@ const COULEUR_ACTION = {
 }
 
 const LIBELLE_ACTION = {
-  connexion: 'Connexion',
-  creation: 'Création',
-  modification: 'Modification',
-  finalisation: 'Finalisation',
-  suppression: 'Suppression',
+  connexion: 'Login',
+  creation: 'Creation',
+  modification: 'Update',
+  finalisation: 'Completion',
+  suppression: 'Deletion',
 }
 
 const TYPES_RESSOURCE = ['Organisation', 'Evaluation', 'Risque', 'Utilisateur']
@@ -33,7 +33,7 @@ function JournalAudit() {
       const data = await getJournalAudit(filtreType || null)
       setEntrees(data)
     } catch (err) {
-      setErreur('Accès refusé — cette page est réservée aux administrateurs et auditeurs.')
+      setErreur('Access denied — this page is restricted to administrators and auditors.')
     }
   }
 
@@ -52,19 +52,19 @@ function JournalAudit() {
     <div className="min-h-screen bg-paper">
       <Navbar />
       <div className="max-w-5xl mx-auto px-6 py-8">
-        <h1 className="font-display text-2xl text-ink mb-1">Journal d'audit</h1>
+        <h1 className="font-display text-2xl text-ink mb-1">Audit log</h1>
         <p className="text-ink-soft text-sm mb-6">
-          Historique des actions réalisées sur la plateforme — traçabilité complète (NFR-013).
+          History of platform activity — complete traceability (NFR-013).
         </p>
 
         <div className="mb-4 flex items-center gap-3">
-          <label className="text-xs font-semibold uppercase tracking-wide text-ink-soft">Filtrer par ressource</label>
+          <label className="text-xs font-semibold uppercase tracking-wide text-ink-soft">Filter by resource</label>
           <select
             value={filtreType}
             onChange={(e) => setFiltreType(e.target.value)}
             className="px-3 py-1.5 border border-line text-sm bg-white focus:border-accent outline-none"
           >
-            <option value="">Toutes</option>
+            <option value="">All</option>
             {TYPES_RESSOURCE.map((t) => <option key={t} value={t}>{t}</option>)}
           </select>
         </div>
@@ -77,7 +77,7 @@ function JournalAudit() {
                 <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-ink-soft">Utilisateur</th>
                 <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-ink-soft">Action</th>
                 <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-ink-soft">Ressource</th>
-                <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-ink-soft">Détails</th>
+                <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-ink-soft">Details</th>
               </tr>
             </thead>
             <tbody>
@@ -86,7 +86,7 @@ function JournalAudit() {
                   <td className="px-4 py-3 font-mono text-xs text-ink-soft whitespace-nowrap">
                     {new Date(e.date_action).toLocaleString()}
                   </td>
-                  <td className="px-4 py-3 text-ink">{e.utilisateur_email || 'Système'}</td>
+                  <td className="px-4 py-3 text-ink">{e.utilisateur_email || 'System'}</td>
                   <td className="px-4 py-3">
                     <span className={`font-mono text-xs font-medium ${COULEUR_ACTION[e.action] || 'text-ink'}`}>
                       {LIBELLE_ACTION[e.action] || e.action}
@@ -97,7 +97,7 @@ function JournalAudit() {
                 </tr>
               ))}
               {entrees.length === 0 && (
-                <tr><td colSpan="5" className="px-4 py-8 text-center text-ink-soft text-sm">Aucune entrée dans le journal.</td></tr>
+                <tr><td colSpan="5" className="px-4 py-8 text-center text-ink-soft text-sm">No audit entries.</td></tr>
               )}
             </tbody>
           </table>

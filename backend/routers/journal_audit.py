@@ -15,7 +15,7 @@ def lister_journal(
     limite: int = 100,
     ressource_type: Optional[str] = None,
     db: Session = Depends(get_db),
-    current_user: Utilisateur = Depends(require_roles("administrateur", "auditeur"))
+    current_user: Utilisateur = Depends(require_roles("super_admin", "administrateur", "auditeur"))
 ):
     query = db.query(JournalAudit)
     if ressource_type:

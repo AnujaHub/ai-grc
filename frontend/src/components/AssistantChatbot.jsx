@@ -6,7 +6,7 @@ import { getOrganisations } from '../services/organisationService'
 function AssistantChatbot() {
   const [ouvert, setOuvert] = useState(false)
   const [messages, setMessages] = useState([
-    { role: 'assistant', content: 'Bonjour. Je peux vous aider à interpréter les exigences ISO/IEC 42001 ou l\'état de conformité de votre organisation.' }
+    { role: 'assistant', content: 'Hello. I can help you interpret ISO/IEC 42001 requirements or your organization’s compliance status.' }
   ])
   const [saisie, setSaisie] = useState('')
   const [chargement, setChargement] = useState(false)
@@ -14,19 +14,21 @@ function AssistantChatbot() {
   const [organisationId, setOrganisationId] = useState('')
   const finDesMessagesRef = useRef(null)
 
-  useEffect(() => {
-    if (ouvert && organisations.length === 0) chargerOrganisations()
-  }, [ouvert])
+  const chargerOrganisations = async () => {
+    try {
+      const data = await getOrganisations()
+      setOrganisations(data)
+    } catch { /* silencieux */ }
+  }
 
   useEffect(() => {
     finDesMessagesRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
 
-  const chargerOrganisations = async () => {
-    try {
-      const data = await getOrganisations()
-      setOrganisations(data)
-    } catch (err) { /* silencieux */ }
+  const basculerOuverture = () => {
+    const prochainEtat = !ouvert
+    setOuvert(prochainEtat)
+    if (prochainEtat && organisations.length === 0) chargerOrganisations()
   }
 
   const handleEnvoyer = async (e) => {
@@ -42,8 +44,8 @@ function AssistantChatbot() {
     try {
       const data = await envoyerMessageAssistant(nouveauxMessages, organisationId)
       setMessages([...nouveauxMessages, { role: 'assistant', content: data.reponse }])
-    } catch (err) {
-      setMessages([...nouveauxMessages, { role: 'assistant', content: 'Une erreur est survenue. Réessaie dans un instant.' }])
+    } catch {
+      setMessages([...nouveauxMessages, { role: 'assistant', content: 'Something went wrong. Please try again.' }])
     } finally {
       setChargement(false)
     }
@@ -61,7 +63,7 @@ function AssistantChatbot() {
           />
         )}
         <motion.button
-          onClick={() => setOuvert(!ouvert)}
+          onClick={basculerOuverture}
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
           className="relative w-12 h-12 rounded-full bg-white border border-ink flex items-center justify-center shadow-lg cursor-pointer"
@@ -92,15 +94,15 @@ function AssistantChatbot() {
             className="fixed bottom-24 right-6 w-[360px] h-[500px] bg-white border border-line shadow-xl flex flex-col z-50"
           >
             <div className="border-b border-line p-4">
-              <p className="font-display text-ink">Assistant conformité</p>
+              <p className="font-display text-ink">Compliance assistant</p>
               <select
                 value={organisationId}
                 onChange={(e) => setOrganisationId(e.target.value)}
                 className="w-full mt-2 px-2 py-1.5 border border-line text-xs bg-paper focus:border-accent outline-none"
               >
-                <option value="">Sans contexte spécifique</option>
+                <option value="">Without specific context</option>
                 {organisations.map((org) => (
-                  <option key={org.id} value={org.id}>Contexte : {org.nom}</option>
+                  <option key={org.id} value={org.id}>Context: {org.nom}</option>
                 ))}
               </select>
             </div>
@@ -116,7 +118,7 @@ function AssistantChatbot() {
                 </div>
               ))}
               {chargement && (
-                <p className="text-xs text-ink-soft font-mono">L'assistant réfléchit...</p>
+                <p className="text-xs text-ink-soft font-mono">The assistant is thinking...</p>
               )}
               <div ref={finDesMessagesRef} />
             </div>
@@ -126,7 +128,7 @@ function AssistantChatbot() {
                 type="text"
                 value={saisie}
                 onChange={(e) => setSaisie(e.target.value)}
-                placeholder="Pose ta question..."
+                placeholder="Ask your question..."
                 className="flex-1 px-3 py-2 border border-line focus:border-accent outline-none text-sm bg-paper"
               />
               <button

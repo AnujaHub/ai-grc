@@ -10,6 +10,7 @@ import { genererRisquesIA } from '../services/risqueService'
 import { genererRapport } from '../services/rapportService'
 import { peutEditer } from '../utils/permissions'
 import SimulateurConformite from '../components/SimulateurConformite'
+import { displayLabel } from '../utils/displayLabels'
 
 const OPTIONS_REPONSE = ['Conforme', 'Partiellement conforme', 'Non conforme', 'Non applicable']
 
@@ -49,7 +50,7 @@ function EvaluationDetail() {
       setReponses(reponsesInitiales)
       setChargement(false)
     } catch (err) {
-      setErreur('Impossible de charger l\'évaluation')
+      setErreur('Unable to load the assessment')
       setChargement(false)
     }
   }
@@ -60,12 +61,12 @@ function EvaluationDetail() {
 
   const handleSauvegarder = async (clauseId) => {
     const donnee = reponses[clauseId]
-    if (!donnee || !donnee.reponse) { alert('Choisis une réponse avant de sauvegarder'); return }
+    if (!donnee || !donnee.reponse) { alert('Select a response before saving'); return }
     try {
       await repondreAClause(evaluationId, clauseId, donnee.reponse, donnee.commentaire || '')
       await chargerDonnees()
     } catch (err) {
-      alert('Erreur lors de la sauvegarde')
+      alert('Save failed')
     }
   }
 
@@ -74,7 +75,7 @@ function EvaluationDetail() {
       const evalFinalisee = await finaliserEvaluation(evaluationId)
       setEvaluation(evalFinalisee)
     } catch (err) {
-      alert('Erreur lors de la finalisation')
+      alert('Completion failed')
     }
   }
 
@@ -84,7 +85,7 @@ function EvaluationDetail() {
       const resultat = await genererRisquesIA(evaluationId)
       alert(resultat.message)
     } catch (err) {
-      alert('Erreur lors de la génération des risques par IA')
+      alert('AI risk generation failed')
     } finally {
       setGenerationIA(false)
     }
@@ -94,9 +95,9 @@ function EvaluationDetail() {
     setGenerationRapport(true)
     try {
       await genererRapport(evaluationId)
-      alert('Rapport généré avec succès. Consulte la page « Rapports » pour le télécharger.')
+      alert('Report generated successfully. Open Reports to download it.')
     } catch (err) {
-      alert('Erreur lors de la génération du rapport')
+      alert('Report generation failed')
     } finally {
       setGenerationRapport(false)
     }
@@ -107,7 +108,7 @@ function EvaluationDetail() {
     return reponseExistante ? reponseExistante.id : null
   }
 
-  if (chargement) return <div><Navbar /><div className="max-w-4xl mx-auto px-6 py-10 text-ink-soft font-mono text-sm">Chargement...</div></div>
+  if (chargement) return <div><Navbar /><div className="max-w-4xl mx-auto px-6 py-10 text-ink-soft font-mono text-sm">Loading...</div></div>
   if (erreur) return <div><Navbar /><div className="max-w-4xl mx-auto px-6 py-10 text-danger">{erreur}</div></div>
 
   const chapitresFiltres = chapitres
@@ -119,33 +120,33 @@ function EvaluationDetail() {
       <Navbar />
       <div className="max-w-4xl mx-auto px-6 py-8">
         <button onClick={() => navigate('/evaluations')} className="text-sm text-ink-soft hover:text-ink mb-6 cursor-pointer">
-          ← Retour à la liste
+          ← Back to assessments
         </button>
 
         <div className="bg-white border border-line p-6 mb-8 flex items-center justify-between gap-6 flex-wrap">
           <div>
-            <h1 className="font-display text-xl text-ink mb-1">Questionnaire d'évaluation</h1>
+            <h1 className="font-display text-xl text-ink mb-1">Assessment questionnaire</h1>
             <p className="text-sm text-ink-soft">
-              Statut : <span className="font-medium text-ink">{evaluation.statut}</span>
+              Status: <span className="font-medium text-ink">{displayLabel(evaluation.statut)}</span>
             </p>
 
             <div className="flex flex-wrap gap-3 mt-4">
               {autorise && evaluation.statut !== 'Terminée' && (
                 <button onClick={handleFinaliser}
                   className="px-4 py-2 bg-accent text-white text-sm font-medium cursor-pointer hover:opacity-90">
-                  Finaliser et calculer le score
+                  Complete and calculate score
                 </button>
               )}
               {autorise && (
                 <button onClick={handleGenererRisquesIA} disabled={genererationIA}
                   className="px-4 py-2 border border-ink text-ink text-sm font-medium cursor-pointer hover:bg-ink hover:text-white disabled:opacity-50">
-                  {genererationIA ? 'Analyse en cours...' : 'Générer les risques (IA)'}
+                  {genererationIA ? 'Analyzing...' : 'Generate risks (AI)'}
                 </button>
               )}
               {evaluation.statut === 'Terminée' && (
                 <button onClick={handleGenererRapport} disabled={genererationRapport}
                   className="px-4 py-2 border border-line text-ink-soft text-sm font-medium cursor-pointer hover:border-ink hover:text-ink disabled:opacity-50">
-                  {genererationRapport ? 'Génération...' : 'Générer le rapport PDF'}
+                  {genererationRapport ? 'Generating...' : 'Generate PDF report'}
                 </button>
               )}
             </div>

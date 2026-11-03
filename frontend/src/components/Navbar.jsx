@@ -3,14 +3,14 @@ import { motion } from 'framer-motion'
 import Logo from './Logo'
 
 const LIENS = [
-  { chemin: '/dashboard', label: 'Tableau de bord' },
-  { chemin: '/organisations', label: 'Organisations' },
-  { chemin: '/systemes-ia', label: 'Systèmes IA' },
-  { chemin: '/evaluations', label: 'Évaluations' },
-  { chemin: '/risques', label: 'Risques' },
-  { chemin: '/rapports', label: 'Rapports' },
-  { chemin: '/utilisateurs', label: 'Utilisateurs', roleRequis: 'administrateur' },
-  { chemin: '/journal-audit', label: 'Journal d\'audit', rolesRequis: ['administrateur', 'auditeur'] },
+  { chemin: '/dashboard', label: 'Dashboard' },
+  { chemin: '/organisations', label: 'Organizations' },
+  { chemin: '/systemes-ia', label: 'AI systems' },
+  { chemin: '/evaluations', label: 'Assessments' },
+  { chemin: '/risques', label: 'Risks' },
+  { chemin: '/rapports', label: 'Reports' },
+  { chemin: '/utilisateurs', label: 'Users', rolesRequis: ['super_admin', 'administrateur'] },
+  { chemin: '/journal-audit', label: 'Audit log', rolesRequis: ['super_admin', 'administrateur', 'auditeur'] },
 ]
 
 function Navbar() {
@@ -80,7 +80,7 @@ function Navbar() {
               onClick={handleLogout}
               className="text-sm font-medium text-ink-soft hover:text-danger px-3 py-2 cursor-pointer"
             >
-              Déconnexion
+              Log out
             </button>
           </div>
         </div>

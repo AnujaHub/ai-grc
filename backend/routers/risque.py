@@ -62,7 +62,7 @@ def calculer_niveau_risque_dynamique(impact: str, probabilite: str, organisation
 def create_risque(
     data: RisqueCreate,
     db: Session = Depends(get_db),
-    current_user: Utilisateur = Depends(require_roles("administrateur", "responsable_conformite"))
+    current_user: Utilisateur = Depends(require_roles("super_admin", "administrateur", "responsable_conformite"))
 ):
     evaluation = db.query(Evaluation).filter(Evaluation.id == data.evaluation_id).first()
     if not evaluation:
@@ -115,7 +115,7 @@ def update_statut_risque(
     risque_id: UUID,
     nouveau_statut: str,
     db: Session = Depends(get_db),
-    current_user: Utilisateur = Depends(require_roles("administrateur", "responsable_conformite"))
+    current_user: Utilisateur = Depends(require_roles("super_admin", "administrateur", "responsable_conformite"))
 ):
     risque = db.query(Risque).filter(Risque.id == risque_id).first()
     if not risque:
@@ -132,7 +132,7 @@ def create_action_corrective(
     risque_id: UUID,
     data: ActionCorrectiveCreate,
     db: Session = Depends(get_db),
-    current_user: Utilisateur = Depends(require_roles("administrateur", "responsable_conformite"))
+    current_user: Utilisateur = Depends(require_roles("super_admin", "administrateur", "responsable_conformite"))
 ):
     risque = db.query(Risque).filter(Risque.id == risque_id).first()
     if not risque:
@@ -156,7 +156,7 @@ def update_statut_action(
     action_id: UUID,
     nouveau_statut: str,
     db: Session = Depends(get_db),
-    current_user: Utilisateur = Depends(require_roles("administrateur", "responsable_conformite"))
+    current_user: Utilisateur = Depends(require_roles("super_admin", "administrateur", "responsable_conformite"))
 ):
     from datetime import date
 
@@ -177,7 +177,7 @@ def update_statut_action(
 def generer_risques_par_ia(
     evaluation_id: UUID,
     db: Session = Depends(get_db),
-    current_user: Utilisateur = Depends(require_roles("administrateur", "responsable_conformite"))
+    current_user: Utilisateur = Depends(require_roles("super_admin", "administrateur", "responsable_conformite"))
 ):
     from models.reponse import Reponse
     from models.clause import Clause
