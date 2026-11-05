@@ -52,7 +52,8 @@ function JournalAudit() {
     <div className="min-h-screen bg-paper">
       <Navbar />
       <div className="max-w-5xl mx-auto px-6 py-8">
-        <h1 className="font-display text-2xl text-ink mb-1">Audit log</h1>
+        <p className="text-accent text-xs font-mono uppercase tracking-[0.18em] mb-2">Administration</p>
+        <h1 className="font-display text-3xl font-semibold text-ink mb-1">Audit log</h1>
         <p className="text-ink-soft text-sm mb-6">
           History of platform activity — complete traceability (NFR-013).
         </p>
@@ -74,9 +75,9 @@ function JournalAudit() {
             <thead>
               <tr className="border-b border-line text-left">
                 <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-ink-soft font-mono">Date</th>
-                <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-ink-soft">Utilisateur</th>
+                <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-ink-soft">User</th>
                 <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-ink-soft">Action</th>
-                <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-ink-soft">Ressource</th>
+                <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-ink-soft">Resource</th>
                 <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-ink-soft">Details</th>
               </tr>
             </thead>

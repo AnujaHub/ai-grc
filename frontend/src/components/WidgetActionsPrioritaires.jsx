@@ -16,7 +16,7 @@ function WidgetActionsPrioritaires({ actions, delai = 0 }) {
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.35, delay: delai, ease: 'easeOut' }}
-      className="bg-white border border-line p-6"
+      className="bg-white border border-line rounded-xl p-6 shadow-[0_12px_30px_rgba(0,0,0,0.14)]"
     >
       <h3 className="text-xs font-semibold uppercase tracking-wide text-ink-soft mb-4">
         Priority actions
@@ -33,7 +33,7 @@ function WidgetActionsPrioritaires({ actions, delai = 0 }) {
                 <p className="text-xs text-ink-soft mt-0.5 truncate">Related to: {action.risque_titre}</p>
               </div>
               <div className="shrink-0 flex flex-col items-end gap-1">
-                <span className={`px-2 py-0.5 text-xs font-mono font-medium ${COULEUR_NIVEAU[action.niveau_risque] || ''}`}>
+                <span className={`px-2 py-0.5 rounded-full text-xs font-mono font-medium ${COULEUR_NIVEAU[action.niveau_risque] || ''}`}>
                   {displayLabel(action.niveau_risque)}
                 </span>
                 {action.en_retard && (

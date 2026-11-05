@@ -103,7 +103,9 @@ function Risques() {
     <div className="min-h-screen bg-paper">
       <Navbar />
       <div className="max-w-7xl mx-auto px-6 py-8">
-        <h1 className="font-display text-2xl text-ink mb-6">Risk register</h1>
+        <p className="text-accent text-xs font-mono uppercase tracking-[0.18em] mb-2">Risk management</p>
+        <h1 className="font-display text-3xl font-semibold text-ink mb-2">Risk register</h1>
+        <p className="text-ink-soft text-sm mb-6">Prioritize exposure, assign ownership, and track remediation.</p>
 
         {autorise && (
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="bg-white border border-line p-6 mb-6">
@@ -144,7 +146,7 @@ function Risques() {
                   <option value="Faible">Low</option><option value="Moyen">Medium</option><option value="Élevée">High</option>
                 </select>
               </label>
-              <button type="submit" className="px-5 py-2 bg-ink text-white text-sm font-medium cursor-pointer hover:bg-[#0d1729]">
+              <button type="submit" className="btn-primary px-5 py-2 text-sm cursor-pointer">
                 Add risk
               </button>
             </div>

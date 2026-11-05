@@ -40,7 +40,9 @@ function Organisations() {
     <div className="min-h-screen bg-paper">
       <Navbar />
       <div className="max-w-7xl mx-auto px-6 py-8">
-        <h1 className="font-display text-2xl text-ink mb-6">Organizations</h1>
+        <p className="text-accent text-xs font-mono uppercase tracking-[0.18em] mb-2">Governance</p>
+        <h1 className="font-display text-3xl font-semibold text-ink mb-2">Organizations</h1>
+        <p className="text-ink-soft text-sm mb-6">Manage the entities and AI governance scopes in your workspace.</p>
 
         {peutCreer && (
         <motion.div
@@ -64,8 +66,8 @@ function Organisations() {
               type="text" placeholder="Country" value={pays} onChange={(e) => setPays(e.target.value)}
               className="flex-1 min-w-[130px] px-3 py-2 border border-line focus:border-accent outline-none bg-paper text-sm"
             />
-            <button type="submit" className="px-5 py-2 bg-ink text-white text-sm font-medium cursor-pointer hover:bg-[#0d1729]">
-              Add
+            <button type="submit" className="btn-primary px-5 py-2 text-sm cursor-pointer">
+              Register organization
             </button>
           </form>
           {erreur && <p className="text-danger text-sm mt-3">{erreur}</p>}
@@ -82,8 +84,8 @@ function Organisations() {
             <thead>
               <tr className="border-b border-line text-left">
                 <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-ink-soft">Name</th>
-                <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-ink-soft">Secteur</th>
-                <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-ink-soft">Pays</th>
+                <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-ink-soft">Sector</th>
+                <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-ink-soft">Country</th>
                 <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-ink-soft font-mono">Created on</th>
                 <th className="px-4 py-3"></th>
               </tr>
@@ -102,7 +104,7 @@ function Organisations() {
                       onClick={() => navigate(`/configuration-risque/${org.id}`)}
                       className="text-xs font-medium text-accent hover:underline cursor-pointer"
                     >
-                      Matrice de risque
+                      Risk matrix
                     </button>
                   </td>
                 </tr>

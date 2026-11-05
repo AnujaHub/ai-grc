@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { motion } from 'framer-motion'
 import Navbar from '../components/Navbar'
 import StatCard from '../components/StatCard'
@@ -10,7 +10,7 @@ import WidgetActionsPrioritaires from '../components/WidgetActionsPrioritaires'
 import { getActionsPrioritaires } from '../services/dashboardService'
 
 
-const COULEURS_GRAPHIQUE = ['#9b2c2c', '#b3541e', '#0f6b5c']
+const COULEURS_GRAPHIQUE = ['#fb7185', '#f5b85b', '#38d9c2']
 
 function CarteGraphique({ titre, children, delai = 0 }) {
   return (
@@ -18,7 +18,7 @@ function CarteGraphique({ titre, children, delai = 0 }) {
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.35, delay: delai, ease: 'easeOut' }}
-      className="bg-white border border-line p-6"
+      className="bg-white border border-line rounded-xl p-6 shadow-[0_12px_30px_rgba(0,0,0,0.14)]"
     >
       <h3 className="text-xs font-semibold uppercase tracking-wide text-ink-soft mb-4">{titre}</h3>
       {children}
@@ -37,19 +37,16 @@ function Dashboard() {
   const [actionsPrioritaires, setActionsPrioritaires] = useState([])
   const [erreur, setErreur] = useState('')
 
-  useEffect(() => { chargerOrganisations() }, [])
-  useEffect(() => { chargerStats() }, [organisationId])
-
-  const chargerOrganisations = async () => {
+  const chargerOrganisations = useCallback(async () => {
     try {
       const data = await getOrganisations()
       setOrganisations(data)
-    } catch (err) {
+    } catch {
       setErreur('Impossible de charger les organisations')
     }
-  }
+  }, [])
 
-  const chargerStats = async () => {
+  const chargerStats = useCallback(async () => {
     try {
       const [statsData, scoresData, deptData, actionsData] = await Promise.all([
         getDashboardStats(organisationId || null),
@@ -61,10 +58,13 @@ function Dashboard() {
       setScoresParSysteme(scoresData)
       setNonConformitesParDept(deptData)
       setActionsPrioritaires(actionsData)
-    } catch (err) {
+    } catch {
       setErreur('Impossible de charger les statistiques')
     }
-  }
+  }, [organisationId])
+
+  useEffect(() => { chargerOrganisations() }, [chargerOrganisations])
+  useEffect(() => { chargerStats() }, [chargerStats])
 
   if (erreur) {
     return (
@@ -106,7 +106,8 @@ function Dashboard() {
 
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6 mb-8">
           <div>
-            <h1 className="font-display text-2xl text-ink">Tableau de bord</h1>
+            <p className="text-accent text-xs font-mono uppercase tracking-[0.18em] mb-2">Control center</p>
+            <h1 className="font-display text-3xl font-semibold text-ink">AI governance overview</h1>
             {utilisateur && (
               <p className="text-ink-soft mt-1 text-sm">
                 {utilisateur.prenom} {utilisateur.nom}
@@ -122,7 +123,7 @@ function Dashboard() {
           <select
             value={organisationId}
             onChange={(e) => setOrganisationId(e.target.value)}
-            className="px-3 py-2 border border-line text-sm focus:border-accent outline-none bg-white"
+            className="px-3 py-2 rounded-lg border border-line text-sm focus:border-accent outline-none bg-white"
           >
             <option value="">All organizations</option>
             {organisations.map((org) => (
@@ -168,7 +169,7 @@ function Dashboard() {
                   <XAxis dataKey="systeme_nom" tick={{ fontSize: 12, fontFamily: 'Public Sans' }} />
                   <YAxis domain={[0, 100]} tick={{ fontSize: 12, fontFamily: 'IBM Plex Mono' }} />
                   <Tooltip contentStyle={{ border: '1px solid #e2e0d8', fontFamily: 'Public Sans' }} />
-                  <Bar dataKey="score" fill="#0f6b5c" />
+                  <Bar dataKey="score" fill="#38d9c2" radius={[5, 5, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             )}
@@ -183,7 +184,7 @@ function Dashboard() {
                 <XAxis dataKey="name" tick={{ fontSize: 12, fontFamily: 'Public Sans' }} />
                 <YAxis allowDecimals={false} tick={{ fontSize: 12, fontFamily: 'IBM Plex Mono' }} />
                 <Tooltip contentStyle={{ border: '1px solid #e2e0d8', fontFamily: 'Public Sans' }} />
-                <Bar dataKey="valeur" fill="#16233d" />
+                <Bar dataKey="valeur" fill="#8b7cf6" radius={[5, 5, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </CarteGraphique>
@@ -195,7 +196,7 @@ function Dashboard() {
                 <XAxis dataKey="name" tick={{ fontSize: 12, fontFamily: 'Public Sans' }} />
                 <YAxis allowDecimals={false} tick={{ fontSize: 12, fontFamily: 'IBM Plex Mono' }} />
                 <Tooltip contentStyle={{ border: '1px solid #e2e0d8', fontFamily: 'Public Sans' }} />
-                <Bar dataKey="valeur" fill="#b3541e" />
+                <Bar dataKey="valeur" fill="#f5b85b" radius={[5, 5, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </CarteGraphique>
@@ -210,7 +211,7 @@ function Dashboard() {
                   <XAxis dataKey="departement" angle={-25} textAnchor="end" height={60} interval={0} tick={{ fontSize: 10, fontFamily: 'Public Sans' }} />
                   <YAxis allowDecimals={false} tick={{ fontSize: 12, fontFamily: 'IBM Plex Mono' }} />
                   <Tooltip contentStyle={{ border: '1px solid #e2e0d8', fontFamily: 'Public Sans' }} />
-                  <Bar dataKey="nombre" fill="#9b2c2c" />
+                  <Bar dataKey="nombre" fill="#fb7185" radius={[5, 5, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             )}

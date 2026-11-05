@@ -60,7 +60,8 @@ function Profil() {
     <div className="min-h-screen bg-paper">
       <Navbar />
       <div className="max-w-2xl mx-auto px-6 py-8">
-        <h1 className="font-display text-2xl text-ink mb-6">Mon profil</h1>
+        <p className="text-accent text-xs font-mono uppercase tracking-[0.18em] mb-2">Account</p>
+        <h1 className="font-display text-3xl font-semibold text-ink mb-6">My profile</h1>
 
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="bg-white border border-line p-6 mb-6">
           <div className="flex items-center gap-4">
@@ -83,7 +84,7 @@ function Profil() {
               <p className="text-ink text-sm capitalize">{profil.statut}</p>
             </div>
             <div className="col-span-2">
-              <p className="text-xs font-semibold uppercase tracking-wide text-ink-soft mb-1">Membre depuis</p>
+              <p className="text-xs font-semibold uppercase tracking-wide text-ink-soft mb-1">Member since</p>
               <p className="text-ink text-sm font-mono">{new Date(profil.date_creation).toLocaleDateString()}</p>
             </div>
           </div>
@@ -136,7 +137,7 @@ function Profil() {
             {erreur && <p className="text-danger text-sm bg-danger-soft border border-danger/20 px-3 py-2">{erreur}</p>}
 
             <div className="flex items-center gap-4">
-              <button type="submit" className="px-5 py-2 bg-ink text-white text-sm font-medium cursor-pointer hover:bg-[#0d1729]">
+              <button type="submit" className="btn-primary px-5 py-2 text-sm cursor-pointer">
                 Modifier le mot de passe
               </button>
               {succes && (

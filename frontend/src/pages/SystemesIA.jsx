@@ -59,7 +59,9 @@ function SystemesIA() {
     <div className="min-h-screen bg-paper">
       <Navbar />
       <div className="max-w-7xl mx-auto px-6 py-8">
-        <h1 className="font-display text-2xl text-ink mb-6">AI system inventory</h1>
+        <p className="text-accent text-xs font-mono uppercase tracking-[0.18em] mb-2">Governance</p>
+        <h1 className="font-display text-3xl font-semibold text-ink mb-2">AI system inventory</h1>
+        <p className="text-ink-soft text-sm mb-6">Maintain a clear register of the AI systems your organization operates.</p>
 
         {autorise && (
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="bg-white border border-line p-6 mb-6">
@@ -99,8 +101,8 @@ function SystemesIA() {
                 type="text" placeholder="Use domain" value={domaineUtilisation} onChange={(e) => setDomaineUtilisation(e.target.value)}
                 className="flex-1 min-w-[160px] px-3 py-2 border border-line focus:border-accent outline-none bg-paper text-sm"
               />
-              <button type="submit" className="px-5 py-2 bg-ink text-white text-sm font-medium cursor-pointer hover:bg-[#0d1729]">
-                Add
+              <button type="submit" className="btn-primary px-5 py-2 text-sm cursor-pointer">
+                Register AI system
               </button>
             </div>
           </form>

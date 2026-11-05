@@ -83,7 +83,7 @@ function Login() {
             <button
               type="submit"
               disabled={chargement}
-              className="w-full bg-ink hover:bg-[#0d1729] disabled:opacity-60 disabled:cursor-not-allowed text-white font-medium py-2.5 cursor-pointer"
+              className="btn-primary w-full py-2.5 cursor-pointer"
             >
               {chargement ? 'Signing in...' : 'Sign in'}
             </button>

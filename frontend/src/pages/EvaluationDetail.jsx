@@ -214,7 +214,7 @@ function EvaluationDetail() {
                     />
                     <button
                       onClick={() => handleSauvegarder(clause.id)}
-                      className="px-4 py-1.5 bg-ink text-white text-xs font-medium cursor-pointer hover:bg-[#0d1729]"
+                      className="btn-primary px-4 py-1.5 text-xs cursor-pointer"
                     >
                       Sauvegarder
                     </button>

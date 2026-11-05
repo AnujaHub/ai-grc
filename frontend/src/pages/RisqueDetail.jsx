@@ -89,7 +89,7 @@ function RisqueDetail() {
             </div>
             <textarea placeholder="Action description" value={description} onChange={(e) => setDescription(e.target.value)}
               className="w-full px-3 py-2 border border-line focus:border-accent outline-none bg-paper text-sm min-h-[60px]" />
-            <button type="submit" className="px-5 py-2 bg-ink text-white text-sm font-medium cursor-pointer hover:bg-[#0d1729]">
+            <button type="submit" className="btn-primary px-5 py-2 text-sm cursor-pointer">
               Add action
             </button>
           </form>

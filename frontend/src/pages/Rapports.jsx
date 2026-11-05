@@ -65,7 +65,9 @@ function Rapports() {
     <div className="min-h-screen bg-paper">
       <Navbar />
       <div className="max-w-7xl mx-auto px-6 py-8">
-        <h1 className="font-display text-2xl text-ink mb-6">Generated reports</h1>
+        <p className="text-accent text-xs font-mono uppercase tracking-[0.18em] mb-2">Compliance</p>
+        <h1 className="font-display text-3xl font-semibold text-ink mb-2">Generated reports</h1>
+        <p className="text-ink-soft text-sm mb-6">Review and export assessment records for stakeholders and auditors.</p>
 
         {erreur && <p className="text-danger text-sm mb-4">{erreur}</p>}
 

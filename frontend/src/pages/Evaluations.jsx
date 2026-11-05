@@ -65,7 +65,9 @@ function Evaluations() {
     <div className="min-h-screen bg-paper">
       <Navbar />
       <div className="max-w-7xl mx-auto px-6 py-8">
-        <h1 className="font-display text-2xl text-ink mb-6">Compliance assessments</h1>
+        <p className="text-accent text-xs font-mono uppercase tracking-[0.18em] mb-2">Compliance</p>
+        <h1 className="font-display text-3xl font-semibold text-ink mb-2">Compliance assessments</h1>
+        <p className="text-ink-soft text-sm mb-6">Measure governance maturity against your selected framework.</p>
 
         {autorise && (
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="bg-white border border-line p-6 mb-6">
@@ -110,7 +112,7 @@ function Evaluations() {
                 {referentiels.map((r) => <option key={r.id} value={r.id}>{r.nom}</option>)}
               </select>
 
-              <button type="submit" className="px-5 py-2 bg-ink text-white text-sm font-medium cursor-pointer hover:bg-[#0d1729]">
+              <button type="submit" className="btn-primary px-5 py-2 text-sm cursor-pointer">
                 Create and start
               </button>
             </div>

@@ -84,7 +84,9 @@ function Utilisateurs() {
     <div className="min-h-screen bg-paper">
       <Navbar />
       <div className="max-w-7xl mx-auto px-6 py-8">
-        <h1 className="font-display text-2xl text-ink mb-6">User management</h1>
+        <p className="text-accent text-xs font-mono uppercase tracking-[0.18em] mb-2">Administration</p>
+        <h1 className="font-display text-3xl font-semibold text-ink mb-2">User management</h1>
+        <p className="text-ink-soft text-sm mb-6">Control workspace access, roles, and account status.</p>
 
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="bg-white border border-line p-6 mb-6">
           <h2 className="text-xs font-semibold uppercase tracking-wide text-ink-soft mb-4">Create a user account</h2>
@@ -109,7 +111,7 @@ function Utilisateurs() {
                 <option value="">— Organization (optional) —</option>
                 {organisations.map((org) => <option key={org.id} value={org.id}>{org.nom}</option>)}
               </select>
-              <button type="submit" className="px-5 py-2 bg-ink text-white text-sm font-medium cursor-pointer hover:bg-[#0d1729]">
+              <button type="submit" className="btn-primary px-5 py-2 text-sm cursor-pointer">
                 Create account
               </button>
             </div>

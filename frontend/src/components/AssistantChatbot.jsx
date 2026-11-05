@@ -66,19 +66,19 @@ function AssistantChatbot() {
           onClick={basculerOuverture}
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
-          className="relative w-12 h-12 rounded-full bg-white border border-ink flex items-center justify-center shadow-lg cursor-pointer"
+          className="relative w-14 h-14 rounded-2xl bg-accent border border-accent flex items-center justify-center shadow-[0_0_26px_rgba(56,217,194,0.35)] cursor-pointer"
         >
           {ouvert ? (
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-              <path d="M2 2L14 14M14 2L2 14" stroke="#16233d" strokeWidth="1.5" strokeLinecap="round" />
+              <path d="M2 2L14 14M14 2L2 14" stroke="#ffffff" strokeWidth="1.8" strokeLinecap="round" />
             </svg>
           ) : (
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
               <path
                 d="M12 3C7.03 3 3 6.58 3 11c0 2.39 1.19 4.53 3.08 5.99-.1.98-.5 2.31-1.58 3.51 0 0 2.19-.29 4.06-1.7A10.6 10.6 0 0 0 12 19c4.97 0 9-3.58 9-8s-4.03-8-9-8Z"
-                stroke="#16233d" strokeWidth="1.4" strokeLinejoin="round"
+                stroke="#ffffff" strokeWidth="1.6" strokeLinejoin="round"
               />
-              <path d="M8.5 10.5h.01M12 10.5h.01M15.5 10.5h.01" stroke="#16233d" strokeWidth="1.8" strokeLinecap="round" />
+              <path d="M8.5 10.5h.01M12 10.5h.01M15.5 10.5h.01" stroke="#ffffff" strokeWidth="2" strokeLinecap="round" />
             </svg>
           )}
         </motion.button>
@@ -91,7 +91,7 @@ function AssistantChatbot() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 10, scale: 0.97 }}
             transition={{ duration: 0.2 }}
-            className="fixed bottom-24 right-6 w-[360px] h-[500px] bg-white border border-line shadow-xl flex flex-col z-50"
+            className="fixed bottom-24 right-6 w-[min(360px,calc(100vw-2rem))] h-[500px] bg-white border border-line shadow-xl rounded-2xl flex flex-col z-50 overflow-hidden"
           >
             <div className="border-b border-line p-4">
               <p className="font-display text-ink">Compliance assistant</p>

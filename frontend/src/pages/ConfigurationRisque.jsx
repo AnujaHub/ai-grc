@@ -65,7 +65,8 @@ function ConfigurationRisque() {
           ← Back to organizations
         </button>
 
-        <h1 className="font-display text-2xl text-ink mb-1">Risk matrix</h1>
+        <p className="text-accent text-xs font-mono uppercase tracking-[0.18em] mb-2">Risk management</p>
+        <h1 className="font-display text-3xl font-semibold text-ink mb-1">Risk matrix</h1>
         <p className="text-ink-soft text-sm mb-6">
           Customize the levels used to assess impact and probability for this organization.
         </p>
@@ -118,7 +119,7 @@ function ConfigurationRisque() {
             </div>
 
             <div className="flex items-center gap-4">
-              <button type="submit" className="px-5 py-2 bg-ink text-white text-sm font-medium cursor-pointer hover:bg-[#0d1729]">
+              <button type="submit" className="btn-primary px-5 py-2 text-sm cursor-pointer">
                 Save configuration
               </button>
               {confirmation && (
