@@ -1,6 +1,4 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
-import Login from './pages/Login'
-import Dashboard from './pages/Dashboard'
+import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom'
 import Organizations from './pages/Organisations'
 import AISystems from './pages/SystemesIA'
 import Evaluations from './pages/Evaluations'
@@ -14,13 +12,21 @@ import Reports from './pages/Rapports'
 import Users from './pages/Utilisateurs'
 import AuditLog from './pages/JournalAudit'
 import Profile from './pages/Profil'
+import { authRoutes, AUTH_PATHS } from './features/auth/routes'
+import { dashboardRoutes } from './features/dashboard/routes'
+
+function ChatbotOutsideAuth() {
+  const { pathname } = useLocation()
+  return AUTH_PATHS.includes(pathname) ? null : <AssistantChatbot />
+}
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<Login />} />
-        <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+        {authRoutes}
+
+        {dashboardRoutes}
         <Route path="/organisations" element={<ProtectedRoute><Organizations /></ProtectedRoute>} />
         <Route path="/systemes-ia" element={<ProtectedRoute><AISystems /></ProtectedRoute>} />
         <Route path="/evaluations" element={<ProtectedRoute><Evaluations /></ProtectedRoute>} />
@@ -33,7 +39,7 @@ function App() {
         <Route path="/journal-audit" element={<ProtectedRoute><AuditLog /></ProtectedRoute>} />
         <Route path="/profil" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
       </Routes>
-      <AssistantChatbot />
+      <ChatbotOutsideAuth />
     </BrowserRouter>
   )
 }
