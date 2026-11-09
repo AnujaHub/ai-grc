@@ -6,12 +6,12 @@ import { getEvaluations } from '../services/evaluationService'
 import { getSystemesIA } from '../services/systemeIaService'
 import { getOrganisations } from '../services/organisationService'
 
-function Rapports() {
+function Reports() {
   const [rapports, setRapports] = useState([])
   const [evaluations, setEvaluations] = useState([])
   const [systemes, setSystemes] = useState([])
-  const [organisations, setOrganisations] = useState([])
-  const [erreur, setErreur] = useState('')
+  const [organizations, setOrganizations] = useState([])
+  const [error, setError] = useState('')
   const [telechargementEnCours, setTelechargementEnCours] = useState(null)
 
   useEffect(() => { chargerDonnees() }, [])
@@ -24,9 +24,9 @@ function Rapports() {
       setRapports(rapportsData)
       setEvaluations(evalsData)
       setSystemes(systemesData)
-      setOrganisations(orgsData)
+      setOrganizations(orgsData)
     } catch (err) {
-      setErreur('Impossible de charger les rapports')
+      setError('Unable to load reports')
     }
   }
 
@@ -45,20 +45,20 @@ function Rapports() {
     try {
       await visualiserRapport(rapportId)
     } catch (err) {
-      alert('Erreur lors de l\'ouverture du rapport')
+      alert('Unable to open the report')
     }
   }
 
   const getInfosEvaluation = (evaluationId) => {
     const evaluation = evaluations.find((e) => e.id === evaluationId)
-    if (!evaluation) return { cible: 'Inconnue', organisation: 'Inconnue' }
-    if (evaluation.type_evaluation === 'Organisation') {
-      const org = organisations.find((o) => o.id === evaluation.organisation_id)
-      return { cible: 'Gouvernance globale', organisation: org ? org.nom : 'Inconnue' }
+    if (!evaluation) return { cible: 'Unknown', organisation: 'Unknown' }
+    if (evaluation.evaluation_type === 'Organisation') {
+      const org = organizations.find((o) => o.id === evaluation.organisation_id)
+      return { cible: 'Organization-wide governance', organisation: org ? org.nom : 'Unknown' }
     }
     const systeme = systemes.find((s) => s.id === evaluation.systeme_ia_id)
-    const org = systeme ? organisations.find((o) => o.id === systeme.organisation_id) : null
-    return { cible: systeme ? systeme.nom : 'Inconnu', organisation: org ? org.nom : 'Inconnue' }
+    const org = systeme ? organizations.find((o) => o.id === systeme.organisation_id) : null
+    return { cible: systeme ? systeme.nom : 'Unknown', organisation: org ? org.nom : 'Unknown' }
   }
 
   return (
@@ -69,7 +69,7 @@ function Rapports() {
         <h1 className="font-display text-3xl font-semibold text-ink mb-2">Generated reports</h1>
         <p className="text-ink-soft text-sm mb-6">Review and export assessment records for stakeholders and auditors.</p>
 
-        {erreur && <p className="text-danger text-sm mb-4">{erreur}</p>}
+        {error && <p className="text-danger text-sm mb-4">{error}</p>}
 
         {rapports.length === 0 ? (
           <p className="text-ink-soft text-sm">
@@ -95,7 +95,7 @@ function Rapports() {
                       <td className="px-4 py-3 text-ink">{infos.organisation}</td>
                       <td className="px-4 py-3 text-ink-soft">{infos.cible}</td>
                       <td className="px-4 py-3 font-mono text-ink">{rapport.score_global !== null ? `${rapport.score_global}%` : '—'}</td>
-                      <td className="px-4 py-3 font-mono text-xs text-ink-soft">{new Date(rapport.date_generation).toLocaleString()}</td>
+                      <td className="px-4 py-3 font-mono text-xs text-ink-soft">{new Date(rapport.generation_date).toLocaleString()}</td>
                       <td className="px-4 py-3 text-right space-x-3">
                         <button
                           onClick={() => handleVisualiser(rapport.id)}
@@ -123,4 +123,4 @@ function Rapports() {
   )
 }
 
-export default Rapports
+export default Reports

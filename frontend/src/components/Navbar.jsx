@@ -3,14 +3,14 @@ import { useEffect } from 'react'
 import Logo from './Logo'
 
 const LIENS = [
-  { chemin: '/dashboard', label: 'Overview', group: 'Workspace' },
-  { chemin: '/organisations', label: 'Organizations', group: 'Governance' },
-  { chemin: '/systemes-ia', label: 'AI systems', group: 'Governance' },
-  { chemin: '/evaluations', label: 'Assessments', group: 'Compliance' },
-  { chemin: '/risques', label: 'Risk register', group: 'Risk' },
-  { chemin: '/rapports', label: 'Reports', group: 'Compliance' },
-  { chemin: '/utilisateurs', label: 'Users', group: 'Administration', rolesRequis: ['super_admin', 'administrateur'] },
-  { chemin: '/journal-audit', label: 'Audit log', group: 'Administration', rolesRequis: ['super_admin', 'administrateur', 'auditeur'] },
+  { path: '/dashboard', label: 'Overview', group: 'Workspace' },
+  { path: '/organisations', label: 'Organizations', group: 'Governance' },
+  { path: '/systemes-ia', label: 'AI systems', group: 'Governance' },
+  { path: '/evaluations', label: 'Assessments', group: 'Compliance' },
+  { path: '/risques', label: 'Risk register', group: 'Risk' },
+  { path: '/rapports', label: 'Reports', group: 'Compliance' },
+  { path: '/utilisateurs', label: 'Users', group: 'Administration', rolesRequis: ['super_admin', 'administrateur'] },
+  { path: '/journal-audit', label: 'Audit log', group: 'Administration', rolesRequis: ['super_admin', 'administrateur', 'auditeur'] },
 ]
 
 function Navbar() {
@@ -46,11 +46,11 @@ function Navbar() {
             <p className="px-3 mb-2 text-[10px] uppercase tracking-[0.18em] text-ink-soft">{groupe}</p>
             <div className="space-y-1">
               {liensVisibles.filter((lien) => lien.group === groupe).map((lien) => {
-                const actif = location.pathname === lien.chemin || location.pathname.startsWith(`${lien.chemin}/`)
+                const actif = location.pathname === lien.path || location.pathname.startsWith(`${lien.chemin}/`)
                 return (
                   <button
-                    key={lien.chemin}
-                    onClick={() => navigate(lien.chemin)}
+                    key={lien.path}
+                    onClick={() => navigate(lien.path)}
                     className={`w-full flex items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm cursor-pointer ${
                       actif ? 'bg-accent-soft text-accent shadow-[inset_3px_0_0_#38d9c2]' : 'text-ink-soft hover:bg-paper-dark hover:text-ink'
                     }`}

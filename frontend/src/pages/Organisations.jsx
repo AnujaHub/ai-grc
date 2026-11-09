@@ -5,23 +5,23 @@ import Navbar from '../components/Navbar'
 import { getOrganisations, createOrganisation } from '../services/organisationService'
 import { estAdministrateur } from '../utils/permissions'
 
-function Organisations() {
-  const [organisations, setOrganisations] = useState([])
+function Organizations() {
+  const [organizations, setOrganizations] = useState([])
   const [nom, setNom] = useState('')
   const [secteur, setSecteur] = useState('')
   const [pays, setPays] = useState('')
-  const [erreur, setErreur] = useState('')
+  const [error, setError] = useState('')
   const navigate = useNavigate()
   const peutCreer = estAdministrateur()
 
-  useEffect(() => { chargerOrganisations() }, [])
+  useEffect(() => { loadOrganizations() }, [])
 
-  const chargerOrganisations = async () => {
+  const loadOrganizations = async () => {
     try {
       const data = await getOrganisations()
-      setOrganisations(data)
+      setOrganizations(data)
     } catch (err) {
-      setErreur('Impossible de charger les organisations')
+      setError('Unable to load organizations')
     }
   }
 
@@ -30,9 +30,9 @@ function Organisations() {
     try {
       await createOrganisation(nom, secteur, pays)
       setNom(''); setSecteur(''); setPays('')
-      chargerOrganisations()
+      loadOrganizations()
     } catch (err) {
-      setErreur('Creation failed')
+      setError('Creation failed')
     }
   }
 
@@ -70,7 +70,7 @@ function Organisations() {
               Register organization
             </button>
           </form>
-          {erreur && <p className="text-danger text-sm mt-3">{erreur}</p>}
+          {error && <p className="text-danger text-sm mt-3">{error}</p>}
         </motion.div>
         )}
 
@@ -91,13 +91,13 @@ function Organisations() {
               </tr>
             </thead>
             <tbody>
-              {organisations.map((org) => (
+              {organizations.map((org) => (
                 <tr key={org.id} className="border-b border-line last:border-0 hover:bg-paper/60">
                   <td className="px-4 py-3 font-medium text-ink">{org.nom}</td>
                   <td className="px-4 py-3 text-ink-soft">{org.secteur || '—'}</td>
                   <td className="px-4 py-3 text-ink-soft">{org.pays || '—'}</td>
                   <td className="px-4 py-3 font-mono text-xs text-ink-soft">
-                    {new Date(org.date_creation).toLocaleDateString()}
+                    {new Date(org.creation_date).toLocaleDateString()}
                   </td>
                   <td className="px-4 py-3 text-right">
                     <button
@@ -109,7 +109,7 @@ function Organisations() {
                   </td>
                 </tr>
               ))}
-              {organisations.length === 0 && (
+              {organizations.length === 0 && (
                 <tr>
                   <td colSpan="5" className="px-4 py-8 text-center text-ink-soft text-sm">
                     No organizations registered yet.
@@ -124,4 +124,4 @@ function Organisations() {
   )
 }
 
-export default Organisations
+export default Organizations

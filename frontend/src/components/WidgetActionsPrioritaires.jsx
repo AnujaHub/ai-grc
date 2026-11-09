@@ -6,9 +6,12 @@ const COULEUR_NIVEAU = {
   'Élevé': 'bg-danger-soft text-danger',
   'Moyen': 'bg-warning-soft text-warning',
   'Faible': 'bg-accent-soft text-accent',
+  High: 'bg-danger-soft text-danger',
+  Medium: 'bg-warning-soft text-warning',
+  Low: 'bg-accent-soft text-accent',
 }
 
-function WidgetActionsPrioritaires({ actions, delai = 0 }) {
+function PriorityActionsWidget({ actions, delai = 0 }) {
   const navigate = useNavigate()
 
   return (
@@ -34,13 +37,13 @@ function WidgetActionsPrioritaires({ actions, delai = 0 }) {
               </div>
               <div className="shrink-0 flex flex-col items-end gap-1">
                 <span className={`px-2 py-0.5 rounded-full text-xs font-mono font-medium ${COULEUR_NIVEAU[action.niveau_risque] || ''}`}>
-                  {displayLabel(action.niveau_risque)}
+                  {displayLabel(action.risk_level)}
                 </span>
                 {action.en_retard && (
                   <span className="text-xs font-mono text-danger font-semibold">Overdue</span>
                 )}
-                {!action.en_retard && action.date_echeance && (
-                  <span className="text-xs font-mono text-ink-soft">{action.date_echeance}</span>
+                {!action.en_retard && action.due_date && (
+                  <span className="text-xs font-mono text-ink-soft">{action.due_date}</span>
                 )}
               </div>
             </li>
@@ -58,4 +61,4 @@ function WidgetActionsPrioritaires({ actions, delai = 0 }) {
   )
 }
 
-export default WidgetActionsPrioritaires
+export default PriorityActionsWidget

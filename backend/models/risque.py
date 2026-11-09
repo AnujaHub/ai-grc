@@ -5,7 +5,7 @@ import uuid
 from datetime import date
 from database import Base
 
-class Risque(Base):
+class Risk(Base):
     __tablename__ = "risques"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
@@ -13,10 +13,10 @@ class Risque(Base):
     titre = Column(String(255), nullable=False)
     description = Column(Text, nullable=True)
     categorie = Column(String(100), nullable=True)
-    impact = Column(String(20), default="Moyen")       # Faible, Moyen, Élevé
-    probabilite = Column(String(20), default="Moyen")  # Faible, Moyen, Élevée
-    niveau_risque = Column(String(20), default="Moyen") # calculé à partir d'impact + probabilité
+    impact = Column(String(20), default="Moyen")       # Implementation note.
+    probabilite = Column(String(20), default="Moyen")  # Implementation note.
+    risk_level = Column("niveau_risque", String(20), default="Moyen")
     statut = Column(String(20), default="Ouvert")       # Ouvert, En cours, Clos
-    date_identification = Column(Date, default=date.today)
+    identification_date = Column("date_identification", Date, default=date.today)
 
-    actions_correctives = relationship("ActionCorrective", backref="risque", cascade="all, delete-orphan")
+    corrective_actions = relationship("CorrectiveAction", backref="risque", cascade="all, delete-orphan")

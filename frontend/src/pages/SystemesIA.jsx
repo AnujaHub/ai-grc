@@ -12,17 +12,17 @@ const BADGE_CRITICITE = {
   Élevé: 'bg-danger-soft text-danger',
 }
 
-function SystemesIA() {
+function AISystems() {
   const [systemes, setSystemes] = useState([])
-  const [organisations, setOrganisations] = useState([])
+  const [organizations, setOrganizations] = useState([])
   const [nom, setNom] = useState('')
   const [description, setDescription] = useState('')
   const [proprietaire, setProprietaire] = useState('')
   const [domaineUtilisation, setDomaineUtilisation] = useState('')
   const [niveauCriticite, setNiveauCriticite] = useState('Moyen')
   const [organisationId, setOrganisationId] = useState('')
-  const [erreur, setErreur] = useState('')
-  const autorise = peutEditer()
+  const [error, setError] = useState('')
+  const authorized = peutEditer()
 
   useEffect(() => { chargerDonnees() }, [])
 
@@ -30,9 +30,9 @@ function SystemesIA() {
     try {
       const [systemesData, orgsData] = await Promise.all([getSystemesIA(), getOrganisations()])
       setSystemes(systemesData)
-      setOrganisations(orgsData)
+      setOrganizations(orgsData)
     } catch (err) {
-      setErreur('Unable to load data')
+      setError('Unable to load data')
     }
   }
 
@@ -42,18 +42,18 @@ function SystemesIA() {
       await createSystemeIA({
         nom, description, proprietaire,
         domaine_utilisation: domaineUtilisation,
-        niveau_criticite: niveauCriticite,
+        criticality_level: niveauCriticite,
         organisation_id: organisationId,
       })
       setNom(''); setDescription(''); setProprietaire('')
       setDomaineUtilisation(''); setNiveauCriticite('Moyen'); setOrganisationId('')
       chargerDonnees()
     } catch (err) {
-      setErreur('AI system creation failed')
+      setError('AI system creation failed')
     }
   }
 
-  const getNomOrganisation = (orgId) => organisations.find((o) => o.id === orgId)?.nom || 'Inconnue'
+  const getNomOrganisation = (orgId) => organizations.find((o) => o.id === orgId)?.nom || 'Unknown'
 
   return (
     <div className="min-h-screen bg-paper">
@@ -63,7 +63,7 @@ function SystemesIA() {
         <h1 className="font-display text-3xl font-semibold text-ink mb-2">AI system inventory</h1>
         <p className="text-ink-soft text-sm mb-6">Maintain a clear register of the AI systems your organization operates.</p>
 
-        {autorise && (
+        {authorized && (
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="bg-white border border-line p-6 mb-6">
           <h2 className="text-xs font-semibold uppercase tracking-wide text-ink-soft mb-4">Register an AI system</h2>
           <form onSubmit={handleSubmit} className="space-y-3">
@@ -73,7 +73,7 @@ function SystemesIA() {
                 className="px-3 py-2 border border-line focus:border-accent outline-none bg-paper text-sm"
               >
                 <option value="">— Organization —</option>
-                {organisations.map((org) => <option key={org.id} value={org.id}>{org.nom}</option>)}
+                {organizations.map((org) => <option key={org.id} value={org.id}>{org.nom}</option>)}
               </select>
               <input
                 type="text" placeholder="System name" value={nom} onChange={(e) => setNom(e.target.value)} required
@@ -106,7 +106,7 @@ function SystemesIA() {
               </button>
             </div>
           </form>
-          {erreur && <p className="text-danger text-sm mt-3">{erreur}</p>}
+          {error && <p className="text-danger text-sm mt-3">{error}</p>}
         </motion.div>
         )}
 
@@ -131,7 +131,7 @@ function SystemesIA() {
                   <td className="px-4 py-3 text-ink-soft">{sys.domaine_utilisation || '—'}</td>
                   <td className="px-4 py-3">
                     <span className={`px-2 py-0.5 text-xs font-mono font-medium ${BADGE_CRITICITE[sys.niveau_criticite] || ''}`}>
-                      {displayLabel(sys.niveau_criticite)}
+                      {displayLabel(sys.criticality_level)}
                     </span>
                   </td>
                   <td className="px-4 py-3 text-ink-soft">{getNomOrganisation(sys.organisation_id)}</td>
@@ -153,4 +153,4 @@ function SystemesIA() {
   )
 }
 
-export default SystemesIA
+export default AISystems

@@ -3,24 +3,24 @@ from typing import Optional
 from datetime import datetime
 from uuid import UUID
 
-class SystemeIACreate(BaseModel):
+class AISystemCreate(BaseModel):
     nom: str
     description: Optional[str] = None
     proprietaire: Optional[str] = None
     domaine_utilisation: Optional[str] = None
-    niveau_criticite: Optional[str] = "Moyen"
+    criticality_level: Optional[str] = "Moyen"
     organisation_id: UUID
 
-class SystemeIAOut(BaseModel):
+class AISystemOut(BaseModel):
     id: UUID
     nom: str
     description: Optional[str] = None
     proprietaire: Optional[str] = None
     domaine_utilisation: Optional[str] = None
-    niveau_criticite: str
+    criticality_level: str
     statut: str
     organisation_id: UUID
-    date_creation: datetime
+    creation_date: datetime
 
     class Config:
         from_attributes = True

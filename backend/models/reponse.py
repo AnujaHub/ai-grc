@@ -4,7 +4,7 @@ import uuid
 from datetime import datetime
 from database import Base
 
-class Reponse(Base):
+class Response(Base):
     __tablename__ = "reponses"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
@@ -12,7 +12,7 @@ class Reponse(Base):
     clause_id = Column(UUID(as_uuid=True), ForeignKey("clauses.id"), nullable=False)
     reponse = Column(String(30), nullable=True)
     commentaire = Column(Text, nullable=True)
-    date_reponse = Column(DateTime, default=datetime.utcnow)
+    response_date = Column("date_reponse", DateTime, default=datetime.utcnow)
 
-    # Nouveau : qui a répondu à cette clause précise
+    # Implementation note.
     repondant_id = Column(UUID(as_uuid=True), ForeignKey("utilisateurs.id"), nullable=True)

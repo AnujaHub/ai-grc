@@ -3,15 +3,16 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import Navbar from '../components/Navbar'
 import { getConfigurationRisque, updateConfigurationRisque } from '../services/configurationRisqueService'
+import { displayLabel } from '../utils/displayLabels'
 
-function ConfigurationRisque() {
+function RiskConfiguration() {
   const { organisationId } = useParams()
   const navigate = useNavigate()
 
-  const [niveauxImpact, setNiveauxImpact] = useState([])
-  const [niveauxProbabilite, setNiveauxProbabilite] = useState([])
-  const [erreur, setErreur] = useState('')
-  const [chargement, setChargement] = useState(true)
+  const [impactLevels, setImpactLevels] = useState([])
+  const [probabilityLevels, setProbabilityLevels] = useState([])
+  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(true)
   const [confirmation, setConfirmation] = useState(false)
 
   useEffect(() => { chargerConfiguration() }, [organisationId])
@@ -19,12 +20,12 @@ function ConfigurationRisque() {
   const chargerConfiguration = async () => {
     try {
       const data = await getConfigurationRisque(organisationId)
-      setNiveauxImpact(data.niveaux_impact)
-      setNiveauxProbabilite(data.niveaux_probabilite)
-      setChargement(false)
+      setImpactLevels(data.impact_levels)
+      setProbabilityLevels(data.probability_levels)
+      setLoading(false)
     } catch (err) {
-      setErreur('Unable to load risk configuration')
-      setChargement(false)
+      setError('Unable to load risk configuration')
+      setLoading(false)
     }
   }
 
@@ -34,8 +35,8 @@ function ConfigurationRisque() {
       4: { impact: ['Faible', 'Modéré', 'Élevé', 'Critique'], probabilite: ['Rare', 'Possible', 'Probable', 'Quasi certaine'] },
       5: { impact: ['Très faible', 'Faible', 'Modéré', 'Élevé', 'Critique'], probabilite: ['Très rare', 'Rare', 'Possible', 'Probable', 'Quasi certaine'] },
     }
-    setNiveauxImpact(presets[nombreNiveaux].impact)
-    setNiveauxProbabilite(presets[nombreNiveaux].probabilite)
+    setImpactLevels(presets[nombreNiveaux].impact)
+    setProbabilityLevels(presets[nombreNiveaux].probabilite)
   }
 
   const handleChangeNiveau = (liste, setListe, index, valeur) => {
@@ -47,7 +48,7 @@ function ConfigurationRisque() {
   const handleSubmit = async (e) => {
     e.preventDefault()
     try {
-      await updateConfigurationRisque(organisationId, niveauxImpact, niveauxProbabilite)
+      await updateConfigurationRisque(organisationId, impactLevels, probabilityLevels)
       setConfirmation(true)
       setTimeout(() => setConfirmation(false), 2500)
     } catch (err) {
@@ -55,7 +56,7 @@ function ConfigurationRisque() {
     }
   }
 
-  if (chargement) return <div><Navbar /><div className="max-w-2xl mx-auto px-6 py-10 text-ink-soft font-mono text-sm">Loading...</div></div>
+  if (loading) return <div><Navbar /><div className="max-w-2xl mx-auto px-6 py-10 text-ink-soft font-mono text-sm">Loading...</div></div>
 
   return (
     <div className="min-h-screen bg-paper">
@@ -71,19 +72,19 @@ function ConfigurationRisque() {
           Customize the levels used to assess impact and probability for this organization.
         </p>
 
-        {erreur && <p className="text-danger text-sm mb-4">{erreur}</p>}
+        {error && <p className="text-danger text-sm mb-4">{error}</p>}
 
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="bg-white border border-line p-6">
           <p className="text-xs font-semibold uppercase tracking-wide text-ink-soft mb-3">Quick presets</p>
           <div className="flex gap-2 mb-6">
             <button onClick={() => appliquerPreset(3)} className="px-4 py-1.5 border border-line text-sm text-ink cursor-pointer hover:border-ink">
-              3 niveaux
+              3 levels
             </button>
             <button onClick={() => appliquerPreset(4)} className="px-4 py-1.5 border border-line text-sm text-ink cursor-pointer hover:border-ink">
-              4 niveaux
+              4 levels
             </button>
             <button onClick={() => appliquerPreset(5)} className="px-4 py-1.5 border border-line text-sm text-ink cursor-pointer hover:border-ink">
-              5 niveaux
+              5 levels
             </button>
           </div>
 
@@ -92,12 +93,12 @@ function ConfigurationRisque() {
               Impact levels <span className="font-normal normal-case text-ink-soft">(lowest to highest)</span>
             </p>
             <div className="flex flex-wrap gap-2 mb-6">
-              {niveauxImpact.map((niveau, index) => (
+              {impactLevels.map((niveau, index) => (
                 <input
                   key={index}
                   type="text"
-                  value={niveau}
-                  onChange={(e) => handleChangeNiveau(niveauxImpact, setNiveauxImpact, index, e.target.value)}
+                  value={displayLabel(niveau)}
+                  onChange={(e) => handleChangeNiveau(impactLevels, setImpactLevels, index, e.target.value)}
                   className="px-3 py-2 border border-line focus:border-accent outline-none bg-paper text-sm w-36"
                 />
               ))}
@@ -107,12 +108,12 @@ function ConfigurationRisque() {
               Probability levels <span className="font-normal normal-case text-ink-soft">(lowest to highest)</span>
             </p>
             <div className="flex flex-wrap gap-2 mb-6">
-              {niveauxProbabilite.map((niveau, index) => (
+              {probabilityLevels.map((niveau, index) => (
                 <input
                   key={index}
                   type="text"
-                  value={niveau}
-                  onChange={(e) => handleChangeNiveau(niveauxProbabilite, setNiveauxProbabilite, index, e.target.value)}
+                  value={displayLabel(niveau)}
+                  onChange={(e) => handleChangeNiveau(probabilityLevels, setProbabilityLevels, index, e.target.value)}
                   className="px-3 py-2 border border-line focus:border-accent outline-none bg-paper text-sm w-36"
                 />
               ))}
@@ -139,4 +140,4 @@ function ConfigurationRisque() {
   )
 }
 
-export default ConfigurationRisque
+export default RiskConfiguration

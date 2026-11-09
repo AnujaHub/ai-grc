@@ -4,57 +4,57 @@ import { envoyerMessageAssistant } from '../services/assistantService'
 import { getOrganisations } from '../services/organisationService'
 
 function AssistantChatbot() {
-  const [ouvert, setOuvert] = useState(false)
+  const [open, setOpen] = useState(false)
   const [messages, setMessages] = useState([
     { role: 'assistant', content: 'Hello. I can help you interpret ISO/IEC 42001 requirements or your organization’s compliance status.' }
   ])
-  const [saisie, setSaisie] = useState('')
-  const [chargement, setChargement] = useState(false)
-  const [organisations, setOrganisations] = useState([])
+  const [input, setInput] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [organizations, setOrganizations] = useState([])
   const [organisationId, setOrganisationId] = useState('')
-  const finDesMessagesRef = useRef(null)
+  const messagesEndRef = useRef(null)
 
-  const chargerOrganisations = async () => {
+  const loadOrganizations = async () => {
     try {
       const data = await getOrganisations()
-      setOrganisations(data)
+      setOrganizations(data)
     } catch { /* silencieux */ }
   }
 
   useEffect(() => {
-    finDesMessagesRef.current?.scrollIntoView({ behavior: 'smooth' })
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
 
-  const basculerOuverture = () => {
-    const prochainEtat = !ouvert
-    setOuvert(prochainEtat)
-    if (prochainEtat && organisations.length === 0) chargerOrganisations()
+  const toggleOpen = () => {
+    const nextState = !open
+    setOpen(nextState)
+    if (nextState && organizations.length === 0) loadOrganizations()
   }
 
-  const handleEnvoyer = async (e) => {
+  const handleSend = async (e) => {
     e.preventDefault()
-    if (!saisie.trim()) return
+    if (!input.trim()) return
 
-    const nouveauMessage = { role: 'user', content: saisie }
-    const nouveauxMessages = [...messages, nouveauMessage]
-    setMessages(nouveauxMessages)
-    setSaisie('')
-    setChargement(true)
+    const newMessage = { role: 'user', content: input }
+    const newMessages = [...messages, newMessage]
+    setMessages(newMessages)
+    setInput('')
+    setLoading(true)
 
     try {
-      const data = await envoyerMessageAssistant(nouveauxMessages, organisationId)
-      setMessages([...nouveauxMessages, { role: 'assistant', content: data.reponse }])
+      const data = await envoyerMessageAssistant(newMessages, organisationId)
+      setMessages([...newMessages, { role: 'assistant', content: data.reponse }])
     } catch {
-      setMessages([...nouveauxMessages, { role: 'assistant', content: 'Something went wrong. Please try again.' }])
+      setMessages([...newMessages, { role: 'assistant', content: 'Something went wrong. Please try again.' }])
     } finally {
-      setChargement(false)
+      setLoading(false)
     }
   }
 
   return (
     <>
       <div className="fixed bottom-6 right-6 z-50">
-        {!ouvert && (
+        {!open && (
           <motion.span
             initial={{ opacity: 0.5, scale: 1 }}
             animate={{ opacity: [0.5, 0, 0.5], scale: [1, 1.4, 1] }}
@@ -63,12 +63,12 @@ function AssistantChatbot() {
           />
         )}
         <motion.button
-          onClick={basculerOuverture}
+          onClick={toggleOpen}
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
           className="relative w-14 h-14 rounded-2xl bg-accent border border-accent flex items-center justify-center shadow-[0_0_26px_rgba(56,217,194,0.35)] cursor-pointer"
         >
-          {ouvert ? (
+          {open ? (
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
               <path d="M2 2L14 14M14 2L2 14" stroke="#ffffff" strokeWidth="1.8" strokeLinecap="round" />
             </svg>
@@ -85,7 +85,7 @@ function AssistantChatbot() {
       </div>
 
       <AnimatePresence>
-        {ouvert && (
+        {open && (
           <motion.div
             initial={{ opacity: 0, y: 20, scale: 0.97 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -101,7 +101,7 @@ function AssistantChatbot() {
                 className="w-full mt-2 px-2 py-1.5 border border-line text-xs bg-paper focus:border-accent outline-none"
               >
                 <option value="">Without specific context</option>
-                {organisations.map((org) => (
+                {organizations.map((org) => (
                   <option key={org.id} value={org.id}>Context: {org.nom}</option>
                 ))}
               </select>
@@ -117,23 +117,23 @@ function AssistantChatbot() {
                   </span>
                 </div>
               ))}
-              {chargement && (
+              {loading && (
                 <p className="text-xs text-ink-soft font-mono">The assistant is thinking...</p>
               )}
-              <div ref={finDesMessagesRef} />
+              <div ref={messagesEndRef} />
             </div>
 
-            <form onSubmit={handleEnvoyer} className="p-3 border-t border-line flex gap-2">
+            <form onSubmit={handleSend} className="p-3 border-t border-line flex gap-2">
               <input
                 type="text"
-                value={saisie}
-                onChange={(e) => setSaisie(e.target.value)}
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
                 placeholder="Ask your question..."
                 className="flex-1 px-3 py-2 border border-line focus:border-accent outline-none text-sm bg-paper"
               />
               <button
                 type="submit"
-                disabled={chargement}
+                disabled={loading}
                 className="px-3 py-2 bg-ink text-white text-sm cursor-pointer hover:bg-[#0d1729] disabled:opacity-50"
               >
                 →

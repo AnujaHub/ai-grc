@@ -9,17 +9,17 @@ class Evaluation(Base):
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
 
-    # Une évaluation porte SOIT sur un système IA, SOIT sur l'organisation entière
-    type_evaluation = Column(String(20), nullable=False, default="Systeme_IA")  # "Organisation" ou "Systeme_IA"
+    # Implementation note.
+    evaluation_type = Column("type_evaluation", String(20), nullable=False, default="Systeme_IA")
     systeme_ia_id = Column(UUID(as_uuid=True), ForeignKey("systemes_ia.id"), nullable=True)
     organisation_id = Column(UUID(as_uuid=True), ForeignKey("organisations.id"), nullable=True)
 
     referentiel_id = Column(UUID(as_uuid=True), ForeignKey("referentiels.id"), nullable=False)
     responsable_id = Column(UUID(as_uuid=True), ForeignKey("utilisateurs.id"), nullable=True)
-    date_debut = Column(Date, nullable=True)
-    date_fin = Column(Date, nullable=True)
+    start_date = Column("date_debut", Date, nullable=True)
+    end_date = Column("date_fin", Date, nullable=True)
     score = Column(Numeric(5, 2), nullable=True)
     statut = Column(String(50), default="Brouillon")
     commentaire = Column(Text, nullable=True)
 
-    reponses = relationship("Reponse", backref="evaluation", cascade="all, delete-orphan")
+    reponses = relationship("Response", backref="evaluation", cascade="all, delete-orphan")

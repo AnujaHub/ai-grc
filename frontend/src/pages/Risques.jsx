@@ -13,13 +13,16 @@ const COULEUR_NIVEAU = {
   'Élevé': 'bg-danger-soft text-danger',
   'Moyen': 'bg-warning-soft text-warning',
   'Faible': 'bg-accent-soft text-accent',
+  High: 'bg-danger-soft text-danger',
+  Medium: 'bg-warning-soft text-warning',
+  Low: 'bg-accent-soft text-accent',
 }
 
-function Risques() {
+function Risks() {
   const [risques, setRisques] = useState([])
   const [evaluations, setEvaluations] = useState([])
   const [systemes, setSystemes] = useState([])
-  const [organisations, setOrganisations] = useState([])
+  const [organizations, setOrganizations] = useState([])
 
   const [evaluationId, setEvaluationId] = useState('')
   const [titre, setTitre] = useState('')
@@ -27,9 +30,9 @@ function Risques() {
   const [categorie, setCategorie] = useState('')
   const [impact, setImpact] = useState('Moyen')
   const [probabilite, setProbabilite] = useState('Moyen')
-  const [erreur, setErreur] = useState('')
+  const [error, setError] = useState('')
   const navigate = useNavigate()
-  const autorise = peutEditer()
+  const authorized = peutEditer()
 
   useEffect(() => { chargerDonnees() }, [])
 
@@ -41,9 +44,9 @@ function Risques() {
       setRisques(risquesData)
       setEvaluations(evalsData)
       setSystemes(systemesData)
-      setOrganisations(orgsData)
+      setOrganizations(orgsData)
     } catch (err) {
-      setErreur('Unable to load data')
+      setError('Unable to load data')
     }
   }
 
@@ -54,7 +57,7 @@ function Risques() {
       setTitre(''); setDescription(''); setCategorie(''); setImpact('Moyen'); setProbabilite('Moyen'); setEvaluationId('')
       chargerDonnees()
     } catch (err) {
-      setErreur('Risk creation failed')
+      setError('Risk creation failed')
     }
   }
 
@@ -69,14 +72,14 @@ function Risques() {
 
   const getEvaluationParId = (id) => evaluations.find((ev) => ev.id === id)
   const getSystemeParId = (id) => systemes.find((s) => s.id === id)
-  const getOrganisationParId = (id) => organisations.find((o) => o.id === id)
+  const getOrganisationParId = (id) => organizations.find((o) => o.id === id)
 
   const getNomSystemePourRisque = (risque) => {
     const evaluation = getEvaluationParId(risque.evaluation_id)
-    if (!evaluation) return 'Inconnu'
-    if (evaluation.type_evaluation === 'Organisation') {
+    if (!evaluation) return 'Unknown'
+    if (evaluation.evaluation_type === 'Organisation') {
       const org = getOrganisationParId(evaluation.organisation_id)
-      return org ? `🏢 ${org.nom} (gouvernance)` : 'Organisation inconnue'
+      return org ? `🏢 ${org.nom} (governance)` : 'Unknown organization'
     }
     const systeme = getSystemeParId(evaluation.systeme_ia_id)
     return systeme ? systeme.nom : 'Unknown system'
@@ -84,12 +87,12 @@ function Risques() {
 
   const getNomOrganisationPourRisque = (risque) => {
     const evaluation = getEvaluationParId(risque.evaluation_id)
-    if (!evaluation) return 'Inconnue'
-    if (evaluation.type_evaluation === 'Organisation') {
-      return getOrganisationParId(evaluation.organisation_id)?.nom || 'Inconnue'
+    if (!evaluation) return 'Unknown'
+    if (evaluation.evaluation_type === 'Organisation') {
+      return getOrganisationParId(evaluation.organisation_id)?.nom || 'Unknown'
     }
     const systeme = getSystemeParId(evaluation.systeme_ia_id)
-    return systeme ? getOrganisationParId(systeme.organisation_id)?.nom || 'Inconnue' : 'Inconnue'
+    return systeme ? getOrganisationParId(systeme.organisation_id)?.nom || 'Unknown' : 'Unknown'
   }
 
   const risquesParSysteme = {}
@@ -107,7 +110,7 @@ function Risques() {
         <h1 className="font-display text-3xl font-semibold text-ink mb-2">Risk register</h1>
         <p className="text-ink-soft text-sm mb-6">Prioritize exposure, assign ownership, and track remediation.</p>
 
-        {autorise && (
+        {authorized && (
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="bg-white border border-line p-6 mb-6">
           <h2 className="text-xs font-semibold uppercase tracking-wide text-ink-soft mb-4">Identify a new risk</h2>
           <form onSubmit={handleSubmit} className="space-y-3">
@@ -116,7 +119,7 @@ function Risques() {
               <option value="">— Link to an assessment —</option>
               {evaluations.map((ev) => (
                 <option key={ev.id} value={ev.id}>
-                  {ev.type_evaluation === 'Organisation'
+                  {ev.evaluation_type === 'Organisation'
                     ? `${getOrganisationParId(ev.organisation_id)?.nom || '?'} (gouvernance)`
                     : (getSystemeParId(ev.systeme_ia_id)?.nom || '?')} — {displayLabel(ev.statut)}
                 </option>
@@ -151,7 +154,7 @@ function Risques() {
               </button>
             </div>
           </form>
-          {erreur && <p className="text-danger text-sm mt-3">{erreur}</p>}
+          {error && <p className="text-danger text-sm mt-3">{error}</p>}
         </motion.div>
         )}
 
@@ -190,7 +193,7 @@ function Risques() {
                       <td className="px-4 py-2.5 text-ink-soft">{r.categorie || '—'}</td>
                       <td className="px-4 py-2.5">
                         <span className={`px-2 py-0.5 text-xs font-mono font-medium ${COULEUR_NIVEAU[r.niveau_risque] || ''}`}>
-                          {displayLabel(r.niveau_risque)}
+                          {displayLabel(r.risk_level)}
                         </span>
                       </td>
                       <td className="px-4 py-2.5">
@@ -221,4 +224,4 @@ function Risques() {
   )
 }
 
-export default Risques
+export default Risks

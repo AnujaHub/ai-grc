@@ -2,9 +2,9 @@ import re
 
 
 def extraire_json(texte):
-    """Extrait le premier bloc JSON valide trouvé dans un texte, même s'il y a du texte autour."""
+    """Extract the first valid JSON block found in text, even when surrounded by other text."""
     if not texte:
-        raise ValueError("Réponse vide reçue du modèle IA")
+        raise ValueError("The AI model returned an empty response")
 
     texte = texte.strip()
     if texte.startswith("```"):
@@ -14,7 +14,7 @@ def extraire_json(texte):
 
     correspondance = re.search(r'\{.*\}', texte, re.DOTALL)
     if not correspondance:
-        raise ValueError(f"Aucun JSON trouvé dans la réponse : {texte[:200]}")
+        raise ValueError(f"No JSON found in the response: {texte[:200]}")
 
     return json.loads(correspondance.group(0))
 
@@ -28,42 +28,42 @@ load_dotenv()
 client = Groq(api_key=os.getenv("GROQ_API_KEY"))
 
 
-def generer_risques_et_actions(nom_systeme_ia, reponses_non_conformes):
+def generate_risks_and_actions(ai_system_name, reponses_non_conformes):
     """
-    reponses_non_conformes : liste de dicts avec 'clause_titre', 'clause_description', 'reponse', 'commentaire'
-    Retourne une liste de risques suggérés, chacun avec ses actions correctives suggérées.
+    reponses_non_conformes: list of dicts with 'clause_titre', 'clause_description', 'reponse', and 'commentaire'.
+    Return suggested risks, each with suggested corrective actions.
     """
 
-    resume_clauses = ""
+    clause_summary = ""
     for r in reponses_non_conformes:
-        resume_clauses += f"- Clause : {r['clause_titre']}\n"
-        resume_clauses += f"  Question : {r['clause_description']}\n"
-        resume_clauses += f"  Réponse donnée : {r['reponse']}\n"
+        clause_summary += f"- Clause: {r['clause_titre']}\n"
+        clause_summary += f"  Question: {r['clause_description']}\n"
+        clause_summary += f"  Submitted answer: {r['reponse']}\n"
         if r.get('commentaire'):
-            resume_clauses += f"  Commentaire : {r['commentaire']}\n"
-        resume_clauses += "\n"
+            clause_summary += f"  Comment: {r['commentaire']}\n"
+        clause_summary += "\n"
 
-    prompt = f"""Tu es un expert en gouvernance de l'intelligence artificielle et en conformité ISO/IEC 42001.
+    prompt = f"""You are an expert in artificial intelligence governance and ISO/IEC 42001 compliance.
 
-Voici les résultats d'une évaluation de conformité pour le système IA "{nom_systeme_ia}".
-Les clauses suivantes ont été jugées "Non conforme" ou "Partiellement conforme" :
+Here are the results of a compliance assessment for the AI system "{ai_system_name}".
+The following clauses were assessed as "Non-compliant" or "Partially compliant":
 
-{resume_clauses}
+{clause_summary}
 
-Pour chacune de ces clauses, identifie un risque concret associé, puis propose une action corrective réaliste.
+For each clause, identify a concrete associated risk and propose a realistic corrective action.
 
-Réponds UNIQUEMENT avec un JSON valide (sans texte avant ou après), au format suivant :
+Respond ONLY with valid JSON (no text before or after), using this format:
 {{
   "risques": [
     {{
-      "titre": "Titre court du risque",
-      "description": "Description du risque en 1-2 phrases",
-      "categorie": "Catégorie du risque (ex: Documentation, Sécurité, Éthique, Données...)",
-      "impact": "Faible" ou "Moyen" ou "Élevé",
-      "probabilite": "Faible" ou "Moyen" ou "Élevée",
+      "titre": "Short risk title",
+      "description": "Risk description in 1-2 sentences",
+      "categorie": "Risk category (e.g. Documentation, Security, Ethics, Data...)",
+      "impact": "Low" or "Medium" or "High",
+      "probabilite": "Low" or "Medium" or "High",
       "action_corrective": {{
-        "titre": "Titre court de l'action",
-        "description": "Description de l'action à mener"
+        "titre": "Short action title",
+        "description": "Description of the action to take"
       }}
     }}
   ]
@@ -90,64 +90,64 @@ Réponds UNIQUEMENT avec un JSON valide (sans texte avant ou après), au format 
     return resultat.get("risques", [])
 
 
-def repondre_assistant_ia(messages_historique, contexte_organisation=None):
+def repondre_assistant_ia(messages_historique, organization_context=None):
     """
     messages_historique : liste de dicts [{"role": "user"/"assistant", "content": "..."}]
-    contexte_organisation : dict optionnel avec les stats de l'organisation (score, risques...)
+    organization_context: optional dict containing organization statistics (score, risks, etc.).
     """
 
-    contexte_texte = ""
-    if contexte_organisation:
-        contexte_texte = f"""
-Voici le contexte actuel de l'organisation sélectionnée par l'utilisateur :
-- Nombre de systèmes IA : {contexte_organisation.get('nb_systemes_ia', 'inconnu')}
-- Nombre d'évaluations : {contexte_organisation.get('nb_evaluations', 'inconnu')}
-- Score moyen de conformité : {contexte_organisation.get('score_moyen_conformite', 'inconnu')} %
-- Risques ouverts : {contexte_organisation.get('nb_risques_ouverts', 'inconnu')}
-- Actions correctives en retard : {contexte_organisation.get('nb_actions_en_retard', 'inconnu')}
+    context_text = ""
+    if organization_context:
+        context_text = f"""
+Here is the current context for the organization selected by the user:
+- Number of AI systems: {organization_context.get('nb_systemes_ia', 'unknown')}
+- Number of assessments: {organization_context.get('nb_evaluations', 'unknown')}
+- Average compliance score: {organization_context.get('score_moyen_conformite', 'unknown')} %
+- Open risks: {organization_context.get('nb_risques_ouverts', 'unknown')}
+- Overdue corrective actions: {organization_context.get('nb_actions_en_retard', 'unknown')}
 
-Utilise ces chiffres si la question de l'utilisateur s'y rapporte.
+Use these figures when relevant to the user's question.
 """
 
-    system_prompt = f"""Tu es l'assistant IA intégré à une plateforme de gouvernance et de conformité des systèmes d'intelligence artificielle, basée sur la norme ISO/IEC 42001.
+    system_prompt = f"""You are the AI assistant integrated into an artificial intelligence governance and compliance platform based on ISO/IEC 42001.
 
-Ton rôle :
-- Aider les utilisateurs (responsables conformité, auditeurs, managers) à comprendre les exigences de la norme ISO/IEC 42001
-- Expliquer des clauses ou des concepts de gouvernance IA (gestion des risques, biais, explicabilité, supervision humaine, etc.)
-- Aider à rédiger des recommandations ou des actions correctives
-- Répondre aux questions sur l'état de conformité de l'organisation si un contexte est fourni
+Your role:
+- Help users (compliance officers, auditors, and managers) understand ISO/IEC 42001 requirements
+- Explain AI governance clauses and concepts (risk management, bias, explainability, human oversight, etc.)
+- Help draft recommendations or corrective actions
+- Answer questions about the organization's compliance status when context is provided
 
-{contexte_texte}
+{context_text}
 
-Réponds de manière claire, professionnelle et concise (quelques phrases, pas de longs pavés sauf si on te le demande explicitement)."""
+Respond clearly, professionally, and concisely (a few sentences, not long essays unless explicitly requested)."""
 
-    messages_pour_api = [{"role": "system", "content": system_prompt}]
-    messages_pour_api.extend(messages_historique)
+    messages_for_api = [{"role": "system", "content": system_prompt}]
+    messages_for_api.extend(messages_historique)
 
     response = client.chat.completions.create(
         model="openai/gpt-oss-20b",
-        messages=messages_pour_api,
+        messages=messages_for_api,
         temperature=0.5,
     )
 
     return response.choices[0].message.content
 
 
-def generer_synthese_rapport(nom_cible, type_evaluation, score, nb_risques_eleves, nb_risques_ouverts, nb_clauses_non_conformes, nb_clauses_totales):
-    prompt = f"""Tu es un expert en gouvernance de l'IA rédigeant la synthèse d'un rapport d'audit de conformité ISO/IEC 42001.
+def generate_report_summary(target_name, evaluation_type, score, high_risk_count, open_risk_count, non_compliant_clause_count, total_clause_count):
+    prompt = f"""You are an AI governance expert writing the summary of an ISO/IEC 42001 compliance audit report.
 
-Contexte :
-- Cible évaluée : {nom_cible} ({"système IA" if type_evaluation == "Systeme_IA" else "gouvernance globale de l'organisation"})
-- Score de conformité global : {score} %
-- Nombre de risques de niveau Élevé identifiés : {nb_risques_eleves}
-- Nombre de risques encore ouverts (non traités) : {nb_risques_ouverts}
-- Nombre de clauses en écart (non conforme ou partiellement conforme) sur {nb_clauses_totales} clauses évaluées : {nb_clauses_non_conformes}
+Context:
+- Assessed target: {target_name} ({"AI system" if evaluation_type == "Systeme_IA" else "organization-wide governance"})
+- Overall compliance score: {score} %
+- Number of identified High-level risks: {nb_risques_eleves}
+- Number of open (untreated) risks: {nb_risques_ouverts}
+- Number of non-compliant or partially compliant clauses out of {nb_clauses_totales} assessed clauses: {nb_clauses_non_conformes}
 
-Rédige :
-1. Un court paragraphe de synthèse (4-6 phrases) à destination d'une direction non technique, expliquant l'état général de conformité et le niveau d'urgence.
-2. Une liste de 3 recommandations stratégiques prioritaires (une phrase chacune).
+Write:
+1. A short summary paragraph (4-6 sentences) for non-technical leadership explaining the overall compliance status and urgency.
+2. A list of 3 prioritized strategic recommendations (one sentence each).
 
-Réponds UNIQUEMENT en JSON valide, sans texte avant ou après, au format :
+Respond ONLY with valid JSON, with no text before or after, using this format:
 {{
   "synthese": "...",
   "recommandations": ["...", "...", "..."]
@@ -171,27 +171,27 @@ Réponds UNIQUEMENT en JSON valide, sans texte avant ou après, au format :
 import base64
 
 
-def analyser_preuve_texte(texte_extrait, clause_titre, clause_description, reponse_donnee):
-    """Analyse un contenu texte (issu d'un PDF) au regard de l'exigence de la clause."""
-    texte_tronque = texte_extrait[:6000]  # limite pour rester raisonnable en tokens
+def analyze_evidence_text(texte_extrait, clause_title, clause_description, given_response):
+    """Analyze text content extracted from a PDF against the clause requirement."""
+    truncated_text = texte_extrait[:6000]  # Keep the prompt within a reasonable token budget.
 
-    prompt = f"""Tu es un auditeur expert en conformité ISO/IEC 42001.
+    prompt = f"""You are an expert auditor for ISO/IEC 42001 compliance.
 
-Exigence évaluée : {clause_titre}
-Description de l'exigence : {clause_description}
-Réponse déclarée par l'utilisateur : {reponse_donnee}
+Assessed requirement: {clause_title}
+Requirement description: {clause_description}
+User-submitted answer: {given_response}
 
-Voici le contenu extrait du document déposé comme preuve :
+Here is the content extracted from the document submitted as evidence:
 ---
-{texte_tronque}
+{truncated_text}
 ---
 
-Analyse si ce document constitue une preuve pertinente et suffisante pour justifier la réponse déclarée.
+Analyze whether this document is relevant and sufficient evidence to support the submitted answer.
 
-Réponds UNIQUEMENT en JSON valide, sans texte avant ou après :
+Respond ONLY with valid JSON, with no text before or after:
 {{
-  "verdict": "Pertinente" ou "Insuffisante" ou "Non liée",
-  "explication": "1-2 phrases expliquant pourquoi"
+  "verdict": "Relevant" or "Insufficient" or "Not related",
+  "explication": "1-2 sentences explaining why"
 }}
 """
 
@@ -205,26 +205,26 @@ Réponds UNIQUEMENT en JSON valide, sans texte avant ou après :
     contenu = message.content or getattr(message, "reasoning", "") or ""
     return extraire_json(contenu)
 
-def analyser_preuve_image(chemin_image, clause_titre, clause_description, reponse_donnee):
-    """Analyse une image (capture d'écran, photo...) au regard de l'exigence de la clause."""
-    with open(chemin_image, "rb") as f:
+def analyze_evidence_image(image_path, clause_title, clause_description, given_response):
+    """Analyze an image (screenshot, photo, etc.) against the clause requirement."""
+    with open(image_path, "rb") as f:
         image_base64 = base64.b64encode(f.read()).decode("utf-8")
 
-    extension = chemin_image.split(".")[-1].lower()
+    extension = image_path.split(".")[-1].lower()
     mime = "image/png" if extension == "png" else "image/jpeg"
 
-    prompt_texte = f"""Tu es un auditeur expert en conformité ISO/IEC 42001.
+    prompt_text = f"""You are an expert auditor for ISO/IEC 42001 compliance.
 
-Exigence évaluée : {clause_titre}
-Description de l'exigence : {clause_description}
-Réponse déclarée par l'utilisateur : {reponse_donnee}
+Assessed requirement: {clause_title}
+Requirement description: {clause_description}
+User-submitted answer: {given_response}
 
-Analyse l'image fournie : constitue-t-elle une preuve pertinente et suffisante pour justifier la réponse déclarée ?
+Analyze the supplied image: is it relevant and sufficient evidence to support the submitted answer?
 
-Réponds UNIQUEMENT en JSON valide, sans texte avant ou après :
+Respond ONLY with valid JSON, with no text before or after:
 {{
-  "verdict": "Pertinente" ou "Insuffisante" ou "Non liée",
-  "explication": "1-2 phrases expliquant pourquoi, en décrivant brièvement ce que montre l'image"
+  "verdict": "Relevant" or "Insufficient" or "Not related",
+  "explication": "1-2 sentences explaining why and briefly describing what the image shows"
 }}
 """
 
@@ -234,7 +234,7 @@ Réponds UNIQUEMENT en JSON valide, sans texte avant ou après :
             {
                 "role": "user",
                 "content": [
-                    {"type": "text", "text": prompt_texte},
+                    {"type": "text", "text": prompt_text},
                     {"type": "image_url", "image_url": {"url": f"data:{mime};base64,{image_base64}"}},
                 ],
             }

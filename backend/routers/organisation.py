@@ -1,45 +1,45 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from database import get_db
-from models.organisation import Organisation
-from models.utilisateur import Utilisateur
-from schemas.organisation import OrganisationCreate, OrganisationOut
+from models.organisation import Organization
+from models.utilisateur import User
+from schemas.organisation import OrganizationCreate, OrganizationOut
 from security import get_current_user, require_roles
 from typing import List
 from uuid import UUID
 
 router = APIRouter(prefix="/organisations", tags=["Organisations"])
 
-@router.post("/", response_model=OrganisationOut)
-def create_organisation(
-    org: OrganisationCreate,
+@router.post("/", response_model=OrganizationOut)
+def create_organization(
+    org: OrganizationCreate,
     db: Session = Depends(get_db),
-    current_user: Utilisateur = Depends(require_roles("administrateur", "super_admin"))
+    current_user: User = Depends(require_roles("administrateur", "super_admin"))
 ):
-    nouvelle_org = Organisation(nom=org.nom, secteur=org.secteur, pays=org.pays)
-    db.add(nouvelle_org)
+    new_organization = Organization(nom=org.nom, secteur=org.secteur, pays=org.pays)
+    db.add(new_organization)
     db.commit()
-    db.refresh(nouvelle_org)
+    db.refresh(new_organization)
 
-    from audit_logger import enregistrer_action
-    enregistrer_action(db, current_user, "creation", "Organisation", str(nouvelle_org.id), f"Nom : {nouvelle_org.nom}")
+    from audit_logger import record_action
+    record_action(db, current_user, "creation", "Organisation", str(new_organization.id), f"Name:  {new_organization.nom}")
 
-    return nouvelle_org
+    return new_organization
 
-@router.get("/", response_model=List[OrganisationOut])
-def list_organisations(
+@router.get("/", response_model=List[OrganizationOut])
+def list_organizations(
     db: Session = Depends(get_db),
-    current_user: Utilisateur = Depends(get_current_user)
+    current_user: User = Depends(get_current_user)
 ):
-    return db.query(Organisation).all()
+    return db.query(Organization).all()
 
-@router.get("/{org_id}", response_model=OrganisationOut)
-def get_organisation(
+@router.get("/{org_id}", response_model=OrganizationOut)
+def get_organization(
     org_id: UUID,
     db: Session = Depends(get_db),
-    current_user: Utilisateur = Depends(get_current_user)
+    current_user: User = Depends(get_current_user)
 ):
-    org = db.query(Organisation).filter(Organisation.id == org_id).first()
+    org = db.query(Organization).filter(Organization.id == org_id).first()
     if not org:
-        raise HTTPException(status_code=404, detail="Organisation non trouvée")
+        raise HTTPException(status_code=404, detail="Organization not found")
     return org

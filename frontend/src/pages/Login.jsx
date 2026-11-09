@@ -6,24 +6,30 @@ import Logo from '../components/Logo'
 
 function Login() {
   const [email, setEmail] = useState('')
-  const [motDePasse, setMotDePasse] = useState('')
-  const [erreur, setErreur] = useState('')
-  const [chargement, setChargement] = useState(false)
+  const [password, setMotDePasse] = useState('')
+  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
   const navigate = useNavigate()
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    setErreur('')
-    setChargement(true)
+    setError('')
+    setLoading(true)
     try {
-      const data = await login(email, motDePasse)
+      const data = await login(email, password)
       localStorage.setItem('token', data.access_token)
       localStorage.setItem('utilisateur', JSON.stringify(data.utilisateur))
       navigate('/dashboard')
     } catch (err) {
-      setErreur('Email ou mot de passe incorrect')
+      if (!err.response) {
+        setError('Unable to connect to the server. Make sure the backend is running on port 8000.')
+      } else if (err.response.status === 401) {
+        setError('Incorrect email or password')
+      } else {
+        setError(err.response.data?.detail || 'Sign-in failed. Please try again.')
+      }
     } finally {
-      setChargement(false)
+      setLoading(false)
     }
   }
 
@@ -40,7 +46,7 @@ function Login() {
         </div>
 
         <div className="bg-white border border-line p-8">
-          <h1 className="font-display text-xl text-ink mb-1">Register access</h1>
+          <h1 className="font-display text-xl text-ink mb-1">Restricted access</h1>
           <p className="text-ink-soft text-sm mb-6">
             Sign in to access your compliance workspace
           </p>
@@ -66,7 +72,7 @@ function Login() {
               </label>
               <input
                 type="password"
-                value={motDePasse}
+                value={password}
                 onChange={(e) => setMotDePasse(e.target.value)}
                 required
                 placeholder="••••••••"
@@ -74,18 +80,18 @@ function Login() {
               />
             </div>
 
-            {erreur && (
+            {error && (
               <p className="text-danger text-sm bg-danger-soft border border-danger/20 px-3 py-2">
-                {erreur}
+                {error}
               </p>
             )}
 
             <button
               type="submit"
-              disabled={chargement}
+              disabled={loading}
               className="btn-primary w-full py-2.5 cursor-pointer"
             >
-              {chargement ? 'Signing in...' : 'Sign in'}
+              {loading ? 'Signing in...' : 'Sign in'}
             </button>
           </form>
         </div>

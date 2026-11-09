@@ -2,11 +2,11 @@ import { useState, useEffect, useCallback } from 'react'
 import { motion } from 'framer-motion'
 import Navbar from '../components/Navbar'
 import StatCard from '../components/StatCard'
-import CachetConformite from '../components/CachetConformite'
+import ComplianceBadge from '../components/CachetConformite'
 import { getDashboardStats, getScoresParSysteme, getNonConformitesParDepartement } from '../services/dashboardService'
 import { getOrganisations } from '../services/organisationService'
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer, CartesianGrid } from 'recharts'
-import WidgetActionsPrioritaires from '../components/WidgetActionsPrioritaires'
+import PriorityActionsWidget from '../components/WidgetActionsPrioritaires'
 import { getActionsPrioritaires } from '../services/dashboardService'
 
 
@@ -28,21 +28,31 @@ function CarteGraphique({ titre, children, delai = 0 }) {
 
 function Dashboard() {
   const utilisateur = JSON.parse(localStorage.getItem('utilisateur'))
-  const [organisations, setOrganisations] = useState([])
+  const [organizations, setOrganizations] = useState([])
   const [organisationId, setOrganisationId] = useState('')
 
   const [stats, setStats] = useState(null)
   const [scoresParSysteme, setScoresParSysteme] = useState([])
   const [nonConformitesParDept, setNonConformitesParDept] = useState([])
   const [actionsPrioritaires, setActionsPrioritaires] = useState([])
-  const [erreur, setErreur] = useState('')
+  const [error, setError] = useState('')
+  const emptyStats = {
+    nb_organisations: 0,
+    nb_systemes_ia: 0,
+    nb_evaluations: 0,
+    nb_evaluations_terminees: 0,
+    nb_evaluations_en_cours: 0,
+    score_moyen_conformite: 0,
+    risques: { eleve: 0, moyen: 0, faible: 0, ouverts: 0 },
+    actions_correctives: { ouvertes: 0, terminees: 0, en_retard: 0 },
+  }
 
-  const chargerOrganisations = useCallback(async () => {
+  const loadOrganizations = useCallback(async () => {
     try {
       const data = await getOrganisations()
-      setOrganisations(data)
+      setOrganizations(data)
     } catch {
-      setErreur('Impossible de charger les organisations')
+      setError('Unable to load organizations')
     }
   }, [])
 
@@ -54,23 +64,23 @@ function Dashboard() {
         getNonConformitesParDepartement(organisationId || null),
         getActionsPrioritaires(organisationId || null),
       ])
-      setStats(statsData)
+      setStats({ ...emptyStats, ...statsData, risques: { ...emptyStats.risques, ...statsData?.risques }, actions_correctives: { ...emptyStats.actions_correctives, ...statsData?.actions_correctives } })
       setScoresParSysteme(scoresData)
       setNonConformitesParDept(deptData)
       setActionsPrioritaires(actionsData)
     } catch {
-      setErreur('Impossible de charger les statistiques')
+      setError('Unable to load statistics')
     }
   }, [organisationId])
 
-  useEffect(() => { chargerOrganisations() }, [chargerOrganisations])
+  useEffect(() => { loadOrganizations() }, [loadOrganizations])
   useEffect(() => { chargerStats() }, [chargerStats])
 
-  if (erreur) {
+  if (error) {
     return (
       <div>
         <Navbar />
-        <div className="max-w-7xl mx-auto px-6 py-10 text-danger">{erreur}</div>
+        <div className="max-w-7xl mx-auto px-6 py-10 text-danger">{error}</div>
       </div>
     )
   }
@@ -85,18 +95,18 @@ function Dashboard() {
   }
 
   const donneesRisques = [
-    { name: 'High', value: stats.risques.eleve },
-    { name: 'Medium', value: stats.risques.moyen },
-    { name: 'Low', value: stats.risques.faible },
+    { name: 'High', value: stats.risques?.eleve ?? 0 },
+    { name: 'Medium', value: stats.risques?.moyen ?? 0 },
+    { name: 'Low', value: stats.risques?.faible ?? 0 },
   ]
   const donneesEvaluations = [
     { name: 'Completed', valeur: stats.nb_evaluations_terminees },
     { name: 'In progress', valeur: stats.nb_evaluations_en_cours },
   ]
   const donneesActions = [
-    { name: 'Open', valeur: stats.actions_correctives.ouvertes },
-    { name: 'Completed', valeur: stats.actions_correctives.terminees },
-    { name: 'Overdue', valeur: stats.actions_correctives.en_retard },
+    { name: 'Open', valeur: stats.corrective_actions?.ouvertes ?? 0 },
+    { name: 'Completed', valeur: stats.corrective_actions?.terminees ?? 0 },
+    { name: 'Overdue', valeur: stats.corrective_actions?.en_retard ?? 0 },
   ]
 
   return (
@@ -115,7 +125,7 @@ function Dashboard() {
               </p>
             )}
           </div>
-          <CachetConformite score={stats.score_moyen_conformite} taille={100} />
+          <ComplianceBadge score={stats.score_moyen_conformite ?? 0} taille={100} />
         </div>
 
         <div className="mb-6 flex items-center gap-3">
@@ -126,7 +136,7 @@ function Dashboard() {
             className="px-3 py-2 rounded-lg border border-line text-sm focus:border-accent outline-none bg-white"
           >
             <option value="">All organizations</option>
-            {organisations.map((org) => (
+            {organizations.map((org) => (
               <option key={org.id} value={org.id}>{org.nom}</option>
             ))}
           </select>
@@ -136,12 +146,12 @@ function Dashboard() {
           <StatCard titre="Organizations" valeur={stats.nb_organisations} delai={0} />
           <StatCard titre="AI systems" valeur={stats.nb_systemes_ia} delai={0.05} />
           <StatCard titre="Assessments" valeur={stats.nb_evaluations} delai={0.1} />
-          <StatCard titre="Open risks" valeur={stats.risques.ouverts} couleur="danger" delai={0.15} />
-          <StatCard titre="Overdue actions" valeur={stats.actions_correctives.en_retard} couleur="warning" delai={0.2} />
+          <StatCard titre="Open risks" valeur={stats.risques?.ouverts ?? 0} couleur="danger" delai={0.15} />
+          <StatCard titre="Overdue actions" valeur={stats.corrective_actions?.en_retard ?? 0} couleur="warning" delai={0.2} />
         </div>
 
         <div className="mb-8">
-          <WidgetActionsPrioritaires actions={actionsPrioritaires} delai={0.25} />
+          <PriorityActionsWidget actions={actionsPrioritaires} delai={0.25} />
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
@@ -189,7 +199,7 @@ function Dashboard() {
             </ResponsiveContainer>
           </CarteGraphique>
 
-          <CarteGraphique titre="Actions correctives" delai={0.25}>
+          <CarteGraphique titre="Corrective actions" delai={0.25}>
             <ResponsiveContainer width="100%" height={220}>
               <BarChart data={donneesActions}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e0d8" />

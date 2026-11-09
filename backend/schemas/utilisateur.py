@@ -3,8 +3,8 @@ from typing import Optional
 from datetime import datetime
 from uuid import UUID
 
-# Ce qu'on envoie pour CRÉER un utilisateur (inscription)
-class UtilisateurCreate(BaseModel):
+# Implementation note.
+class UserCreate(BaseModel):
     nom: str
     prenom: str
     email: EmailStr
@@ -12,13 +12,13 @@ class UtilisateurCreate(BaseModel):
     role: Optional[str] = "responsable_conformite"
     organisation_id: Optional[UUID] = None
 
-# Ce qu'on envoie pour se CONNECTER
-class UtilisateurLogin(BaseModel):
+# Payload sent to sign in
+class UserLogin(BaseModel):
     email: EmailStr
     mot_de_passe: str
 
-# Ce que l'API renvoie (jamais le mot de passe !)
-class UtilisateurOut(BaseModel):
+# Response returned by the API (never includes the password)
+class UserOut(BaseModel):
     id: UUID
     nom: str
     prenom: str
@@ -26,7 +26,7 @@ class UtilisateurOut(BaseModel):
     role: str
     organisation_id: Optional[UUID] = None
     statut: str
-    date_creation: datetime
+    creation_date: datetime
 
     class Config:
         from_attributes = True

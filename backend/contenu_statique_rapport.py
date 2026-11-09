@@ -1,54 +1,52 @@
 CADRE_REGLEMENTAIRE = """
-La norme ISO/IEC 42001 définit les exigences relatives à la mise en place d'un Système de Management
-de l'Intelligence Artificielle (AIMS). Elle permet aux organisations de démontrer une gouvernance
-responsable de leurs systèmes d'IA, en couvrant la gestion des risques, la transparence, la supervision
-humaine et l'amélioration continue.
+ISO/IEC 42001 defines the requirements for establishing an Artificial Intelligence Management
+System (AIMS). It enables organizations to demonstrate responsible governance of their AI systems,
+covering risk management, transparency, human oversight, and continual improvement.
 
-En complément, le règlement européen sur l'Intelligence Artificielle (AI Act, Règlement (UE) 2024/1689)
-impose des obligations proportionnées au niveau de risque des systèmes d'IA : les systèmes classés à
-« haut risque » doivent notamment faire l'objet d'une gestion des risques documentée, d'une supervision
-humaine effective, et d'une transparence vis-à-vis des utilisateurs.
+In addition, the European Artificial Intelligence Act (AI Act, Regulation (EU) 2024/1689) imposes
+obligations proportionate to the risk level of AI systems. Systems classified as high risk must have
+documented risk management, effective human oversight, and transparency toward users.
 
-Cette évaluation s'appuie également sur les principes de l'ISO/IEC 23894 (gestion des risques liés à l'IA)
-et sur les bonnes pratiques reconnues du secteur (OCDE, cadres de gouvernance IA sectoriels).
+This assessment also draws on the principles of ISO/IEC 23894 (AI risk management) and recognized
+industry good practices, including OECD principles and sector-specific AI governance frameworks.
 """
 
 DEMARCHE_GOUVERNANCE_IA = """
-Une gouvernance de l'Intelligence Artificielle efficace repose sur plusieurs piliers complémentaires :
+Effective AI governance rests on several complementary pillars:
 
-1. Stratégie et leadership — Définir une stratégie IA alignée avec les objectifs de l'organisation,
-   désigner des responsables clairs, et créer une instance de gouvernance (comité IA ou équivalent).
+1. Strategy and leadership — Define an AI strategy aligned with organizational objectives, assign
+   clear owners, and create a governance body such as an AI committee.
 
-2. Gestion des risques — Identifier, évaluer et suivre les risques liés à chaque système d'IA (biais,
-   erreurs, dérive, sécurité), avec des plans de traitement associés.
+2. Risk management — Identify, assess, and monitor risks for each AI system (bias, errors, drift,
+   and security), with associated treatment plans.
 
-3. Données et qualité — Garantir la qualité, la représentativité et la traçabilité des données utilisées
-   pour entraîner et faire fonctionner les systèmes d'IA.
+3. Data and quality — Ensure the quality, representativeness, and traceability of data used to train
+   and operate AI systems.
 
-4. Transparence et supervision humaine — Assurer que les décisions prises ou assistées par l'IA
-   peuvent être expliquées, tracées, et qu'un contrôle humain reste possible.
+4. Transparency and human oversight — Ensure AI-assisted decisions can be explained and traced, and
+   that human control remains possible.
 
-5. Sécurité et cycle de vie — Protéger les systèmes d'IA contre les usages détournés, et maintenir
-   une veille sur leurs performances tout au long de leur cycle de vie (déploiement, suivi, retrait).
+5. Security and lifecycle — Protect AI systems from misuse and monitor their performance throughout
+   their lifecycle (deployment, monitoring, and retirement).
 
-Cette évaluation constitue une première étape dans la structuration de cette gouvernance, à
-consolider par des revues périodiques et une amélioration continue.
+This assessment is a first step in structuring this governance and should be reinforced through
+periodic reviews and continual improvement.
 """
 
 GLOSSAIRE = [
-    ("AIMS", "Artificial Intelligence Management System — Système de management de l'intelligence artificielle."),
-    ("ISO/IEC 42001", "Norme internationale de management des systèmes d'intelligence artificielle."),
-    ("AI Act", "Règlement européen encadrant l'intelligence artificielle (Règlement (UE) 2024/1689)."),
-    ("Gap Analysis", "Analyse des écarts entre l'état actuel et les exigences d'un référentiel de conformité."),
-    ("KPI / KRI", "Key Performance Indicator / Key Risk Indicator — indicateurs de performance et de risque."),
-    ("Non-conformité", "Écart constaté entre la pratique observée et l'exigence attendue par la norme."),
-    ("Action corrective", "Action mise en œuvre pour corriger une non-conformité identifiée."),
-    ("Niveau de risque", "Estimation de la criticité d'un risque, calculée à partir de son impact et de sa probabilité."),
+    ("AIMS", "Artificial Intelligence Management System."),
+    ("ISO/IEC 42001", "International standard for managing artificial intelligence systems."),
+    ("AI Act", "European regulation governing artificial intelligence (Regulation (EU) 2024/1689)."),
+    ("Gap Analysis", "Analysis of the gap between the current state and compliance framework requirements."),
+    ("KPI / KRI", "Key Performance Indicator / Key Risk Indicator."),
+    ("Non-conformity", "Difference between observed practice and the requirement expected by the standard."),
+    ("Corrective action", "Action implemented to correct an identified non-conformity."),
+    ("Risk level", "Estimate of risk criticality calculated from its impact and probability."),
 ]
 
 REFERENCES = [
-    "Norme ISO/IEC 42001:2023 — Management de l'Intelligence Artificielle.",
-    "Norme ISO/IEC 23894:2023 — Gestion des risques liés à l'Intelligence Artificielle.",
-    "Règlement (UE) 2024/1689 du Parlement européen sur l'Intelligence Artificielle (AI Act).",
-    "OCDE — Principes sur l'Intelligence Artificielle.",
+    "ISO/IEC 42001:2023 — Artificial Intelligence Management.",
+    "ISO/IEC 23894:2023 — Artificial Intelligence Risk Management.",
+    "Regulation (EU) 2024/1689 of the European Parliament on artificial intelligence (AI Act).",
+    "OECD — Principles on Artificial Intelligence.",
 ]

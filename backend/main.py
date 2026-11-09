@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from database import engine
 from routers import organisation, auth, systeme_ia, referentiel, evaluation, risque, preuve, dashboard, configuration_risque, assistant, rapport, gestion_utilisateurs, journal_audit
 
-app = FastAPI(title="Plateforme GRC - ISO/IEC 42001")
+app = FastAPI(title="GRC Platform - ISO/IEC 42001")
 
 app.add_middleware(
     CORSMiddleware,
@@ -36,6 +36,6 @@ def health_check():
     try:
         connection = engine.connect()
         connection.close()
-        return {"status": "ok", "database": "connectée ✅"}
+        return {"status": "ok", "database": "connected ✅"}
     except Exception as e:
-        return {"status": "erreur", "détail": str(e)}
+        return {"status": "error", "detail": str(e)}

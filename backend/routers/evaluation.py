@@ -2,20 +2,20 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from database import get_db
 from models.evaluation import Evaluation
-from models.reponse import Reponse
+from models.reponse import Response
 from models.clause import Clause
-from models.chapitre import Chapitre
-from models.utilisateur import Utilisateur
-from schemas.evaluation import EvaluationCreate, EvaluationOut, EvaluationDetailOut, ReponseCreate, ReponseOut
+from models.chapitre import Chapter
+from models.utilisateur import User
+from schemas.evaluation import EvaluationCreate, EvaluationOut, EvaluationDetailOut, ResponseCreate, ResponseOut
 from security import get_current_user
 from typing import List
 from uuid import UUID
 from datetime import date
 from security import require_roles
 
-router = APIRouter(prefix="/evaluations", tags=["Évaluations"])
+router = APIRouter(prefix="/evaluations", tags=["Assessments"])
 
-SCORE_PAR_REPONSE = {
+SCORE_BY_RESPONSE = {
     "Conforme": 100,
     "Partiellement conforme": 50,
     "Non conforme": 0,
@@ -27,36 +27,36 @@ SCORE_PAR_REPONSE = {
 def create_evaluation(
     data: EvaluationCreate,
     db: Session = Depends(get_db),
-    current_user: Utilisateur = Depends(require_roles("super_admin", "administrateur", "responsable_conformite"))
+    current_user: User = Depends(require_roles("super_admin", "administrateur", "responsable_conformite"))
 ):
-    if data.type_evaluation == "Systeme_IA" and not data.systeme_ia_id:
-        raise HTTPException(status_code=400, detail="systeme_ia_id est requis pour une évaluation de type Systeme_IA")
-    if data.type_evaluation == "Organisation" and not data.organisation_id:
-        raise HTTPException(status_code=400, detail="organisation_id est requis pour une évaluation de type Organisation")
+    if data.evaluation_type == "Systeme_IA" and not data.systeme_ia_id:
+        raise HTTPException(status_code=400, detail="systeme_ia_id is required for a Systeme_IA assessment")
+    if data.evaluation_type == "Organisation" and not data.organisation_id:
+        raise HTTPException(status_code=400, detail="organisation_id is required for an Organisation assessment")
 
-    nouvelle_eval = Evaluation(
-        type_evaluation=data.type_evaluation,
+    new_evaluation = Evaluation(
+        evaluation_type=data.evaluation_type,
         systeme_ia_id=data.systeme_ia_id,
         organisation_id=data.organisation_id,
         referentiel_id=data.referentiel_id,
         responsable_id=current_user.id,
-        date_debut=date.today(),
+        start_date=date.today(),
         statut="En cours"
     )
-    db.add(nouvelle_eval)
+    db.add(new_evaluation)
     db.commit()
-    db.refresh(nouvelle_eval)
+    db.refresh(new_evaluation)
 
-    from audit_logger import enregistrer_action
-    enregistrer_action(db, current_user, "creation", "Evaluation", str(nouvelle_eval.id))
+    from audit_logger import record_action
+    record_action(db, current_user, "creation", "Evaluation", str(new_evaluation.id))
 
-    return nouvelle_eval
+    return new_evaluation
 
 
 @router.get("/", response_model=List[EvaluationOut])
 def list_evaluations(
     db: Session = Depends(get_db),
-    current_user: Utilisateur = Depends(get_current_user)
+    current_user: User = Depends(get_current_user)
 ):
     return db.query(Evaluation).all()
 
@@ -65,79 +65,79 @@ def list_evaluations(
 def get_evaluation(
     evaluation_id: UUID,
     db: Session = Depends(get_db),
-    current_user: Utilisateur = Depends(get_current_user)
+    current_user: User = Depends(get_current_user)
 ):
     evaluation = db.query(Evaluation).filter(Evaluation.id == evaluation_id).first()
     if not evaluation:
-        raise HTTPException(status_code=404, detail="Évaluation non trouvée")
+        raise HTTPException(status_code=404, detail="Assessment not found")
     return evaluation
 
 
-@router.post("/{evaluation_id}/reponses", response_model=ReponseOut)
-def repondre_a_une_clause(
+@router.post("/{evaluation_id}/reponses", response_model=ResponseOut)
+def answer_clause(
     evaluation_id: UUID,
-    data: ReponseCreate,
+    data: ResponseCreate,
     db: Session = Depends(get_db),
-    current_user: Utilisateur = Depends(require_roles("super_admin", "administrateur", "responsable_conformite"))
+    current_user: User = Depends(require_roles("super_admin", "administrateur", "responsable_conformite"))
 ):
     evaluation = db.query(Evaluation).filter(Evaluation.id == evaluation_id).first()
     if not evaluation:
-        raise HTTPException(status_code=404, detail="Évaluation non trouvée")
+        raise HTTPException(status_code=404, detail="Assessment not found")
 
-    reponse_existante = db.query(Reponse).filter(
-        Reponse.evaluation_id == evaluation_id,
-        Reponse.clause_id == data.clause_id
+    existing_response = db.query(Response).filter(
+        Response.evaluation_id == evaluation_id,
+        Response.clause_id == data.clause_id
     ).first()
 
-    if reponse_existante:
-        reponse_existante.reponse = data.reponse
-        reponse_existante.commentaire = data.commentaire
-        reponse_existante.repondant_id = current_user.id
+    if existing_response:
+        existing_response.reponse = data.reponse
+        existing_response.commentaire = data.commentaire
+        existing_response.repondant_id = current_user.id
         db.commit()
-        db.refresh(reponse_existante)
-        return reponse_existante
+        db.refresh(existing_response)
+        return existing_response
     else:
-        nouvelle_reponse = Reponse(
+        new_response = Response(
             evaluation_id=evaluation_id,
             clause_id=data.clause_id,
             reponse=data.reponse,
             commentaire=data.commentaire,
             repondant_id=current_user.id,
         )
-        db.add(nouvelle_reponse)
+        db.add(new_response)
         db.commit()
-        db.refresh(nouvelle_reponse)
-        return nouvelle_reponse
+        db.refresh(new_response)
+        return new_response
 
 
 @router.post("/{evaluation_id}/finaliser", response_model=EvaluationOut)
 def finaliser_evaluation(
     evaluation_id: UUID,
     db: Session = Depends(get_db),
-    current_user: Utilisateur = Depends(require_roles("super_admin", "administrateur", "responsable_conformite"))
+    current_user: User = Depends(require_roles("super_admin", "administrateur", "responsable_conformite"))
 ):
     evaluation = db.query(Evaluation).filter(Evaluation.id == evaluation_id).first()
     if not evaluation:
-        raise HTTPException(status_code=404, detail="Évaluation non trouvée")
+        raise HTTPException(status_code=404, detail="Assessment not found")
 
-    reponses = db.query(Reponse).filter(Reponse.evaluation_id == evaluation_id).all()
+    reponses = db.query(Response).filter(Response.evaluation_id == evaluation_id).all()
 
-    scores_valides = []
+    valid_scores = []
     for r in reponses:
-        valeur = SCORE_PAR_REPONSE.get(r.reponse)
+        valeur = SCORE_BY_RESPONSE.get(r.reponse)
         if valeur is not None:
-            scores_valides.append(valeur)
+            valid_scores.append(valeur)
 
-    score_final = sum(scores_valides) / len(scores_valides) if scores_valides else 0
+    final_score = sum(valid_scores) / len(valid_scores) if valid_scores else 0
 
-    evaluation.score = round(score_final, 2)
+    evaluation.score = round(final_score, 2)
     evaluation.statut = "Terminée"
-    evaluation.date_fin = date.today()
+    evaluation.end_date = date.today()
 
     db.commit()
     db.refresh(evaluation)
 
-    from audit_logger import enregistrer_action
-    enregistrer_action(db, current_user, "finalisation", "Evaluation", str(evaluation.id), f"Score : {evaluation.score}%")
+    from audit_logger import record_action
+    record_action(db, current_user, "finalisation", "Evaluation", str(evaluation.id), f"Score : {evaluation.score}%")
 
     return evaluation

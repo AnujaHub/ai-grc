@@ -4,27 +4,27 @@ from datetime import date
 from uuid import UUID
 
 # ---------- Action corrective ----------
-class ActionCorrectiveCreate(BaseModel):
+class CorrectiveActionCreate(BaseModel):
     titre: str
     description: Optional[str] = None
     responsable_id: Optional[UUID] = None
-    date_echeance: Optional[date] = None
+    due_date: Optional[date] = None
 
-class ActionCorrectiveOut(BaseModel):
+class CorrectiveActionOut(BaseModel):
     id: UUID
     risque_id: UUID
     titre: str
     description: Optional[str] = None
     responsable_id: Optional[UUID] = None
-    date_echeance: Optional[date] = None
+    due_date: Optional[date] = None
     statut: str
-    date_cloture: Optional[date] = None
+    closure_date: Optional[date] = None
 
     class Config:
         from_attributes = True
 
 # ---------- Risque ----------
-class RisqueCreate(BaseModel):
+class RiskCreate(BaseModel):
     evaluation_id: UUID
     titre: str
     description: Optional[str] = None
@@ -32,7 +32,7 @@ class RisqueCreate(BaseModel):
     impact: Optional[str] = "Moyen"
     probabilite: Optional[str] = "Moyen"
 
-class RisqueOut(BaseModel):
+class RiskOut(BaseModel):
     id: UUID
     evaluation_id: UUID
     titre: str
@@ -40,12 +40,12 @@ class RisqueOut(BaseModel):
     categorie: Optional[str] = None
     impact: str
     probabilite: str
-    niveau_risque: str
+    risk_level: str
     statut: str
-    date_identification: date
+    identification_date: date
 
     class Config:
         from_attributes = True
 
-class RisqueDetailOut(RisqueOut):
-    actions_correctives: List[ActionCorrectiveOut] = []
+class RiskDetailOut(RiskOut):
+    corrective_actions: List[CorrectiveActionOut] = []

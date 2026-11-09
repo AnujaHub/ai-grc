@@ -5,7 +5,7 @@ import uuid
 from datetime import datetime
 from database import Base
 
-class Utilisateur(Base):
+class User(Base):
     __tablename__ = "utilisateurs"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
@@ -16,4 +16,4 @@ class Utilisateur(Base):
     role = Column(String(50), nullable=False, default="responsable_conformite")
     organisation_id = Column(UUID(as_uuid=True), ForeignKey("organisations.id"), nullable=True)
     statut = Column(String(20), default="actif")
-    date_creation = Column(DateTime, default=datetime.utcnow)
+    creation_date = Column("date_creation", DateTime, default=datetime.utcnow)

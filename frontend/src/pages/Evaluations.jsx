@@ -13,15 +13,15 @@ function Evaluations() {
   const [evaluations, setEvaluations] = useState([])
   const [systemes, setSystemes] = useState([])
   const [referentiels, setReferentiels] = useState([])
-  const [organisations, setOrganisations] = useState([])
+  const [organizations, setOrganizations] = useState([])
 
   const [typeEvaluation, setTypeEvaluation] = useState('Systeme_IA')
   const [systemeId, setSystemeId] = useState('')
   const [organisationId, setOrganisationId] = useState('')
   const [referentielId, setReferentielId] = useState('')
-  const [erreur, setErreur] = useState('')
+  const [error, setError] = useState('')
   const navigate = useNavigate()
-  const autorise = peutEditer()
+  const authorized = peutEditer()
 
   useEffect(() => { chargerDonnees() }, [])
 
@@ -33,9 +33,9 @@ function Evaluations() {
       setEvaluations(evalsData)
       setSystemes(systemesData)
       setReferentiels(refsData)
-      setOrganisations(orgsData)
+      setOrganizations(orgsData)
     } catch (err) {
-      setErreur('Unable to load assessment data')
+      setError('Unable to load assessment data')
     }
   }
 
@@ -49,13 +49,13 @@ function Evaluations() {
       )
       navigate(`/evaluations/${nouvelleEval.id}`)
     } catch (err) {
-      setErreur('Assessment creation failed')
+      setError('Assessment creation failed')
     }
   }
 
   const getNomSysteme = (id) => systemes.find((s) => s.id === id)?.nom || null
-  const getNomOrganisation = (id) => organisations.find((o) => o.id === id)?.nom || null
-  const getNomReferentiel = (id) => referentiels.find((r) => r.id === id)?.nom || 'Inconnu'
+  const getNomOrganisation = (id) => organizations.find((o) => o.id === id)?.nom || null
+  const getNomReferentiel = (id) => referentiels.find((r) => r.id === id)?.nom || 'Unknown'
 
   const couleurStatut = (statut) =>
     statut === 'Terminée' ? 'bg-accent-soft text-accent' :
@@ -69,7 +69,7 @@ function Evaluations() {
         <h1 className="font-display text-3xl font-semibold text-ink mb-2">Compliance assessments</h1>
         <p className="text-ink-soft text-sm mb-6">Measure governance maturity against your selected framework.</p>
 
-        {autorise && (
+        {authorized && (
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="bg-white border border-line p-6 mb-6">
           <h2 className="text-xs font-semibold uppercase tracking-wide text-ink-soft mb-4">Start a new assessment</h2>
 
@@ -102,7 +102,7 @@ function Evaluations() {
                 <select value={organisationId} onChange={(e) => setOrganisationId(e.target.value)} required
                   className="px-3 py-2 border border-line focus:border-accent outline-none bg-paper text-sm">
                   <option value="">— Organization —</option>
-                  {organisations.map((o) => <option key={o.id} value={o.id}>{o.nom}</option>)}
+                  {organizations.map((o) => <option key={o.id} value={o.id}>{o.nom}</option>)}
                 </select>
               )}
 
@@ -117,7 +117,7 @@ function Evaluations() {
               </button>
             </div>
           </form>
-          {erreur && <p className="text-danger text-sm mt-3">{erreur}</p>}
+          {error && <p className="text-danger text-sm mt-3">{error}</p>}
         </motion.div>
         )}
 
@@ -137,7 +137,7 @@ function Evaluations() {
               {evaluations.map((ev) => (
                 <tr key={ev.id} className="border-b border-line last:border-0 hover:bg-paper/60">
                   <td className="px-4 py-3 text-ink">
-                    {ev.type_evaluation === 'Organisation'
+                    {ev.evaluation_type === 'Organisation'
                       ? <span>{getNomOrganisation(ev.organisation_id) || 'Unknown'} <span className="text-ink-soft text-xs font-mono">— governance</span></span>
                       : (getNomSysteme(ev.systeme_ia_id) || 'Unknown')}
                   </td>
@@ -148,7 +148,7 @@ function Evaluations() {
                     </span>
                   </td>
                   <td className="px-4 py-3 font-mono text-ink">{ev.score !== null ? `${ev.score}%` : '—'}</td>
-                  <td className="px-4 py-3 font-mono text-xs text-ink-soft">{ev.date_debut}</td>
+                  <td className="px-4 py-3 font-mono text-xs text-ink-soft">{ev.start_date}</td>
                   <td className="px-4 py-3 text-right">
                     <button
                       onClick={() => navigate(`/evaluations/${ev.id}`)}

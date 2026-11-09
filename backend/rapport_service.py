@@ -4,6 +4,7 @@ from reportlab.lib import colors
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, PageBreak
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.enums import TA_CENTER
+from xml.sax.saxutils import escape
 from datetime import datetime
 from functools import partial
 import os
@@ -12,29 +13,58 @@ from contenu_statique_rapport import CADRE_REGLEMENTAIRE, DEMARCHE_GOUVERNANCE_I
 
 DOSSIER_RAPPORTS = "rapports"
 
-COULEURS_NIVEAU = {
+
+def safe_paragraph_text(value):
+    return escape(str(value or ""))
+
+LEVEL_COLORS = {
     "Conforme": colors.HexColor("#16a34a"),
     "Partiellement conforme": colors.HexColor("#f59e0b"),
     "Non conforme": colors.HexColor("#dc2626"),
     "Non applicable": colors.HexColor("#9ca3af"),
 }
 
-COULEURS_RISQUE = {
+RISK_COLORS = {
     "Élevé": colors.HexColor("#dc2626"),
     "Moyen": colors.HexColor("#f59e0b"),
     "Faible": colors.HexColor("#16a34a"),
+    "High": colors.HexColor("#dc2626"),
+    "Medium": colors.HexColor("#f59e0b"),
+    "Low": colors.HexColor("#16a34a"),
 }
+
+LIBELLES_ANGLAIS = {
+    "Élevé": "High",
+    "Élevée": "High",
+    "Moyen": "Medium",
+    "Faible": "Low",
+    "Conforme": "Compliant",
+    "Partiellement conforme": "Partially compliant",
+    "Non conforme": "Non-compliant",
+    "Non applicable": "Not applicable",
+    "Non répondu": "Not answered",
+    "Ouverte": "Open",
+    "En cours": "In progress",
+    "Terminée": "Completed",
+    "Maîtrisé": "Controlled",
+    "À surveiller": "Needs attention",
+    "Critique": "Critical",
+}
+
+
+def libelle_anglais(value):
+    return LIBELLES_ANGLAIS.get(value, value)
 
 COULEUR_PRINCIPALE = colors.HexColor("#1f2937")
 COULEUR_ACCENT = colors.HexColor("#7c3aed")
 COULEUR_GRIS = colors.HexColor("#6b7280")
 
 
-def calculer_niveau_matrice(index_impact, index_prob, nb_niveaux_impact, nb_niveaux_prob):
-    """Réplique la même logique que le backend pour rester cohérent avec le calcul des risques."""
-    norm_impact = index_impact / (nb_niveaux_impact - 1) if nb_niveaux_impact > 1 else 0
+def calculate_matrix_level(impact_index, index_prob, impact_level_count, nb_niveaux_prob):
+    """Mirror the backend logic to keep risk calculations consistent."""
+    normalized_impact = impact_index / (impact_level_count - 1) if impact_level_count > 1 else 0
     norm_prob = index_prob / (nb_niveaux_prob - 1) if nb_niveaux_prob > 1 else 0
-    score = (norm_impact + norm_prob) / 2
+    score = (normalized_impact + norm_prob) / 2
     if score <= 0.33:
         return "Faible"
     elif score <= 0.66:
@@ -43,29 +73,29 @@ def calculer_niveau_matrice(index_impact, index_prob, nb_niveaux_impact, nb_nive
         return "Élevé"
 
 
-def dessiner_entete_pied_page(canvas, doc, organisation_nom):
+def dessiner_entete_pied_page(canvas, doc, organization_name):
     canvas.saveState()
     canvas.setStrokeColor(colors.HexColor("#e5e7eb"))
     canvas.line(2*cm, 1.6*cm, A4[0] - 2*cm, 1.6*cm)
     canvas.setFont('Helvetica', 8)
     canvas.setFillColor(COULEUR_GRIS)
-    canvas.drawString(2*cm, 1.2*cm, f"{organisation_nom} — Rapport de Conformité IA — ISO/IEC 42001")
+    canvas.drawString(2*cm, 1.2*cm, f"{organization_name} — AI Compliance Report — ISO/IEC 42001")
     canvas.drawRightString(A4[0] - 2*cm, 1.2*cm, f"Page {doc.page}")
     canvas.restoreState()
 
 
-def generer_rapport_pdf(donnees):
+def generate_report_pdf(donnees):
     os.makedirs(DOSSIER_RAPPORTS, exist_ok=True)
-    nom_fichier = f"rapport_{donnees['evaluation_id']}.pdf"
-    chemin_complet = os.path.join(DOSSIER_RAPPORTS, nom_fichier)
+    file_name = f"rapport_{donnees['evaluation_id']}.pdf"
+    full_path = os.path.join(DOSSIER_RAPPORTS, file_name)
 
-    doc = SimpleDocTemplate(chemin_complet, pagesize=A4,
+    doc = SimpleDocTemplate(full_path, pagesize=A4,
                              topMargin=2.5*cm, bottomMargin=2.5*cm,
                              leftMargin=2*cm, rightMargin=2*cm)
 
     styles = getSampleStyleSheet()
-    style_titre_page_garde = ParagraphStyle('TitreGarde', parent=styles['Title'], fontSize=26, textColor=COULEUR_PRINCIPALE, spaceAfter=10, alignment=TA_CENTER)
-    style_sous_titre_garde = ParagraphStyle('SousTitreGarde', parent=styles['Normal'], fontSize=14, textColor=COULEUR_ACCENT, alignment=TA_CENTER, spaceAfter=40)
+    cover_title_style = ParagraphStyle('TitreGarde', parent=styles['Title'], fontSize=26, textColor=COULEUR_PRINCIPALE, spaceAfter=10, alignment=TA_CENTER)
+    cover_subtitle_style = ParagraphStyle('SousTitreGarde', parent=styles['Normal'], fontSize=14, textColor=COULEUR_ACCENT, alignment=TA_CENTER, spaceAfter=40)
     style_section = ParagraphStyle('Section', parent=styles['Heading1'], fontSize=16, textColor=COULEUR_PRINCIPALE, spaceBefore=10, spaceAfter=14)
     style_sous_section = ParagraphStyle('SousSection', parent=styles['Heading3'], fontSize=12, textColor=COULEUR_PRINCIPALE, spaceBefore=12, spaceAfter=6)
     style_normal = ParagraphStyle('NormalPerso', parent=styles['Normal'], fontSize=10, leading=15)
@@ -74,19 +104,19 @@ def generer_rapport_pdf(donnees):
 
     elements = []
 
-    # ============ PAGE DE GARDE ============
+    # ============ COVER PAGE ============
     elements.append(Spacer(1, 3*cm))
-    elements.append(Paragraph("RAPPORT DE CONFORMITÉ IA", style_titre_page_garde))
-    elements.append(Paragraph("Gouvernance des systèmes d'Intelligence Artificielle — Norme ISO/IEC 42001", style_sous_titre_garde))
+    elements.append(Paragraph("AI COMPLIANCE REPORT", cover_title_style))
+    elements.append(Paragraph("Artificial Intelligence Systems Governance — ISO/IEC 42001 Standard", cover_subtitle_style))
 
-    cible_libelle = donnees.get('systeme_ia_nom') or "Gouvernance globale de l'organisation"
+    cible_libelle = donnees.get('systeme_ia_nom') or "Organization-wide governance"
 
     data_garde = [
-        ["Organisation", donnees['organisation_nom']],
-        ["Cible évaluée", cible_libelle],
-        ["Référentiel", donnees['referentiel_nom']],
-        ["Date de génération", datetime.now().strftime('%d/%m/%Y à %H:%M')],
-        ["Score global de conformité", f"{donnees.get('score', 0)} %"],
+        ["Organization", donnees['organisation_nom']],
+        ["Assessed target", cible_libelle],
+        ["Framework", donnees['referentiel_nom']],
+        ["Generated on", datetime.now().strftime('%Y-%m-%d %H:%M')],
+        ["Overall compliance score", f"{donnees.get('score', 0)} %"],
     ]
     table_garde = Table(data_garde, colWidths=[6*cm, 9*cm])
     table_garde.setStyle(TableStyle([
@@ -102,97 +132,97 @@ def generer_rapport_pdf(donnees):
     elements.append(table_garde)
     elements.append(Spacer(1, 2*cm))
     elements.append(Paragraph(
-        "Rapport généré automatiquement par la Plateforme de Gouvernance et de Conformité des Systèmes d'Intelligence Artificielle.",
+        "Report automatically generated by the Artificial Intelligence Governance and Compliance Platform.",
         style_petit
     ))
     elements.append(PageBreak())
 
     # ============ SOMMAIRE ============
-    elements.append(Paragraph("Sommaire", style_section))
+    elements.append(Paragraph("Table of Contents", style_section))
     sommaire_items = [
-        "1. Synthèse pour la Direction",
-        "2. Contexte et périmètre de l'évaluation",
-        "3. Cadre réglementaire et normatif applicable",
-        "4. Analyse des risques identifiés",
-        "5. Cartographie des risques et matrice de criticité",
-        "6. Évaluation de la conformité (gap analysis)",
-        "7. Plan de remédiation priorisé",
-        "8. Démarche de gouvernance de l'Intelligence Artificielle",
-        "9. Indicateurs de pilotage (KPI / KRI)",
-        "10. Conclusion et recommandations stratégiques",
-        "11. Annexes",
+        "1. Executive summary",
+        "2. Assessment context and scope",
+        "3. Applicable regulatory and standards framework",
+        "4. Analysis of identified risks",
+        "5. Risk map and criticality matrix",
+        "6. Compliance assessment (gap analysis)",
+        "7. Prioritized remediation plan",
+        "8. Artificial Intelligence governance approach",
+        "9. Performance indicators (KPI / KRI)",
+        "10. Conclusion and strategic recommendations",
+        "11. Appendices",
     ]
     for item in sommaire_items:
         elements.append(Paragraph(item, style_normal))
     elements.append(PageBreak())
 
-    # ============ 1. SYNTHÈSE POUR LA DIRECTION ============
-    elements.append(Paragraph("1. Synthèse pour la Direction", style_section))
+    # Implementation note.
+    elements.append(Paragraph("1. Executive summary", style_section))
     synthese_ia = donnees.get('synthese_ia')
     if synthese_ia and synthese_ia.get('synthese'):
-        elements.append(Paragraph(synthese_ia['synthese'], style_normal))
+        elements.append(Paragraph(safe_paragraph_text(synthese_ia['synthese']), style_normal))
     else:
         elements.append(Paragraph(
-            f"Cette évaluation porte sur « {cible_libelle} » selon le référentiel {donnees['referentiel_nom']}. "
-            f"Le score global de conformité obtenu est de {donnees.get('score', 0)} %.",
+            f"This assessment covers “{cible_libelle}” under the {donnees['referentiel_nom']} framework. "
+            f"The overall compliance score is {donnees.get('score', 0)} %.",
             style_normal
         ))
     elements.append(PageBreak())
 
-    # ============ 2. CONTEXTE ET PÉRIMÈTRE ============
-    elements.append(Paragraph("2. Contexte et périmètre de l'évaluation", style_section))
+    # Implementation note.
+    elements.append(Paragraph("2. Assessment context and scope", style_section))
     elements.append(Paragraph(
-        f"Cette évaluation a été réalisée pour l'organisation <b>{donnees['organisation_nom']}</b>"
-        + (f" (secteur : {donnees['organisation_secteur']})" if donnees.get('organisation_secteur') else "")
+        f"This assessment was conducted for the organization <b>{safe_paragraph_text(donnees['organisation_nom'])}</b>"
+        + (f" (sector: {safe_paragraph_text(donnees['organisation_secteur'])})" if donnees.get('organisation_secteur') else "")
         + ".", style_normal
     ))
     elements.append(Spacer(1, 8))
 
     if donnees.get('systeme_ia_nom'):
         elements.append(Paragraph(
-            f"<b>Système IA évalué :</b> {donnees['systeme_ia_nom']}", style_normal
+            f"<b>Assessed AI system:</b> {safe_paragraph_text(donnees['systeme_ia_nom'])}", style_normal
         ))
         if donnees.get('systeme_ia_description'):
-            elements.append(Paragraph(donnees['systeme_ia_description'], style_normal))
+            elements.append(Paragraph(safe_paragraph_text(donnees['systeme_ia_description']), style_normal))
         if donnees.get('systeme_ia_criticite'):
-            elements.append(Paragraph(f"<b>Niveau de criticité déclaré :</b> {donnees['systeme_ia_criticite']}", style_normal))
+            elements.append(Paragraph(f"<b>Declared criticality level:</b> {libelle_anglais(donnees['systeme_ia_criticite'])}", style_normal))
     else:
         elements.append(Paragraph(
-            "Cette évaluation porte sur la gouvernance globale de l'organisation, et non sur un système "
-            "d'intelligence artificielle spécifique. Elle couvre les aspects stratégiques, organisationnels "
-            "et transversaux de la gouvernance IA.", style_normal
+            "This assessment covers the organization's overall governance rather than a specific "
+            "artificial intelligence system. It covers strategic, organizational, and cross-functional "
+            "AI governance aspects.", style_normal
         ))
 
     elements.append(Spacer(1, 8))
     elements.append(Paragraph(
-        f"<b>Référentiel utilisé :</b> {donnees['referentiel_nom']}. "
-        f"L'évaluation couvre {donnees['nb_clauses_totales']} exigences réparties sur {len(donnees['chapitres'])} chapitres.",
+        f"<b>Framework used:</b> {safe_paragraph_text(donnees['referentiel_nom'])}. "
+        f"The assessment covers {donnees['nb_clauses_totales']} requirements across {len(donnees['chapitres'])} chapters.",
         style_normal
     ))
     elements.append(PageBreak())
 
-    # ============ 3. CADRE RÉGLEMENTAIRE ============
-    elements.append(Paragraph("3. Cadre réglementaire et normatif applicable", style_section))
+    # Implementation note.
+    elements.append(Paragraph("3. Applicable regulatory and standards framework", style_section))
     for paragraphe in CADRE_REGLEMENTAIRE.strip().split("\n\n"):
         elements.append(Paragraph(paragraphe.strip().replace("\n", " "), style_normal))
         elements.append(Spacer(1, 8))
     elements.append(PageBreak())
 
-    # ============ 4. ANALYSE DES RISQUES ============
-    elements.append(Paragraph("4. Analyse des risques identifiés", style_section))
+    # ============ 4. RISK ANALYSIS ============
+    elements.append(Paragraph("4. Analysis of identified risks", style_section))
 
     if not donnees['risques']:
-        elements.append(Paragraph("Aucun risque n'a été identifié pour cette évaluation.", style_normal))
+        elements.append(Paragraph("No risks were identified for this assessment.", style_normal))
     else:
         for i, r in enumerate(donnees['risques'], start=1):
-            elements.append(Paragraph(f"Risque R{i} — {r['titre']}", style_sous_section))
+            elements.append(Paragraph(f"Risk R{i} — {safe_paragraph_text(r['titre'])}", style_sous_section))
             if r['description']:
-                elements.append(Paragraph(r['description'], style_normal))
+                elements.append(Paragraph(safe_paragraph_text(r['description']), style_normal))
             elements.append(Spacer(1, 4))
 
-            data_risque = [["Catégorie", "Impact", "Probabilité", "Niveau de criticité"]]
-            data_risque.append([r['categorie'] or "-", r['impact'], r['probabilite'], r['niveau_risque']])
-            table_r = Table(data_risque, colWidths=[4*cm, 3.5*cm, 3.5*cm, 4*cm])
+            risk_data = [["Category", "Impact", "Probability", "Criticality level"]]
+            risk_data.append([r['categorie'] or "-", libelle_anglais(r['impact']), libelle_anglais(r['probabilite']), libelle_anglais(r['niveau_risque'])])
+            table_r = Table(risk_data, colWidths=[4*cm, 3.5*cm, 3.5*cm, 4*cm])
             style_r = [
                 ('BACKGROUND', (0, 0), (-1, 0), COULEUR_PRINCIPALE),
                 ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
@@ -201,7 +231,7 @@ def generer_rapport_pdf(donnees):
                 ('TOPPADDING', (0, 0), (-1, -1), 5),
                 ('BOTTOMPADDING', (0, 0), (-1, -1), 5),
             ]
-            couleur_niv = COULEURS_RISQUE.get(r['niveau_risque'])
+            couleur_niv = RISK_COLORS.get(r['niveau_risque'])
             if couleur_niv:
                 style_r.append(('TEXTCOLOR', (3, 1), (3, 1), couleur_niv))
                 style_r.append(('FONTNAME', (3, 1), (3, 1), 'Helvetica-Bold'))
@@ -210,27 +240,27 @@ def generer_rapport_pdf(donnees):
             elements.append(Spacer(1, 14))
     elements.append(PageBreak())
 
-    # ============ 5. CARTOGRAPHIE ET MATRICE DE CRITICITÉ ============
-    elements.append(Paragraph("5. Cartographie des risques et matrice de criticité", style_section))
+    # Implementation note.
+    elements.append(Paragraph("5. Risk map and criticality matrix", style_section))
 
-    niveaux_impact = donnees.get('niveaux_impact', ["Faible", "Moyen", "Élevé"])
-    niveaux_probabilite = donnees.get('niveaux_probabilite', ["Faible", "Moyen", "Élevée"])
-    nb_i = len(niveaux_impact)
-    nb_p = len(niveaux_probabilite)
+    impact_levels = donnees.get('niveaux_impact', ["Faible", "Moyen", "Élevé"])
+    probability_levels = donnees.get('niveaux_probabilite', ["Faible", "Moyen", "Élevée"])
+    nb_i = len(impact_levels)
+    nb_p = len(probability_levels)
 
     elements.append(Paragraph(
-        f"La matrice ci-dessous croise {nb_p} niveaux de probabilité et {nb_i} niveaux d'impact, "
-        "configurés pour cette organisation.", style_normal
+        f"The matrix below combines {nb_p} probability levels and {nb_i} impact levels "
+        "configured for this organization.", style_normal
     ))
     elements.append(Spacer(1, 10))
 
-    entete_matrice = ["Probabilité \\ Impact"] + niveaux_impact
+    entete_matrice = ["Probability \\ Impact"] + [libelle_anglais(v) for v in impact_levels]
     data_matrice = [entete_matrice]
 
     for idx_p in range(nb_p - 1, -1, -1):
-        ligne = [niveaux_probabilite[idx_p]]
+        ligne = [libelle_anglais(probability_levels[idx_p])]
         for idx_i in range(nb_i):
-            niveau = calculer_niveau_matrice(idx_i, idx_p, nb_i, nb_p)
+            niveau = calculate_matrix_level(idx_i, idx_p, nb_i, nb_p)
             ligne.append(niveau)
         data_matrice.append(ligne)
 
@@ -250,7 +280,7 @@ def generer_rapport_pdf(donnees):
     for ligne_idx in range(1, len(data_matrice)):
         for col_idx in range(1, len(data_matrice[ligne_idx])):
             niveau = data_matrice[ligne_idx][col_idx]
-            couleur = COULEURS_RISQUE.get(niveau, colors.white)
+            couleur = RISK_COLORS.get(niveau, colors.white)
             style_matrice.append(('BACKGROUND', (col_idx, ligne_idx), (col_idx, ligne_idx), couleur))
             style_matrice.append(('TEXTCOLOR', (col_idx, ligne_idx), (col_idx, ligne_idx), colors.white))
 
@@ -259,10 +289,10 @@ def generer_rapport_pdf(donnees):
     elements.append(Spacer(1, 20))
 
     if donnees['risques']:
-        elements.append(Paragraph("Positionnement des risques identifiés :", style_sous_section))
-        data_position = [["Réf.", "Risque", "Impact", "Probabilité", "Criticité"]]
+        elements.append(Paragraph("Positioning of identified risks:", style_sous_section))
+        data_position = [["Ref.", "Risk", "Impact", "Probability", "Criticality"]]
         for i, r in enumerate(donnees['risques'], start=1):
-            data_position.append([f"R{i}", r['titre'], r['impact'], r['probabilite'], r['niveau_risque']])
+            data_position.append([f"R{i}", r['titre'], libelle_anglais(r['impact']), libelle_anglais(r['probabilite']), libelle_anglais(r['niveau_risque'])])
         table_pos = Table(data_position, colWidths=[1.5*cm, 6*cm, 3*cm, 3*cm, 2.5*cm])
         style_pos = [
             ('BACKGROUND', (0, 0), (-1, 0), COULEUR_PRINCIPALE),
@@ -273,7 +303,7 @@ def generer_rapport_pdf(donnees):
             ('BOTTOMPADDING', (0, 0), (-1, -1), 5),
         ]
         for i, r in enumerate(donnees['risques'], start=1):
-            couleur = COULEURS_RISQUE.get(r['niveau_risque'])
+            couleur = RISK_COLORS.get(r['niveau_risque'])
             if couleur:
                 style_pos.append(('TEXTCOLOR', (4, i), (4, i), couleur))
                 style_pos.append(('FONTNAME', (4, i), (4, i), 'Helvetica-Bold'))
@@ -282,16 +312,16 @@ def generer_rapport_pdf(donnees):
     elements.append(PageBreak())
 
     # ============ 6. GAP ANALYSIS ============
-    elements.append(Paragraph("6. Évaluation de la conformité (gap analysis)", style_section))
+    elements.append(Paragraph("6. Compliance assessment (gap analysis)", style_section))
 
     for chapitre in donnees['chapitres']:
-        elements.append(Paragraph(f"{chapitre['numero']}. {chapitre['titre']}", style_sous_section))
+        elements.append(Paragraph(f"{chapitre['numero']}. {safe_paragraph_text(chapitre['titre'])}", style_sous_section))
 
-        data_table = [["Clause", "Réponse", "Écart", "Département"]]
+        data_table = [["Clause", "Answer", "Gap", "Department"]]
         for clause_info in chapitre['clauses']:
             data_table.append([
-                Paragraph(f"{clause_info['numero']} — {clause_info['titre']}", style_petit),
-                clause_info['reponse'] or "Non répondu",
+                Paragraph(f"{clause_info['numero']} — {safe_paragraph_text(clause_info['titre'])}", style_petit),
+                libelle_anglais(clause_info['reponse']) if clause_info['reponse'] else "Not answered",
                 clause_info['ecart'] or "-",
                 clause_info['departement'] or "-",
             ])
@@ -307,7 +337,7 @@ def generer_rapport_pdf(donnees):
             ('BOTTOMPADDING', (0, 0), (-1, -1), 4),
         ]
         for i, clause_info in enumerate(chapitre['clauses'], start=1):
-            couleur = COULEURS_NIVEAU.get(clause_info['reponse'])
+            couleur = LEVEL_COLORS.get(clause_info['reponse'])
             if couleur:
                 style_commandes.append(('TEXTCOLOR', (1, i), (1, i), couleur))
                 style_commandes.append(('FONTNAME', (1, i), (1, i), 'Helvetica-Bold'))
@@ -317,13 +347,13 @@ def generer_rapport_pdf(donnees):
 
     elements.append(PageBreak())
 
-    # ============ 7. PLAN DE REMÉDIATION PRIORISÉ ============
-    elements.append(Paragraph("7. Plan de remédiation priorisé", style_section))
+    # ============ 7. PRIORITIZED REMEDIATION PLAN ============
+    elements.append(Paragraph("7. Prioritized remediation plan", style_section))
 
-    toutes_actions = []
+    all_actions = []
     for i, r in enumerate(donnees['risques'], start=1):
         for a in r.get('actions', []):
-            toutes_actions.append({
+            all_actions.append({
                 "risque_ref": f"R{i}",
                 "risque_titre": r['titre'],
                 "risque_niveau": r['niveau_risque'],
@@ -331,21 +361,21 @@ def generer_rapport_pdf(donnees):
             })
 
     ordre_priorite = {"Élevé": 0, "Moyen": 1, "Faible": 2}
-    toutes_actions.sort(key=lambda a: ordre_priorite.get(a['risque_niveau'], 3))
+    all_actions.sort(key=lambda a: ordre_priorite.get(a['risque_niveau'], 3))
 
-    if not toutes_actions:
-        elements.append(Paragraph("Aucune action corrective n'a encore été définie pour cette évaluation.", style_normal))
+    if not all_actions:
+        elements.append(Paragraph("No corrective actions have been defined for this assessment yet.", style_normal))
     else:
-        data_actions = [["Réf.", "Action corrective", "Échéance", "Statut"]]
-        for a in toutes_actions:
-            data_actions.append([
+        action_data = [["Ref.", "Corrective action", "Due date", "Status"]]
+        for a in all_actions:
+            action_data.append([
                 a['risque_ref'],
-                Paragraph(f"{a['titre']} (lié à : {a['risque_titre']})", style_petit),
+                Paragraph(f"{safe_paragraph_text(a['titre'])} (linked to: {safe_paragraph_text(a['risque_titre'])})", style_petit),
                 a['date_echeance'],
-                a['statut'],
+                libelle_anglais(a['statut']),
             ])
-        table_actions = Table(data_actions, colWidths=[1.5*cm, 8.5*cm, 3*cm, 3*cm])
-        style_actions = [
+        actions_table = Table(action_data, colWidths=[1.5*cm, 8.5*cm, 3*cm, 3*cm])
+        actions_style = [
             ('BACKGROUND', (0, 0), (-1, 0), COULEUR_PRINCIPALE),
             ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
             ('FONTSIZE', (0, 0), (-1, -1), 8.5),
@@ -354,35 +384,35 @@ def generer_rapport_pdf(donnees):
             ('TOPPADDING', (0, 0), (-1, -1), 5),
             ('BOTTOMPADDING', (0, 0), (-1, -1), 5),
         ]
-        table_actions.setStyle(TableStyle(style_actions))
-        elements.append(table_actions)
+        actions_table.setStyle(TableStyle(actions_style))
+        elements.append(actions_table)
 
     elements.append(PageBreak())
 
-    # ============ 8. DÉMARCHE DE GOUVERNANCE IA ============
-    elements.append(Paragraph("8. Démarche de gouvernance de l'Intelligence Artificielle", style_section))
+    # ============ 8. AI GOVERNANCE APPROACH ============
+    elements.append(Paragraph("8. Artificial Intelligence governance approach", style_section))
     for paragraphe in DEMARCHE_GOUVERNANCE_IA.strip().split("\n\n"):
         elements.append(Paragraph(paragraphe.strip().replace("\n", " "), style_normal))
         elements.append(Spacer(1, 8))
     elements.append(PageBreak())
 
-    # ============ 9. INDICATEURS KPI/KRI ============
-    elements.append(Paragraph("9. Indicateurs de pilotage (KPI / KRI)", style_section))
+    # ============ 9. KPI/KRI INDICATORS ============
+    elements.append(Paragraph("9. Performance indicators (KPI / KRI)", style_section))
 
     score = donnees.get('score', 0)
-    niveau_global = "Maîtrisé" if score >= 70 else "À surveiller" if score >= 40 else "Critique"
-    couleur_niveau_global = colors.HexColor("#16a34a") if score >= 70 else colors.HexColor("#f59e0b") if score >= 40 else colors.HexColor("#dc2626")
+    overall_level = "Controlled" if score >= 70 else "Needs attention" if score >= 40 else "Critical"
+    overall_level_color = colors.HexColor("#16a34a") if score >= 70 else colors.HexColor("#f59e0b") if score >= 40 else colors.HexColor("#dc2626")
 
     data_indicateurs = [
-        ["Indicateur", "Valeur"],
-        ["Score global de conformité", f"{score} %"],
-        ["Niveau de conformité", niveau_global],
-        ["Clauses évaluées", str(donnees.get('nb_clauses_totales', 0))],
-        ["Clauses en écart (Non conforme / Partiel)", str(donnees.get('nb_clauses_non_conformes', 0))],
-        ["Risques identifiés", str(len(donnees['risques']))],
-        ["Risques de niveau Élevé", str(donnees.get('nb_risques_eleves', 0))],
-        ["Risques ouverts (non traités)", str(donnees.get('nb_risques_ouverts', 0))],
-        ["Actions correctives définies", str(len(toutes_actions))],
+        ["Indicator", "Value"],
+        ["Overall compliance score", f"{score} %"],
+        ["Compliance level", overall_level],
+        ["Assessed clauses", str(donnees.get('nb_clauses_totales', 0))],
+        ["Non-compliant or partial clauses", str(donnees.get('nb_clauses_non_conformes', 0))],
+        ["Identified risks", str(len(donnees['risques']))],
+        ["High-level risks", str(donnees.get('nb_risques_eleves', 0))],
+        ["Open (untreated) risks", str(donnees.get('nb_risques_ouverts', 0))],
+        ["Defined corrective actions", str(len(all_actions))],
     ]
     table_indicateurs = Table(data_indicateurs, colWidths=[9*cm, 6*cm])
     style_ind = [
@@ -393,36 +423,36 @@ def generer_rapport_pdf(donnees):
         ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor("#e5e7eb")),
         ('TOPPADDING', (0, 0), (-1, -1), 6),
         ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
-        ('TEXTCOLOR', (1, 2), (1, 2), couleur_niveau_global),
+        ('TEXTCOLOR', (1, 2), (1, 2), overall_level_color),
         ('FONTNAME', (1, 2), (1, 2), 'Helvetica-Bold'),
     ]
     table_indicateurs.setStyle(TableStyle(style_ind))
     elements.append(table_indicateurs)
     elements.append(PageBreak())
 
-    # ============ 10. CONCLUSION ET RECOMMANDATIONS ============
-    elements.append(Paragraph("10. Conclusion et recommandations stratégiques", style_section))
+    # ============ 10. CONCLUSION AND RECOMMENDATIONS ============
+    elements.append(Paragraph("10. Conclusion and strategic recommendations", style_section))
 
     if synthese_ia and synthese_ia.get('recommandations'):
-        elements.append(Paragraph("Recommandations stratégiques prioritaires :", style_normal))
+        elements.append(Paragraph("Priority strategic recommendations:", style_normal))
         elements.append(Spacer(1, 8))
         for i, reco in enumerate(synthese_ia['recommandations'], start=1):
-            elements.append(Paragraph(f"{i}. {reco}", style_recommandation))
+            elements.append(Paragraph(f"{i}. {safe_paragraph_text(reco)}", style_recommandation))
     else:
         elements.append(Paragraph(
-            "Il est recommandé de traiter en priorité les risques de niveau Élevé identifiés dans ce rapport, "
-            "et de planifier des actions correctives pour chaque non-conformité relevée.",
+            "The High-level risks identified in this report should be addressed first, with corrective "
+            "actions planned for each identified non-conformity.",
             style_normal
         ))
     elements.append(PageBreak())
 
-    # ============ 11. ANNEXES ============
-    elements.append(Paragraph("11. Annexes", style_section))
+    # ============ 11. APPENDICES ============
+    elements.append(Paragraph("11. Appendices", style_section))
 
-    elements.append(Paragraph("11.1 Glossaire", style_sous_section))
-    data_glossaire = [["Terme", "Définition"]]
+    elements.append(Paragraph("11.1 Glossary", style_sous_section))
+    data_glossaire = [["Term", "Definition"]]
     for terme, definition in GLOSSAIRE:
-        data_glossaire.append([terme, Paragraph(definition, style_petit)])
+        data_glossaire.append([terme, Paragraph(safe_paragraph_text(definition), style_petit)])
     table_glossaire = Table(data_glossaire, colWidths=[4*cm, 11*cm])
     table_glossaire.setStyle(TableStyle([
         ('BACKGROUND', (0, 0), (-1, 0), COULEUR_PRINCIPALE),
@@ -437,14 +467,14 @@ def generer_rapport_pdf(donnees):
     elements.append(table_glossaire)
     elements.append(Spacer(1, 15))
 
-    elements.append(Paragraph("11.2 Références", style_sous_section))
+    elements.append(Paragraph("11.2 References", style_sous_section))
     for ref in REFERENCES:
-        elements.append(Paragraph(f"• {ref}", style_petit))
+        elements.append(Paragraph(f"• {safe_paragraph_text(ref)}", style_petit))
 
     doc.build(
         elements,
         onFirstPage=lambda c, d: None,
-        onLaterPages=partial(dessiner_entete_pied_page, organisation_nom=donnees['organisation_nom'])
+        onLaterPages=partial(dessiner_entete_pied_page, organization_name=donnees['organisation_nom'])
     )
 
-    return chemin_complet
+    return full_path

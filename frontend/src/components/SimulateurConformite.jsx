@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import CachetConformite from './CachetConformite'
+import ComplianceBadge from './CachetConformite'
 
 const SCORE_PAR_REPONSE = {
   'Conforme': 100,
@@ -9,11 +9,11 @@ const SCORE_PAR_REPONSE = {
   'Non applicable': null,
 }
 
-function SimulateurConformite({ reponses, chapitresFiltres }) {
+function ComplianceSimulator({ reponses, chapitresFiltres }) {
   const [clausesCorrigees, setClausesCorrigees] = useState(new Set())
-  const [ouvert, setOuvert] = useState(false)
+  const [open, setOpen] = useState(false)
 
-  // Construit la liste des clauses en écart (Non conforme / Partiellement conforme), avec leur titre
+  // Build the list of non-compliant or partially compliant clauses with their titles.
   const clausesEnEcart = useMemo(() => {
     const resultat = []
     chapitresFiltres.forEach((chapitre) => {
@@ -65,20 +65,20 @@ function SimulateurConformite({ reponses, chapitresFiltres }) {
   return (
     <div className="bg-white border border-line mb-8">
       <button
-        onClick={() => setOuvert(!ouvert)}
+        onClick={() => setOpen(!open)}
         className="w-full flex items-center justify-between px-6 py-4 cursor-pointer"
       >
         <div className="text-left">
-          <p className="font-display text-lg text-ink">Simulateur « Et si... »</p>
+          <p className="font-display text-lg text-ink">What-if simulator</p>
           <p className="text-ink-soft text-xs mt-0.5">
             Estimate how fixing non-conformities would affect your score
           </p>
         </div>
-        <span className="font-mono text-ink-soft text-sm">{ouvert ? '−' : '+'}</span>
+        <span className="font-mono text-ink-soft text-sm">{open ? '−' : '+'}</span>
       </button>
 
       <AnimatePresence>
-        {ouvert && (
+        {open && (
           <motion.div
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: 'auto', opacity: 1 }}
@@ -90,7 +90,7 @@ function SimulateurConformite({ reponses, chapitresFiltres }) {
               <div className="flex items-center justify-center gap-8 mb-8">
                 <div className="text-center">
                   <p className="text-xs font-semibold uppercase tracking-wide text-ink-soft mb-2">Current score</p>
-                  <CachetConformite score={scoreActuel} taille={90} />
+                  <ComplianceBadge score={scoreActuel} taille={90} />
                 </div>
 
                 <div className="flex flex-col items-center gap-1">
@@ -109,7 +109,7 @@ function SimulateurConformite({ reponses, chapitresFiltres }) {
 
                 <div className="text-center">
                   <p className="text-xs font-semibold uppercase tracking-wide text-ink-soft mb-2">Projected score</p>
-                  <CachetConformite score={scoreProjete} taille={90} />
+                  <ComplianceBadge score={scoreProjete} taille={90} />
                 </div>
               </div>
 
@@ -146,4 +146,4 @@ function SimulateurConformite({ reponses, chapitresFiltres }) {
   )
 }
 
-export default SimulateurConformite
+export default ComplianceSimulator

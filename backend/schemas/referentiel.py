@@ -8,15 +8,15 @@ class ClauseOut(BaseModel):
     numero: str
     titre: str
     description: Optional[str] = None
-    type_exigence: Optional[str] = None
+    requirement_type: Optional[str] = None
     ordre: int
-    type_evaluation: str
+    evaluation_type: str
     departement_suggere: Optional[str] = None
 
     class Config:
         from_attributes = True
 
-class ChapitreOut(BaseModel):
+class ChapterOut(BaseModel):
     id: UUID
     referentiel_id: UUID
     numero: str
@@ -26,7 +26,7 @@ class ChapitreOut(BaseModel):
     class Config:
         from_attributes = True
 
-class ReferentielOut(BaseModel):
+class ReferenceFrameworkOut(BaseModel):
     id: UUID
     code: str
     nom: str

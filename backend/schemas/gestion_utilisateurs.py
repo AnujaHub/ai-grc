@@ -3,7 +3,7 @@ from typing import Optional
 from datetime import datetime
 from uuid import UUID
 
-class UtilisateurAdminCreate(BaseModel):
+class AdminUserCreate(BaseModel):
     nom: str
     prenom: str
     email: EmailStr
@@ -11,12 +11,12 @@ class UtilisateurAdminCreate(BaseModel):
     role: str
     organisation_id: Optional[UUID] = None
 
-class UtilisateurUpdate(BaseModel):
+class UserUpdate(BaseModel):
     role: Optional[str] = None
     statut: Optional[str] = None
     organisation_id: Optional[UUID] = None
 
-class UtilisateurListOut(BaseModel):
+class UserListOut(BaseModel):
     id: UUID
     nom: str
     prenom: str
@@ -24,7 +24,7 @@ class UtilisateurListOut(BaseModel):
     role: str
     organisation_id: Optional[UUID] = None
     statut: str
-    date_creation: datetime
+    creation_date: datetime
 
     class Config:
         from_attributes = True

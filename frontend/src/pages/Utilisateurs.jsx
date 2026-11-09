@@ -11,16 +11,16 @@ const ROLES = [
   { valeur: 'manager', label: 'Manager' },
 ]
 
-function Utilisateurs() {
+function Users() {
   const [utilisateurs, setUtilisateurs] = useState([])
-  const [organisations, setOrganisations] = useState([])
+  const [organizations, setOrganizations] = useState([])
   const [nom, setNom] = useState('')
   const [prenom, setPrenom] = useState('')
   const [email, setEmail] = useState('')
-  const [motDePasse, setMotDePasse] = useState('')
+  const [password, setMotDePasse] = useState('')
   const [role, setRole] = useState('responsable_conformite')
   const [organisationId, setOrganisationId] = useState('')
-  const [erreur, setErreur] = useState('')
+  const [error, setError] = useState('')
 
   useEffect(() => { chargerDonnees() }, [])
 
@@ -28,9 +28,9 @@ function Utilisateurs() {
     try {
       const [utilisateursData, orgsData] = await Promise.all([getUtilisateurs(), getOrganisations()])
       setUtilisateurs(utilisateursData)
-      setOrganisations(orgsData)
+      setOrganizations(orgsData)
     } catch (err) {
-      setErreur('Access denied — this page is restricted to administrators.')
+      setError('Access denied — this page is restricted to administrators.')
     }
   }
 
@@ -38,14 +38,14 @@ function Utilisateurs() {
     e.preventDefault()
     try {
       await creerUtilisateur({
-        nom, prenom, email, mot_de_passe: motDePasse, role,
+        nom, prenom, email, mot_de_passe: password, role,
         organisation_id: organisationId || null,
       })
       setNom(''); setPrenom(''); setEmail(''); setMotDePasse('')
       setRole('responsable_conformite'); setOrganisationId('')
       chargerDonnees()
     } catch (err) {
-      setErreur('Creation failed (the email may already be in use).')
+      setError('Creation failed (the email may already be in use).')
     }
   }
 
@@ -67,14 +67,14 @@ function Utilisateurs() {
     }
   }
 
-  const getNomOrganisation = (id) => organisations.find((o) => o.id === id)?.nom || '—'
+  const getNomOrganisation = (id) => organizations.find((o) => o.id === id)?.nom || '—'
 
-  if (erreur && utilisateurs.length === 0) {
+  if (error && utilisateurs.length === 0) {
     return (
       <div className="min-h-screen bg-paper">
         <Navbar />
         <div className="max-w-3xl mx-auto px-6 py-10">
-          <p className="text-danger text-sm bg-danger-soft border border-danger/20 px-4 py-3">{erreur}</p>
+          <p className="text-danger text-sm bg-danger-soft border border-danger/20 px-4 py-3">{error}</p>
         </div>
       </div>
     )
@@ -100,7 +100,7 @@ function Utilisateurs() {
                 className="flex-1 min-w-[200px] px-3 py-2 border border-line focus:border-accent outline-none bg-paper text-sm" />
             </div>
             <div className="flex flex-wrap gap-3">
-              <input type="password" placeholder="Temporary password" value={motDePasse} onChange={(e) => setMotDePasse(e.target.value)} required
+              <input type="password" placeholder="Temporary password" value={password} onChange={(e) => setMotDePasse(e.target.value)} required
                 className="flex-1 min-w-[180px] px-3 py-2 border border-line focus:border-accent outline-none bg-paper text-sm" />
               <select value={role} onChange={(e) => setRole(e.target.value)}
                 className="px-3 py-2 border border-line focus:border-accent outline-none bg-paper text-sm">
@@ -109,14 +109,14 @@ function Utilisateurs() {
               <select value={organisationId} onChange={(e) => setOrganisationId(e.target.value)}
                 className="px-3 py-2 border border-line focus:border-accent outline-none bg-paper text-sm">
                 <option value="">— Organization (optional) —</option>
-                {organisations.map((org) => <option key={org.id} value={org.id}>{org.nom}</option>)}
+                {organizations.map((org) => <option key={org.id} value={org.id}>{org.nom}</option>)}
               </select>
               <button type="submit" className="btn-primary px-5 py-2 text-sm cursor-pointer">
                 Create account
               </button>
             </div>
           </form>
-          {erreur && <p className="text-danger text-sm mt-3">{erreur}</p>}
+          {error && <p className="text-danger text-sm mt-3">{error}</p>}
         </motion.div>
 
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="bg-white border border-line">
@@ -165,4 +165,4 @@ function Utilisateurs() {
   )
 }
 
-export default Utilisateurs
+export default Users

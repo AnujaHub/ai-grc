@@ -21,10 +21,10 @@ const LIBELLE_ACTION = {
 
 const TYPES_RESSOURCE = ['Organisation', 'Evaluation', 'Risque', 'Utilisateur']
 
-function JournalAudit() {
+function AuditLog() {
   const [entrees, setEntrees] = useState([])
   const [filtreType, setFiltreType] = useState('')
-  const [erreur, setErreur] = useState('')
+  const [error, setError] = useState('')
 
   useEffect(() => { chargerJournal() }, [filtreType])
 
@@ -33,16 +33,16 @@ function JournalAudit() {
       const data = await getJournalAudit(filtreType || null)
       setEntrees(data)
     } catch (err) {
-      setErreur('Access denied — this page is restricted to administrators and auditors.')
+      setError('Access denied — this page is restricted to administrators and auditors.')
     }
   }
 
-  if (erreur) {
+  if (error) {
     return (
       <div className="min-h-screen bg-paper">
         <Navbar />
         <div className="max-w-3xl mx-auto px-6 py-10">
-          <p className="text-danger text-sm bg-danger-soft border border-danger/20 px-4 py-3">{erreur}</p>
+          <p className="text-danger text-sm bg-danger-soft border border-danger/20 px-4 py-3">{error}</p>
         </div>
       </div>
     )
@@ -85,7 +85,7 @@ function JournalAudit() {
               {entrees.map((e) => (
                 <tr key={e.id} className="border-b border-line last:border-0 hover:bg-paper/60">
                   <td className="px-4 py-3 font-mono text-xs text-ink-soft whitespace-nowrap">
-                    {new Date(e.date_action).toLocaleString()}
+                    {new Date(e.action_date).toLocaleString()}
                   </td>
                   <td className="px-4 py-3 text-ink">{e.utilisateur_email || 'System'}</td>
                   <td className="px-4 py-3">
@@ -108,4 +108,4 @@ function JournalAudit() {
   )
 }
 
-export default JournalAudit
+export default AuditLog

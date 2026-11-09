@@ -1,19 +1,19 @@
 import api from './api'
 
-export const login = async (email, motDePasse) => {
+export const login = async (email, password) => {
   const response = await api.post('/auth/login', {
     email: email,
-    mot_de_passe: motDePasse,
+    mot_de_passe: password,
   })
   return response.data
 }
 
-export const register = async (nom, prenom, email, motDePasse) => {
+export const register = async (nom, prenom, email, password) => {
   const response = await api.post('/auth/register', {
     nom: nom,
     prenom: prenom,
     email: email,
-    mot_de_passe: motDePasse,
+    mot_de_passe: password,
   })
   return response.data
 }

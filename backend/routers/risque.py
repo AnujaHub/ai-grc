@@ -1,54 +1,54 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from database import get_db
-from models.risque import Risque
-from models.action_corrective import ActionCorrective
+from models.risque import Risk
+from models.action_corrective import CorrectiveAction
 from models.evaluation import Evaluation
-from models.systeme_ia import SystemeIA
-from models.configuration_risque import ConfigurationRisque
-from models.utilisateur import Utilisateur
-from schemas.risque import RisqueCreate, RisqueOut, RisqueDetailOut, ActionCorrectiveCreate, ActionCorrectiveOut
+from models.systeme_ia import AISystem
+from models.configuration_risque import RiskConfiguration
+from models.utilisateur import User
+from schemas.risque import RiskCreate, RiskOut, RiskDetailOut, CorrectiveActionCreate, CorrectiveActionOut
 from security import get_current_user
 from typing import List
 from uuid import UUID
 from security import require_roles
 
-router = APIRouter(prefix="/risques", tags=["Risques"])
+router = APIRouter(prefix="/risques", tags=["Risks"])
 
 
-def get_organisation_id_pour_evaluation(evaluation: Evaluation, db: Session) -> UUID:
-    """Retrouve l'organisation concernée, que l'évaluation soit de type Organisation ou Systeme_IA."""
-    if evaluation.type_evaluation == "Organisation":
+def get_organization_id_for_evaluation(evaluation: Evaluation, db: Session) -> UUID:
+    """Find the relevant organization for an Organisation or Systeme_IA evaluation."""
+    if evaluation.evaluation_type == "Organisation":
         return evaluation.organisation_id
     else:
-        systeme = db.query(SystemeIA).filter(SystemeIA.id == evaluation.systeme_ia_id).first()
+        systeme = db.query(AISystem).filter(AISystem.id == evaluation.systeme_ia_id).first()
         return systeme.organisation_id if systeme else None
 
 
-def calculer_niveau_risque_dynamique(impact: str, probabilite: str, organisation_id: UUID, db: Session) -> str:
+def calculate_dynamic_risk_level(impact: str, probabilite: str, organisation_id: UUID, db: Session) -> str:
     """
-    Calcule le niveau de risque (Faible/Moyen/Élevé) à partir d'un impact et d'une probabilité,
-    quel que soit le nombre de niveaux configurés par l'organisation (3, 4, 5...).
+    Calculate the risk level (Faible/Moyen/Élevé) from impact and probability,
+    regardless of how many levels the organization configured (3, 4, 5, etc.).
     """
-    config = db.query(ConfigurationRisque).filter(
-        ConfigurationRisque.organisation_id == organisation_id
+    config = db.query(RiskConfiguration).filter(
+        RiskConfiguration.organisation_id == organisation_id
     ).first()
 
-    niveaux_impact = config.niveaux_impact if config else ["Faible", "Moyen", "Élevé"]
-    niveaux_probabilite = config.niveaux_probabilite if config else ["Faible", "Moyen", "Élevée"]
+    impact_levels = config.impact_levels if config else ["Faible", "Moyen", "Élevé"]
+    probability_levels = config.probability_levels if config else ["Faible", "Moyen", "Élevée"]
 
     try:
-        index_impact = niveaux_impact.index(impact)
-        index_prob = niveaux_probabilite.index(probabilite)
+        impact_index = impact_levels.index(impact)
+        index_prob = probability_levels.index(probabilite)
     except ValueError:
-        # Si la valeur reçue ne correspond à aucun niveau connu, on retombe sur "Moyen"
+        # Implementation note.
         return "Moyen"
 
-    # Normalise chaque index entre 0 et 1
-    norm_impact = index_impact / (len(niveaux_impact) - 1) if len(niveaux_impact) > 1 else 0
-    norm_prob = index_prob / (len(niveaux_probabilite) - 1) if len(niveaux_probabilite) > 1 else 0
+    # Normalize each index between 0 and 1
+    normalized_impact = impact_index / (len(impact_levels) - 1) if len(impact_levels) > 1 else 0
+    norm_prob = index_prob / (len(probability_levels) - 1) if len(probability_levels) > 1 else 0
 
-    score = (norm_impact + norm_prob) / 2  # entre 0 et 1
+    score = (normalized_impact + norm_prob) / 2  # entre 0 et 1
 
     if score <= 0.33:
         return "Faible"
@@ -58,115 +58,115 @@ def calculer_niveau_risque_dynamique(impact: str, probabilite: str, organisation
         return "Élevé"
 
 
-@router.post("/", response_model=RisqueOut)
+@router.post("/", response_model=RiskOut)
 def create_risque(
-    data: RisqueCreate,
+    data: RiskCreate,
     db: Session = Depends(get_db),
-    current_user: Utilisateur = Depends(require_roles("super_admin", "administrateur", "responsable_conformite"))
+    current_user: User = Depends(require_roles("super_admin", "administrateur", "responsable_conformite"))
 ):
     evaluation = db.query(Evaluation).filter(Evaluation.id == data.evaluation_id).first()
     if not evaluation:
-        raise HTTPException(status_code=404, detail="Évaluation non trouvée")
+        raise HTTPException(status_code=404, detail="Assessment not found")
 
-    organisation_id = get_organisation_id_pour_evaluation(evaluation, db)
-    niveau = calculer_niveau_risque_dynamique(data.impact, data.probabilite, organisation_id, db)
+    organisation_id = get_organization_id_for_evaluation(evaluation, db)
+    niveau = calculate_dynamic_risk_level(data.impact, data.probabilite, organisation_id, db)
 
-    nouveau_risque = Risque(
+    new_risk = Risk(
         evaluation_id=data.evaluation_id,
         titre=data.titre,
         description=data.description,
         categorie=data.categorie,
         impact=data.impact,
         probabilite=data.probabilite,
-        niveau_risque=niveau,
+        risk_level=niveau,
     )
-    db.add(nouveau_risque)
+    db.add(new_risk)
     db.commit()
-    db.refresh(nouveau_risque)
+    db.refresh(new_risk)
 
-    from audit_logger import enregistrer_action
-    enregistrer_action(db, current_user, "creation", "Risque", str(nouveau_risque.id), f"Titre : {nouveau_risque.titre}, Niveau : {niveau}")
+    from audit_logger import record_action
+    record_action(db, current_user, "creation", "Risque", str(new_risk.id), f"Title:  {new_risk.titre}, Level:  {niveau}")
 
-    return nouveau_risque
+    return new_risk
 
 
-@router.get("/", response_model=List[RisqueOut])
-def list_risques(
+@router.get("/", response_model=List[RiskOut])
+def list_risks(
     db: Session = Depends(get_db),
-    current_user: Utilisateur = Depends(get_current_user)
+    current_user: User = Depends(get_current_user)
 ):
-    return db.query(Risque).all()
+    return db.query(Risk).all()
 
 
-@router.get("/{risque_id}", response_model=RisqueDetailOut)
-def get_risque(
+@router.get("/{risque_id}", response_model=RiskDetailOut)
+def get_risk(
     risque_id: UUID,
     db: Session = Depends(get_db),
-    current_user: Utilisateur = Depends(get_current_user)
+    current_user: User = Depends(get_current_user)
 ):
-    risque = db.query(Risque).filter(Risque.id == risque_id).first()
+    risque = db.query(Risk).filter(Risk.id == risque_id).first()
     if not risque:
-        raise HTTPException(status_code=404, detail="Risque non trouvé")
+        raise HTTPException(status_code=404, detail="Risk not found")
     return risque
 
 
-@router.patch("/{risque_id}/statut", response_model=RisqueOut)
-def update_statut_risque(
+@router.patch("/{risque_id}/statut", response_model=RiskOut)
+def update_risk_status(
     risque_id: UUID,
-    nouveau_statut: str,
+    new_status: str,
     db: Session = Depends(get_db),
-    current_user: Utilisateur = Depends(require_roles("super_admin", "administrateur", "responsable_conformite"))
+    current_user: User = Depends(require_roles("super_admin", "administrateur", "responsable_conformite"))
 ):
-    risque = db.query(Risque).filter(Risque.id == risque_id).first()
+    risque = db.query(Risk).filter(Risk.id == risque_id).first()
     if not risque:
-        raise HTTPException(status_code=404, detail="Risque non trouvé")
+        raise HTTPException(status_code=404, detail="Risk not found")
 
-    risque.statut = nouveau_statut
+    risque.statut = new_status
     db.commit()
     db.refresh(risque)
     return risque
 
 
-@router.post("/{risque_id}/actions", response_model=ActionCorrectiveOut)
+@router.post("/{risque_id}/actions", response_model=CorrectiveActionOut)
 def create_action_corrective(
     risque_id: UUID,
-    data: ActionCorrectiveCreate,
+    data: CorrectiveActionCreate,
     db: Session = Depends(get_db),
-    current_user: Utilisateur = Depends(require_roles("super_admin", "administrateur", "responsable_conformite"))
+    current_user: User = Depends(require_roles("super_admin", "administrateur", "responsable_conformite"))
 ):
-    risque = db.query(Risque).filter(Risque.id == risque_id).first()
+    risque = db.query(Risk).filter(Risk.id == risque_id).first()
     if not risque:
-        raise HTTPException(status_code=404, detail="Risque non trouvé")
+        raise HTTPException(status_code=404, detail="Risk not found")
 
-    nouvelle_action = ActionCorrective(
+    new_action = CorrectiveAction(
         risque_id=risque_id,
         titre=data.titre,
         description=data.description,
         responsable_id=data.responsable_id,
-        date_echeance=data.date_echeance,
+        due_date=data.due_date,
     )
-    db.add(nouvelle_action)
+    db.add(new_action)
     db.commit()
-    db.refresh(nouvelle_action)
-    return nouvelle_action
+    db.refresh(new_action)
+    return new_action
 
 
-@router.patch("/actions/{action_id}/statut", response_model=ActionCorrectiveOut)
-def update_statut_action(
+@router.patch("/actions/{action_id}/statut", response_model=CorrectiveActionOut)
+def update_action_status(
     action_id: UUID,
-    nouveau_statut: str,
+    new_status: str,
     db: Session = Depends(get_db),
-    current_user: Utilisateur = Depends(require_roles("super_admin", "administrateur", "responsable_conformite"))
+    current_user: User = Depends(require_roles("super_admin", "administrateur", "responsable_conformite"))
 ):
     from datetime import date
 
-    action = db.query(ActionCorrective).filter(ActionCorrective.id == action_id).first()
+    action = db.query(CorrectiveAction).filter(CorrectiveAction.id == action_id).first()
     if not action:
-        raise HTTPException(status_code=404, detail="Action corrective non trouvée")
+        raise HTTPException(status_code=404, detail="Corrective action not found")
 
-    action.statut = nouveau_statut
-    if nouveau_statut == "Terminée":
-        action.date_cloture = date.today()
+    action.statut = new_status
+    if new_status == "Terminée":
+        action.closure_date = date.today()
 
     db.commit()
     db.refresh(action)
@@ -174,81 +174,81 @@ def update_statut_action(
 
 
 @router.post("/generer-ia/{evaluation_id}")
-def generer_risques_par_ia(
+def generate_risks_with_ai(
     evaluation_id: UUID,
     db: Session = Depends(get_db),
-    current_user: Utilisateur = Depends(require_roles("super_admin", "administrateur", "responsable_conformite"))
+    current_user: User = Depends(require_roles("super_admin", "administrateur", "responsable_conformite"))
 ):
-    from models.reponse import Reponse
+    from models.reponse import Response
     from models.clause import Clause
-    from models.systeme_ia import SystemeIA
-    from groq_service import generer_risques_et_actions
+    from models.systeme_ia import AISystem
+    from groq_service import generate_risks_and_actions
 
     evaluation = db.query(Evaluation).filter(Evaluation.id == evaluation_id).first()
     if not evaluation:
-        raise HTTPException(status_code=404, detail="Évaluation non trouvée")
+        raise HTTPException(status_code=404, detail="Assessment not found")
 
-    if evaluation.type_evaluation == "Systeme_IA":
-        systeme_ia = db.query(SystemeIA).filter(SystemeIA.id == evaluation.systeme_ia_id).first()
-        nom_contexte = systeme_ia.nom if systeme_ia else "Système IA"
+    if evaluation.evaluation_type == "Systeme_IA":
+        systeme_ia = db.query(AISystem).filter(AISystem.id == evaluation.systeme_ia_id).first()
+        context_name = systeme_ia.nom if systeme_ia else "AI system"
     else:
-        nom_contexte = "Gouvernance de l'organisation"
+        context_name = "Gouvernance de l'organisation"
 
-    reponses = db.query(Reponse).filter(
-        Reponse.evaluation_id == evaluation_id,
-        Reponse.reponse.in_(["Non conforme", "Partiellement conforme"])
+    reponses = db.query(Response).filter(
+        Response.evaluation_id == evaluation_id,
+        Response.reponse.in_(["Non conforme", "Partiellement conforme"])
     ).all()
 
     if not reponses:
-        return {"message": "Aucune non-conformité détectée, aucun risque à générer.", "risques_crees": []}
+        return {"message": "No non-compliance detected; no risks to generate.", "risques_crees": []}
 
-    donnees_pour_ia = []
+    data_for_ai = []
     for r in reponses:
         clause = db.query(Clause).filter(Clause.id == r.clause_id).first()
-        donnees_pour_ia.append({
+        data_for_ai.append({
             "clause_titre": clause.titre if clause else "Inconnue",
             "clause_description": clause.description if clause else "",
             "reponse": r.reponse,
             "commentaire": r.commentaire,
         })
 
-    risques_suggeres = generer_risques_et_actions(nom_contexte, donnees_pour_ia)
-    organisation_id = get_organisation_id_pour_evaluation(evaluation, db)
+    suggested_risks = generate_risks_and_actions(context_name, data_for_ai)
+    organisation_id = get_organization_id_for_evaluation(evaluation, db)
 
-    risques_crees = []
-    for suggestion in risques_suggeres:
-        niveau = calculer_niveau_risque_dynamique(
+    created_risks = []
+    for suggestion in suggested_risks:
+        niveau = calculate_dynamic_risk_level(
             suggestion.get("impact", "Moyen"),
             suggestion.get("probabilite", "Moyen"),
             organisation_id,
             db
         )
-        nouveau_risque = Risque(
+        new_risk = Risk(
             evaluation_id=evaluation_id,
-            titre=suggestion.get("titre", "Risque identifié par IA"),
+            titre=suggestion.get("titre", "Risk identified by AI"),
             description=suggestion.get("description", ""),
-            categorie=suggestion.get("categorie", "Général"),
+            categorie=suggestion.get("categorie", "General"),
             impact=suggestion.get("impact", "Moyen"),
             probabilite=suggestion.get("probabilite", "Moyen"),
-            niveau_risque=niveau,
+            risk_level=niveau,
         )
-        db.add(nouveau_risque)
+        db.add(new_risk)
         db.commit()
-        db.refresh(nouveau_risque)
+        db.refresh(new_risk)
 
         action_data = suggestion.get("action_corrective", {})
         if action_data:
-            nouvelle_action = ActionCorrective(
-                risque_id=nouveau_risque.id,
-                titre=action_data.get("titre", "Action corrective suggérée"),
+            new_action = CorrectiveAction(
+                risque_id=new_risk.id,
+                titre=action_data.get("titre", "Suggested corrective action"),
                 description=action_data.get("description", ""),
             )
-            db.add(nouvelle_action)
+            db.add(new_action)
             db.commit()
 
-        risques_crees.append(nouveau_risque)
+        created_risks.append(new_risk)
 
     return {
-        "message": f"{len(risques_crees)} risque(s) généré(s) par l'IA avec succès.",
-        "risques_crees": [r.id for r in risques_crees]
+        "message": f"{len(risques_crees)} risk(s) generated successfully by AI.",
+        "risques_crees": [r.id for r in created_risks]
     }

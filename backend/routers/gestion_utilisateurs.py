@@ -1,34 +1,34 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from database import get_db
-from models.utilisateur import Utilisateur
-from schemas.gestion_utilisateurs import UtilisateurAdminCreate, UtilisateurUpdate, UtilisateurListOut
+from models.utilisateur import User
+from schemas.gestion_utilisateurs import AdminUserCreate, UserUpdate, UserListOut
 from security import require_roles, hash_password
 from typing import List
 from uuid import UUID
 
-router = APIRouter(prefix="/utilisateurs", tags=["Gestion des utilisateurs"])
+router = APIRouter(prefix="/utilisateurs", tags=["User Management"])
 
 
-@router.get("/", response_model=List[UtilisateurListOut])
-def lister_utilisateurs(
+@router.get("/", response_model=List[UserListOut])
+def list_users(
     db: Session = Depends(get_db),
-    current_user: Utilisateur = Depends(require_roles("super_admin", "administrateur"))
+    current_user: User = Depends(require_roles("super_admin", "administrateur"))
 ):
-    return db.query(Utilisateur).all()
+    return db.query(User).all()
 
 
-@router.post("/", response_model=UtilisateurListOut)
-def creer_utilisateur(
-    data: UtilisateurAdminCreate,
+@router.post("/", response_model=UserListOut)
+def create_user(
+    data: AdminUserCreate,
     db: Session = Depends(get_db),
-    current_user: Utilisateur = Depends(require_roles("super_admin", "administrateur"))
+    current_user: User = Depends(require_roles("super_admin", "administrateur"))
 ):
-    existant = db.query(Utilisateur).filter(Utilisateur.email == data.email).first()
+    existant = db.query(User).filter(User.email == data.email).first()
     if existant:
-        raise HTTPException(status_code=400, detail="Cet email est déjà utilisé")
+        raise HTTPException(status_code=400, detail="This email is already in use")
 
-    nouvel_utilisateur = Utilisateur(
+    new_user = User(
         nom=data.nom,
         prenom=data.prenom,
         email=data.email,
@@ -36,22 +36,22 @@ def creer_utilisateur(
         role=data.role,
         organisation_id=data.organisation_id,
     )
-    db.add(nouvel_utilisateur)
+    db.add(new_user)
     db.commit()
-    db.refresh(nouvel_utilisateur)
-    return nouvel_utilisateur
+    db.refresh(new_user)
+    return new_user
 
 
-@router.patch("/{utilisateur_id}", response_model=UtilisateurListOut)
-def modifier_utilisateur(
+@router.patch("/{utilisateur_id}", response_model=UserListOut)
+def update_user(
     utilisateur_id: UUID,
-    data: UtilisateurUpdate,
+    data: UserUpdate,
     db: Session = Depends(get_db),
-    current_user: Utilisateur = Depends(require_roles("super_admin", "administrateur"))
+    current_user: User = Depends(require_roles("super_admin", "administrateur"))
 ):
-    utilisateur = db.query(Utilisateur).filter(Utilisateur.id == utilisateur_id).first()
+    utilisateur = db.query(User).filter(User.id == utilisateur_id).first()
     if not utilisateur:
-        raise HTTPException(status_code=404, detail="Utilisateur non trouvé")
+        raise HTTPException(status_code=404, detail="User not found")
 
     if data.role is not None:
         utilisateur.role = data.role

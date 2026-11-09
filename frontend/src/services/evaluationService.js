@@ -12,7 +12,7 @@ export const getEvaluationDetail = async (evaluationId) => {
 
 export const createEvaluation = async (typeEvaluation, referentielId, systemeIaId, organisationId) => {
   const response = await api.post('/evaluations/', {
-    type_evaluation: typeEvaluation,
+    evaluation_type: typeEvaluation,
     referentiel_id: referentielId,
     systeme_ia_id: systemeIaId || null,
     organisation_id: organisationId || null,

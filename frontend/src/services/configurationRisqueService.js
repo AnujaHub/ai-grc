@@ -5,10 +5,10 @@ export const getConfigurationRisque = async (organisationId) => {
   return response.data
 }
 
-export const updateConfigurationRisque = async (organisationId, niveauxImpact, niveauxProbabilite) => {
+export const updateConfigurationRisque = async (organisationId, impactLevels, probabilityLevels) => {
   const response = await api.put(`/configuration-risque/${organisationId}`, {
-    niveaux_impact: niveauxImpact,
-    niveaux_probabilite: niveauxProbabilite,
+    impact_levels: impactLevels,
+    probability_levels: probabilityLevels,
   })
   return response.data
 }

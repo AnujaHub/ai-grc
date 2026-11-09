@@ -2,14 +2,14 @@ import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import Navbar from '../components/Navbar'
-import CachetConformite from '../components/CachetConformite'
+import ComplianceBadge from '../components/CachetConformite'
 import { getEvaluationDetail, repondreAClause, finaliserEvaluation } from '../services/evaluationService'
 import { getChapitres } from '../services/referentielService'
-import GestionPreuves from '../components/GestionPreuves'
+import EvidenceManagement from '../components/GestionPreuves'
 import { genererRisquesIA } from '../services/risqueService'
 import { genererRapport } from '../services/rapportService'
 import { peutEditer } from '../utils/permissions'
-import SimulateurConformite from '../components/SimulateurConformite'
+import ComplianceSimulator from '../components/SimulateurConformite'
 import { displayLabel } from '../utils/displayLabels'
 
 const OPTIONS_REPONSE = ['Conforme', 'Partiellement conforme', 'Non conforme', 'Non applicable']
@@ -28,11 +28,11 @@ function EvaluationDetail() {
   const [evaluation, setEvaluation] = useState(null)
   const [chapitres, setChapitres] = useState([])
   const [reponses, setReponses] = useState({})
-  const [erreur, setErreur] = useState('')
-  const [chargement, setChargement] = useState(true)
+  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(true)
   const [genererationIA, setGenerationIA] = useState(false)
   const [genererationRapport, setGenerationRapport] = useState(false)
-  const autorise = peutEditer()
+  const authorized = peutEditer()
 
   useEffect(() => { chargerDonnees() }, [evaluationId])
 
@@ -48,10 +48,10 @@ function EvaluationDetail() {
         reponsesInitiales[r.clause_id] = { reponse: r.reponse || '', commentaire: r.commentaire || '' }
       })
       setReponses(reponsesInitiales)
-      setChargement(false)
+      setLoading(false)
     } catch (err) {
-      setErreur('Unable to load the assessment')
-      setChargement(false)
+      setError('Unable to load the assessment')
+      setLoading(false)
     }
   }
 
@@ -59,7 +59,7 @@ function EvaluationDetail() {
     setReponses((prev) => ({ ...prev, [clauseId]: { ...prev[clauseId], [champ]: valeur } }))
   }
 
-  const handleSauvegarder = async (clauseId) => {
+  const handleSave = async (clauseId) => {
     const donnee = reponses[clauseId]
     if (!donnee || !donnee.reponse) { alert('Select a response before saving'); return }
     try {
@@ -97,7 +97,8 @@ function EvaluationDetail() {
       await genererRapport(evaluationId)
       alert('Report generated successfully. Open Reports to download it.')
     } catch (err) {
-      alert('Report generation failed')
+      const detail = err.response?.data?.detail
+      alert(detail ? `Report generation failed: ${detail}` : 'Report generation failed')
     } finally {
       setGenerationRapport(false)
     }
@@ -108,12 +109,12 @@ function EvaluationDetail() {
     return reponseExistante ? reponseExistante.id : null
   }
 
-  if (chargement) return <div><Navbar /><div className="max-w-4xl mx-auto px-6 py-10 text-ink-soft font-mono text-sm">Loading...</div></div>
-  if (erreur) return <div><Navbar /><div className="max-w-4xl mx-auto px-6 py-10 text-danger">{erreur}</div></div>
+  if (loading) return <div><Navbar /><div className="max-w-4xl mx-auto px-6 py-10 text-ink-soft font-mono text-sm">Loading...</div></div>
+  if (error) return <div><Navbar /><div className="max-w-4xl mx-auto px-6 py-10 text-danger">{error}</div></div>
 
   const chapitresFiltres = chapitres
-    .filter((ch) => ch.clauses.some((c) => c.type_evaluation === evaluation.type_evaluation))
-    .map((ch) => ({ ...ch, clauses: ch.clauses.filter((c) => c.type_evaluation === evaluation.type_evaluation) }))
+    .filter((ch) => ch.clauses.some((c) => c.evaluation_type === evaluation.evaluation_type))
+    .map((ch) => ({ ...ch, clauses: ch.clauses.filter((c) => c.evaluation_type === evaluation.evaluation_type) }))
 
   return (
     <div className="min-h-screen bg-paper">
@@ -131,13 +132,13 @@ function EvaluationDetail() {
             </p>
 
             <div className="flex flex-wrap gap-3 mt-4">
-              {autorise && evaluation.statut !== 'Terminée' && (
+              {authorized && evaluation.statut !== 'Terminée' && (
                 <button onClick={handleFinaliser}
                   className="px-4 py-2 bg-accent text-white text-sm font-medium cursor-pointer hover:opacity-90">
                   Complete and calculate score
                 </button>
               )}
-              {autorise && (
+              {authorized && (
                 <button onClick={handleGenererRisquesIA} disabled={genererationIA}
                   className="px-4 py-2 border border-ink text-ink text-sm font-medium cursor-pointer hover:bg-ink hover:text-white disabled:opacity-50">
                   {genererationIA ? 'Analyzing...' : 'Generate risks (AI)'}
@@ -153,11 +154,11 @@ function EvaluationDetail() {
           </div>
 
           {evaluation.score !== null && (
-            <CachetConformite score={evaluation.score} taille={90} />
+            <ComplianceBadge score={evaluation.score} taille={90} />
           )}
         </div>
 
-        <SimulateurConformite reponses={evaluation.reponses} chapitresFiltres={chapitresFiltres} />
+        <ComplianceSimulator reponses={evaluation.reponses} chapitresFiltres={chapitresFiltres} />
         {chapitresFiltres.map((chapitre, idxChap) => (
           <motion.div
             key={chapitre.id}
@@ -203,20 +204,20 @@ function EvaluationDetail() {
                   ))}
                 </div>
 
-                {autorise ? (
+                {authorized ? (
                   <div className="flex gap-2">
                     <input
                       type="text"
-                      placeholder="Commentaire (optionnel)"
+                      placeholder="Comment (optional)"
                       value={reponses[clause.id]?.commentaire || ''}
                       onChange={(e) => handleChangeReponse(clause.id, 'commentaire', e.target.value)}
                       className="flex-1 px-3 py-1.5 border border-line focus:border-accent outline-none bg-paper text-sm"
                     />
                     <button
-                      onClick={() => handleSauvegarder(clause.id)}
+                      onClick={() => handleSave(clause.id)}
                       className="btn-primary px-4 py-1.5 text-xs cursor-pointer"
                     >
-                      Sauvegarder
+                      Save
                     </button>
                   </div>
                 ) : (
@@ -226,7 +227,7 @@ function EvaluationDetail() {
                 )}
 
                 {getReponseIdPourClause(clause.id) && (
-                  <GestionPreuves reponseId={getReponseIdPourClause(clause.id)} />
+                  <EvidenceManagement responseId={getReponseIdPourClause(clause.id)} />
                 )}
               </div>
             ))}

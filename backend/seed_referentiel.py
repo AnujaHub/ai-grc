@@ -1,9 +1,9 @@
 from database import SessionLocal
-from models.referentiel import Referentiel
-from models.chapitre import Chapitre
+from models.referentiel import ReferenceFramework
+from models.chapitre import Chapter
 from models.clause import Clause
 
-# Structure : (numéro chapitre, titre chapitre, type_evaluation, département suggéré, [(titre clause, question), ...])
+# Implementation note.
 DONNEES = [
     ("1", "AI Governance Strategy and Principles", "Organisation", "Direction", [
         ("AI strategy", "Is there an approved AI strategy and responsible AI principles aligned to business objectives, risk appetite, customer outcomes, regulation and technology strategy?"),
@@ -137,16 +137,16 @@ DONNEES = [
 def seed():
     db = SessionLocal()
 
-    existant = db.query(Referentiel).filter(Referentiel.code == "ISO42001-MAT").first()
+    existant = db.query(ReferenceFramework).filter(ReferenceFramework.code == "ISO42001-MAT").first()
     if existant:
-        print("Le référentiel existe déjà, aucune donnée insérée.")
+        print("The reference framework already exists; no data inserted.")
         db.close()
         return
 
-    referentiel = Referentiel(
+    referentiel = ReferenceFramework(
         code="ISO42001-MAT",
         nom="ISO/IEC 42001 - AI Governance Maturity Assessment",
-        description="Grille d'évaluation de maturité de la gouvernance de l'IA, basée sur ISO/IEC 42001, ISO/IEC 23894 et l'EU AI Act.",
+        description="AI governance maturity assessment framework based on ISO/IEC 42001, ISO/IEC 23894, and the EU AI Act.",
         version="1.0",
         statut="actif"
     )
@@ -154,32 +154,32 @@ def seed():
     db.commit()
     db.refresh(referentiel)
 
-    for chap_numero, chap_titre, type_eval, departement, clauses in DONNEES:
-        chapitre = Chapitre(
+    for chap_numero, chapter_title, evaluation_type_local, departement, clauses in DONNEES:
+        chapitre = Chapter(
             referentiel_id=referentiel.id,
             numero=chap_numero,
-            titre=chap_titre
+            titre=chapter_title
         )
         db.add(chapitre)
         db.commit()
         db.refresh(chapitre)
 
-        for index, (clause_titre, question) in enumerate(clauses, start=1):
+        for index, (clause_title, question) in enumerate(clauses, start=1):
             clause = Clause(
                 chapitre_id=chapitre.id,
                 numero=f"{chap_numero}.{index}",
-                titre=clause_titre,
+                titre=clause_title,
                 description=question,
-                type_exigence="Hybrid",
+                requirement_type="Hybrid",
                 ordre=index,
-                type_evaluation=type_eval,
+                evaluation_type=evaluation_type_local,
                 departement_suggere=departement,
             )
             db.add(clause)
 
         db.commit()
 
-    print(f"✅ Référentiel créé avec {len(DONNEES)} chapitres et {sum(len(c[4]) for c in DONNEES)} clauses.")
+    print(f"✅ Reference framework created with {len(DONNEES)} chapters and {sum(len(c[4]) for c in DONNEES)} clauses.")
     db.close()
 
 

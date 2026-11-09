@@ -3,19 +3,19 @@ from typing import Optional
 from datetime import datetime
 from uuid import UUID
 
-# Ce que le client doit envoyer pour CRÉER une organisation
-class OrganisationCreate(BaseModel):
+# Implementation note.
+class OrganizationCreate(BaseModel):
     nom: str
     secteur: Optional[str] = None
     pays: Optional[str] = None
 
-# Ce que l'API renvoie quand on LIT une organisation
-class OrganisationOut(BaseModel):
+# Response returned by the API when reading an organization
+class OrganizationOut(BaseModel):
     id: UUID
     nom: str
     secteur: Optional[str] = None
     pays: Optional[str] = None
-    date_creation: datetime
+    creation_date: datetime
 
     class Config:
         from_attributes = True

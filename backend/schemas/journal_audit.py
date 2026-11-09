@@ -3,7 +3,7 @@ from typing import Optional
 from datetime import datetime
 from uuid import UUID
 
-class JournalAuditOut(BaseModel):
+class AuditLogOut(BaseModel):
     id: UUID
     utilisateur_id: Optional[UUID] = None
     utilisateur_email: Optional[str] = None
@@ -11,7 +11,7 @@ class JournalAuditOut(BaseModel):
     ressource_type: str
     ressource_id: Optional[str] = None
     details: Optional[str] = None
-    date_action: datetime
+    action_date: datetime
 
     class Config:
         from_attributes = True

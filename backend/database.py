@@ -4,21 +4,21 @@ from sqlalchemy.orm import sessionmaker
 from dotenv import load_dotenv
 import os
 
-# Charge les variables du fichier .env
+# Load variables from the .env file
 load_dotenv()
 
 DATABASE_URL = os.getenv("DATABASE_URL")
 
-# Crée la connexion vers PostgreSQL
+# Implementation note.
 engine = create_engine(DATABASE_URL)
 
-# Crée une "session" = une conversation avec la base de données
+# Implementation note.
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
-# Base dont hériteront tous nos modèles (tables)
+# Implementation note.
 Base = declarative_base()
 
-# Fonction utilisée pour obtenir une session dans nos routes
+# Implementation note.
 def get_db():
     db = SessionLocal()
     try:

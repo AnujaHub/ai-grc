@@ -9,9 +9,12 @@ const COULEUR_NIVEAU = {
   'Élevé': 'bg-danger-soft text-danger',
   'Moyen': 'bg-warning-soft text-warning',
   'Faible': 'bg-accent-soft text-accent',
+  High: 'bg-danger-soft text-danger',
+  Medium: 'bg-warning-soft text-warning',
+  Low: 'bg-accent-soft text-accent',
 }
 
-function RisqueDetail() {
+function RiskDetail() {
   const { risqueId } = useParams()
   const navigate = useNavigate()
 
@@ -19,7 +22,7 @@ function RisqueDetail() {
   const [titre, setTitre] = useState('')
   const [description, setDescription] = useState('')
   const [dateEcheance, setDateEcheance] = useState('')
-  const [erreur, setErreur] = useState('')
+  const [error, setError] = useState('')
 
   useEffect(() => { chargerRisque() }, [risqueId])
 
@@ -28,14 +31,14 @@ function RisqueDetail() {
       const data = await getRisqueDetail(risqueId)
       setRisque(data)
     } catch (err) {
-      setErreur('Unable to load the risk')
+      setError('Unable to load the risk')
     }
   }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
     try {
-      await createActionCorrective(risqueId, { titre, description, date_echeance: dateEcheance || null })
+      await createActionCorrective(risqueId, { titre, description, due_date: dateEcheance || null })
       setTitre(''); setDescription(''); setDateEcheance('')
       chargerRisque()
     } catch (err) {
@@ -66,7 +69,7 @@ function RisqueDetail() {
           <div className="flex items-start justify-between gap-4 mb-3">
             <h1 className="font-display text-xl text-ink">{risque.titre}</h1>
             <span className={`shrink-0 px-2 py-0.5 text-xs font-mono font-medium ${COULEUR_NIVEAU[risque.niveau_risque] || ''}`}>
-              {displayLabel(risque.niveau_risque)}
+              {displayLabel(risque.risk_level)}
             </span>
           </div>
           <p className="text-ink-soft text-sm mb-4">{risque.description}</p>
@@ -79,7 +82,7 @@ function RisqueDetail() {
 
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }} className="bg-white border border-line p-6 mb-6">
           <h2 className="text-xs font-semibold uppercase tracking-wide text-ink-soft mb-4">Add a corrective action</h2>
-          {erreur && <p className="text-danger text-sm mb-3">{erreur}</p>}
+          {error && <p className="text-danger text-sm mb-3">{error}</p>}
           <form onSubmit={handleSubmit} className="space-y-3">
             <div className="flex flex-wrap gap-3">
               <input type="text" placeholder="Action title" value={titre} onChange={(e) => setTitre(e.target.value)} required
@@ -106,11 +109,11 @@ function RisqueDetail() {
               </tr>
             </thead>
             <tbody>
-              {risque.actions_correctives.map((action) => (
+              {risque.corrective_actions.map((action) => (
                 <tr key={action.id} className="border-b border-line last:border-0">
                   <td className="px-4 py-3 text-ink font-medium">{action.titre}</td>
                   <td className="px-4 py-3 text-ink-soft">{action.description || '—'}</td>
-                  <td className="px-4 py-3 font-mono text-xs text-ink-soft">{action.date_echeance || '—'}</td>
+                  <td className="px-4 py-3 font-mono text-xs text-ink-soft">{action.due_date || '—'}</td>
                   <td className="px-4 py-3">
                     <select
                       value={action.statut}
@@ -124,7 +127,7 @@ function RisqueDetail() {
                   </td>
                 </tr>
               ))}
-              {risque.actions_correctives.length === 0 && (
+              {risque.corrective_actions.length === 0 && (
                 <tr><td colSpan="4" className="px-4 py-8 text-center text-ink-soft text-sm">No corrective actions defined.</td></tr>
               )}
             </tbody>
@@ -135,4 +138,4 @@ function RisqueDetail() {
   )
 }
 
-export default RisqueDetail
+export default RiskDetail

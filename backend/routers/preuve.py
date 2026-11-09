@@ -2,10 +2,10 @@ from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
 from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
 from database import get_db
-from models.preuve import Preuve
-from models.reponse import Reponse
-from models.utilisateur import Utilisateur
-from schemas.preuve import PreuveOut
+from models.preuve import Evidence
+from models.reponse import Response
+from models.utilisateur import User
+from schemas.preuve import EvidenceOut
 from security import get_current_user
 from typing import List, Optional
 from uuid import UUID
@@ -13,105 +13,105 @@ import os
 import shutil
 from security import require_roles
 
-router = APIRouter(prefix="/preuves", tags=["Preuves documentaires"])
+router = APIRouter(prefix="/preuves", tags=["Documentary Evidence"])
 
 DOSSIER_UPLOADS = "uploads"
-EXTENSIONS_AUTORISEES = {".pdf", ".docx", ".doc", ".xlsx", ".xls", ".png", ".jpg", ".jpeg"}
-TAILLE_MAX_MO = 10  # 10 Mo max par fichier
+ALLOWED_EXTENSIONS = {".pdf", ".docx", ".doc", ".xlsx", ".xls", ".png", ".jpg", ".jpeg"}
+MAX_SIZE_MB = 10  # 10 Mo max par fichier
 
 
-@router.post("/", response_model=PreuveOut)
-def upload_preuve(
+@router.post("/", response_model=EvidenceOut)
+def upload_evidence(
     reponse_id: UUID = Form(...),
     description: Optional[str] = Form(None),
-    fichier: UploadFile = File(...),
+    file: UploadFile = File(...),
     db: Session = Depends(get_db),
-    current_user: Utilisateur = Depends(require_roles("super_admin", "administrateur", "responsable_conformite"))
+    current_user: User = Depends(require_roles("super_admin", "administrateur", "responsable_conformite"))
 ):
-    # Vérifie que la réponse existe
-    reponse = db.query(Reponse).filter(Reponse.id == reponse_id).first()
+    # Implementation note.
+    reponse = db.query(Response).filter(Response.id == reponse_id).first()
     if not reponse:
-        raise HTTPException(status_code=404, detail="Réponse non trouvée")
+        raise HTTPException(status_code=404, detail="Response not found")
 
-    # Vérifie l'extension du fichier
-    extension = os.path.splitext(fichier.filename)[1].lower()
-    if extension not in EXTENSIONS_AUTORISEES:
-        raise HTTPException(status_code=400, detail=f"Format non autorisé : {extension}")
+    # Implementation note.
+    extension = os.path.splitext(file.filename)[1].lower()
+    if extension not in ALLOWED_EXTENSIONS:
+        raise HTTPException(status_code=400, detail=f"Unsupported format: {extension}")
 
-    # Crée un nom de fichier unique pour éviter les conflits
-    nom_unique = f"{uuid_str()}{extension}"
-    chemin_complet = os.path.join(DOSSIER_UPLOADS, nom_unique)
+    # Implementation note.
+    unique_name = f"{uuid_str()}{extension}"
+    full_path = os.path.join(DOSSIER_UPLOADS, unique_name)
 
-    # Crée le dossier uploads s'il n'existe pas
+    # Implementation note.
     os.makedirs(DOSSIER_UPLOADS, exist_ok=True)
 
-    # Sauvegarde le fichier physiquement sur le disque
-    with open(chemin_complet, "wb") as buffer:
-        shutil.copyfileobj(fichier.file, buffer)
+    # Save the file to disk
+    with open(full_path, "wb") as buffer:
+        shutil.copyfileobj(file.file, buffer)
 
-    taille_fichier = os.path.getsize(chemin_complet)
+    file_size = os.path.getsize(full_path)
 
-    # Vérifie la taille après sauvegarde
-    if taille_fichier > TAILLE_MAX_MO * 1024 * 1024:
-        os.remove(chemin_complet)
+    # Implementation note.
+    if file_size > MAX_SIZE_MB * 1024 * 1024:
+        os.remove(full_path)
         raise HTTPException(status_code=400, detail=f"Fichier trop volumineux (max {TAILLE_MAX_MO} Mo)")
 
-    nouvelle_preuve = Preuve(
+    new_evidence = Evidence(
         reponse_id=reponse_id,
-        nom_fichier=fichier.filename,
-        chemin_fichier=chemin_complet,
-        type_fichier=extension.replace(".", ""),
-        taille=taille_fichier,
+        file_name=file.filename,
+        file_path=full_path,
+        file_type=extension.replace(".", ""),
+        taille=file_size,
         description=description,
         uploaded_by=current_user.id,
     )
-    db.add(nouvelle_preuve)
+    db.add(new_evidence)
     db.commit()
-    db.refresh(nouvelle_preuve)
-    return nouvelle_preuve
+    db.refresh(new_evidence)
+    return new_evidence
 
 
-@router.get("/reponse/{reponse_id}", response_model=List[PreuveOut])
-def list_preuves_pour_reponse(
+@router.get("/reponse/{reponse_id}", response_model=List[EvidenceOut])
+def list_evidence_for_response(
     reponse_id: UUID,
     db: Session = Depends(get_db),
-    current_user: Utilisateur = Depends(get_current_user)
+    current_user: User = Depends(get_current_user)
 ):
-    return db.query(Preuve).filter(Preuve.reponse_id == reponse_id).all()
+    return db.query(Evidence).filter(Evidence.reponse_id == reponse_id).all()
 
 
 @router.get("/{preuve_id}/telecharger")
-def telecharger_preuve(
+def download_evidence(
     preuve_id: UUID,
     db: Session = Depends(get_db),
-    current_user: Utilisateur = Depends(get_current_user)
+    current_user: User = Depends(get_current_user)
 ):
-    preuve = db.query(Preuve).filter(Preuve.id == preuve_id).first()
+    preuve = db.query(Evidence).filter(Evidence.id == preuve_id).first()
     if not preuve:
-        raise HTTPException(status_code=404, detail="Preuve non trouvée")
+        raise HTTPException(status_code=404, detail="Evidence not found")
 
-    if not os.path.exists(preuve.chemin_fichier):
+    if not os.path.exists(preuve.file_path):
         raise HTTPException(status_code=404, detail="Fichier introuvable sur le serveur")
 
-    return FileResponse(preuve.chemin_fichier, filename=preuve.nom_fichier)
+    return FileResponse(preuve.file_path, filename=preuve.file_name)
 
 
 @router.delete("/{preuve_id}")
-def supprimer_preuve(
+def delete_evidence(
     preuve_id: UUID,
     db: Session = Depends(get_db),
-    current_user: Utilisateur = Depends(require_roles("super_admin", "administrateur", "responsable_conformite"))
+    current_user: User = Depends(require_roles("super_admin", "administrateur", "responsable_conformite"))
 ):
-    preuve = db.query(Preuve).filter(Preuve.id == preuve_id).first()
+    preuve = db.query(Evidence).filter(Evidence.id == preuve_id).first()
     if not preuve:
-        raise HTTPException(status_code=404, detail="Preuve non trouvée")
+        raise HTTPException(status_code=404, detail="Evidence not found")
 
-    if os.path.exists(preuve.chemin_fichier):
-        os.remove(preuve.chemin_fichier)
+    if os.path.exists(preuve.file_path):
+        os.remove(preuve.file_path)
 
     db.delete(preuve)
     db.commit()
-    return {"message": "Preuve supprimée avec succès"}
+    return {"message": "Evidence deleted successfully"}
 
 
 def uuid_str():
@@ -120,12 +120,12 @@ def uuid_str():
 
 from pypdf import PdfReader
 from models.clause import Clause
-from groq_service import analyser_preuve_texte, analyser_preuve_image
+from groq_service import analyze_evidence_text, analyze_evidence_image
 from datetime import datetime
 
 
-def extraire_texte_pdf(chemin_fichier):
-    lecteur = PdfReader(chemin_fichier)
+def extraire_texte_pdf(file_path):
+    lecteur = PdfReader(file_path)
     texte = ""
     for page in lecteur.pages:
         texte += page.extract_text() or ""
@@ -133,52 +133,52 @@ def extraire_texte_pdf(chemin_fichier):
 
 
 @router.post("/{preuve_id}/analyser")
-def analyser_preuve(
+def analyze_evidence(
     preuve_id: UUID,
     db: Session = Depends(get_db),
-    current_user: Utilisateur = Depends(get_current_user)
+    current_user: User = Depends(get_current_user)
 ):
-    preuve = db.query(Preuve).filter(Preuve.id == preuve_id).first()
+    preuve = db.query(Evidence).filter(Evidence.id == preuve_id).first()
     if not preuve:
-        raise HTTPException(status_code=404, detail="Preuve non trouvée")
+        raise HTTPException(status_code=404, detail="Evidence not found")
 
-    if not os.path.exists(preuve.chemin_fichier):
-        raise HTTPException(status_code=404, detail="Fichier introuvable sur le serveur")
+    if not os.path.exists(preuve.file_path):
+        raise HTTPException(status_code=404, detail="File not found on the server")
 
-    # Récupère le contexte de la clause via la réponse liée
-    reponse = db.query(Reponse).filter(Reponse.id == preuve.reponse_id).first()
+    # Implementation note.
+    reponse = db.query(Response).filter(Response.id == preuve.reponse_id).first()
     if not reponse:
-        raise HTTPException(status_code=404, detail="Réponse associée introuvable")
+        raise HTTPException(status_code=404, detail="Associated response not found")
 
     clause = db.query(Clause).filter(Clause.id == reponse.clause_id).first()
     if not clause:
-        raise HTTPException(status_code=404, detail="Clause associée introuvable")
+        raise HTTPException(status_code=404, detail="Associated clause not found")
 
     try:
-        if preuve.type_fichier == "pdf":
-            texte = extraire_texte_pdf(preuve.chemin_fichier)
+        if preuve.file_type == "pdf":
+            texte = extraire_texte_pdf(preuve.file_path)
             if not texte.strip():
-                raise HTTPException(status_code=400, detail="Impossible d'extraire du texte de ce PDF (probablement scanné/image)")
-            resultat = analyser_preuve_texte(texte, clause.titre, clause.description, reponse.reponse)
+                raise HTTPException(status_code=400, detail="Unable to extract text from this PDF (it may be scanned or image-based)")
+            resultat = analyze_evidence_text(texte, clause.titre, clause.description, reponse.reponse)
 
-        elif preuve.type_fichier in ["png", "jpg", "jpeg"]:
-            resultat = analyser_preuve_image(preuve.chemin_fichier, clause.titre, clause.description, reponse.reponse)
+        elif preuve.file_type in ["png", "jpg", "jpeg"]:
+            resultat = analyze_evidence_image(preuve.file_path, clause.titre, clause.description, reponse.reponse)
 
         else:
-            raise HTTPException(status_code=400, detail="Analyse IA disponible uniquement pour les PDF et images")
+            raise HTTPException(status_code=400, detail="AI analysis is available only for PDFs and images")
 
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Erreur lors de l'analyse IA : {str(e)}")
+        raise HTTPException(status_code=500, detail=f"AI analysis failed: {str(e)}")
 
     preuve.analyse_verdict = resultat.get("verdict")
-    preuve.analyse_details = resultat.get("explication")
-    preuve.analyse_date = datetime.utcnow()
+    preuve.analysis_details = resultat.get("explication")
+    preuve.analysis_date = datetime.utcnow()
     db.commit()
     db.refresh(preuve)
 
     return {
         "verdict": preuve.analyse_verdict,
-        "explication": preuve.analyse_details,
+        "explication": preuve.analysis_details,
     }

@@ -1,54 +1,54 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from database import get_db
-from models.utilisateur import Utilisateur
-from models.systeme_ia import SystemeIA
+from models.utilisateur import User
+from models.systeme_ia import AISystem
 from models.evaluation import Evaluation
-from models.risque import Risque
-from models.action_corrective import ActionCorrective
+from models.risque import Risk
+from models.action_corrective import CorrectiveAction
 from schemas.assistant import ChatRequest, ChatResponse
 from security import get_current_user
 from groq_service import repondre_assistant_ia
 from sqlalchemy import func
 from datetime import date
 
-router = APIRouter(prefix="/assistant", tags=["Assistant IA"])
+router = APIRouter(prefix="/assistant", tags=["AI Assistant"])
 
 
-def construire_contexte_organisation(organisation_id, db: Session):
-    ids_systemes = [s.id for s in db.query(SystemeIA.id).filter(SystemeIA.organisation_id == organisation_id).all()]
+def build_organization_context(organisation_id, db: Session):
+    system_ids = [s.id for s in db.query(AISystem.id).filter(AISystem.organisation_id == organisation_id).all()]
 
     evaluations = db.query(Evaluation).filter(
         (Evaluation.organisation_id == organisation_id) |
-        (Evaluation.systeme_ia_id.in_(ids_systemes))
+        (Evaluation.systeme_ia_id.in_(system_ids))
     ).all()
-    ids_evaluations = [e.id for e in evaluations]
+    evaluation_ids = [e.id for e in evaluations]
 
-    nb_systemes_ia = len(ids_systemes)
-    nb_evaluations = len(evaluations)
+    ai_system_count = len(system_ids)
+    evaluation_count = len(evaluations)
 
     scores = [float(e.score) for e in evaluations if e.statut == "Terminée" and e.score is not None]
-    score_moyen = round(sum(scores) / len(scores), 2) if scores else 0
+    average_score = round(sum(scores) / len(scores), 2) if scores else 0
 
-    nb_risques_ouverts = db.query(Risque).filter(
-        Risque.evaluation_id.in_(ids_evaluations),
-        Risque.statut == "Ouvert"
+    open_risk_count = db.query(Risk).filter(
+        Risk.evaluation_id.in_(evaluation_ids),
+        Risk.statut == "Ouvert"
     ).count()
 
-    ids_risques = [r.id for r in db.query(Risque.id).filter(Risque.evaluation_id.in_(ids_evaluations)).all()]
-    nb_actions_en_retard = db.query(ActionCorrective).filter(
-        ActionCorrective.risque_id.in_(ids_risques),
-        ActionCorrective.statut != "Terminée",
-        ActionCorrective.date_echeance != None,
-        ActionCorrective.date_echeance < date.today()
+    risk_ids = [r.id for r in db.query(Risk.id).filter(Risk.evaluation_id.in_(evaluation_ids)).all()]
+    overdue_action_count = db.query(CorrectiveAction).filter(
+        CorrectiveAction.risque_id.in_(risk_ids),
+        CorrectiveAction.statut != "Terminée",
+        CorrectiveAction.due_date != None,
+        CorrectiveAction.due_date < date.today()
     ).count()
 
     return {
-        "nb_systemes_ia": nb_systemes_ia,
-        "nb_evaluations": nb_evaluations,
-        "score_moyen_conformite": score_moyen,
-        "nb_risques_ouverts": nb_risques_ouverts,
-        "nb_actions_en_retard": nb_actions_en_retard,
+        "nb_systemes_ia": ai_system_count,
+        "nb_evaluations": evaluation_count,
+        "score_moyen_conformite": average_score,
+        "nb_risques_ouverts": open_risk_count,
+        "nb_actions_en_retard": overdue_action_count,
     }
 
 
@@ -56,11 +56,11 @@ def construire_contexte_organisation(organisation_id, db: Session):
 def chat_avec_assistant(
     data: ChatRequest,
     db: Session = Depends(get_db),
-    current_user: Utilisateur = Depends(get_current_user)
+    current_user: User = Depends(get_current_user)
 ):
     contexte = None
     if data.organisation_id:
-        contexte = construire_contexte_organisation(data.organisation_id, db)
+        contexte = build_organization_context(data.organisation_id, db)
 
     messages_historique = [{"role": m.role, "content": m.content} for m in data.messages]
 

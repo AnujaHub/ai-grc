@@ -3,19 +3,19 @@ from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
 from database import get_db
 from models.evaluation import Evaluation
-from models.reponse import Reponse
+from models.reponse import Response
 from models.clause import Clause
-from models.chapitre import Chapitre
-from models.systeme_ia import SystemeIA
-from models.organisation import Organisation
-from models.referentiel import Referentiel
-from models.risque import Risque
-from models.rapport import Rapport
-from models.utilisateur import Utilisateur
-from schemas.rapport import RapportOut
+from models.chapitre import Chapter
+from models.systeme_ia import AISystem
+from models.organisation import Organization
+from models.referentiel import ReferenceFramework
+from models.risque import Risk
+from models.rapport import Report
+from models.utilisateur import User
+from schemas.rapport import ReportOut
 from security import get_current_user
-from rapport_service import generer_rapport_pdf
-from groq_service import generer_synthese_rapport
+from rapport_service import generate_report_pdf
+from groq_service import generate_report_summary
 from typing import List
 from uuid import UUID
 import os
@@ -23,64 +23,64 @@ import os
 router = APIRouter(prefix="/rapports", tags=["Rapports"])
 
 
-def rassembler_donnees_rapport(evaluation_id: UUID, db: Session):
-    from models.action_corrective import ActionCorrective
-    from models.configuration_risque import ConfigurationRisque
+def gather_report_data(evaluation_id: UUID, db: Session):
+    from models.action_corrective import CorrectiveAction
+    from models.configuration_risque import RiskConfiguration
 
     evaluation = db.query(Evaluation).filter(Evaluation.id == evaluation_id).first()
     if not evaluation:
-        raise HTTPException(status_code=404, detail="Évaluation non trouvée")
+        raise HTTPException(status_code=404, detail="Assessment not found")
 
-    referentiel = db.query(Referentiel).filter(Referentiel.id == evaluation.referentiel_id).first()
+    referentiel = db.query(ReferenceFramework).filter(ReferenceFramework.id == evaluation.referentiel_id).first()
 
-    if evaluation.type_evaluation == "Systeme_IA":
-        systeme = db.query(SystemeIA).filter(SystemeIA.id == evaluation.systeme_ia_id).first()
-        organisation = db.query(Organisation).filter(Organisation.id == systeme.organisation_id).first() if systeme else None
-        systeme_ia_nom = systeme.nom if systeme else None
-        systeme_ia_description = systeme.description if systeme else None
-        systeme_ia_criticite = systeme.niveau_criticite if systeme else None
-        organisation_id_reelle = systeme.organisation_id if systeme else None
+    if evaluation.evaluation_type == "Systeme_IA":
+        systeme = db.query(AISystem).filter(AISystem.id == evaluation.systeme_ia_id).first()
+        organisation = db.query(Organization).filter(Organization.id == systeme.organisation_id).first() if systeme else None
+        ai_system_name = systeme.nom if systeme else None
+        ai_system_description = systeme.description if systeme else None
+        ai_system_criticality = systeme.criticality_level if systeme else None
+        real_organization_id = systeme.organisation_id if systeme else None
     else:
-        organisation = db.query(Organisation).filter(Organisation.id == evaluation.organisation_id).first()
-        systeme_ia_nom = None
-        systeme_ia_description = None
-        systeme_ia_criticite = None
-        organisation_id_reelle = evaluation.organisation_id
+        organisation = db.query(Organization).filter(Organization.id == evaluation.organisation_id).first()
+        ai_system_name = None
+        ai_system_description = None
+        ai_system_criticality = None
+        real_organization_id = evaluation.organisation_id
 
-    reponses = db.query(Reponse).filter(Reponse.evaluation_id == evaluation_id).all()
-    reponses_par_clause = {r.clause_id: r for r in reponses}
+    reponses = db.query(Response).filter(Response.evaluation_id == evaluation_id).all()
+    responses_by_clause = {r.clause_id: r for r in reponses}
 
-    chapitres_bd = db.query(Chapitre).filter(Chapitre.referentiel_id == evaluation.referentiel_id).all()
+    db_chapters = db.query(Chapter).filter(Chapter.referentiel_id == evaluation.referentiel_id).all()
 
-    chapitres_donnees = []
-    nb_clauses_totales = 0
-    nb_clauses_non_conformes = 0
+    chapter_data = []
+    total_clause_count = 0
+    non_compliant_clause_count = 0
 
-    for chapitre in chapitres_bd:
-        clauses_bd = db.query(Clause).filter(
+    for chapitre in db_chapters:
+        db_clauses = db.query(Clause).filter(
             Clause.chapitre_id == chapitre.id,
-            Clause.type_evaluation == evaluation.type_evaluation
+            Clause.evaluation_type == evaluation.evaluation_type
         ).order_by(Clause.ordre).all()
 
-        if not clauses_bd:
+        if not db_clauses:
             continue
 
-        clauses_info = []
-        for clause in clauses_bd:
-            reponse = reponses_par_clause.get(clause.id)
-            nb_clauses_totales += 1
+        clause_info = []
+        for clause in db_clauses:
+            reponse = responses_by_clause.get(clause.id)
+            total_clause_count += 1
             ecart = None
             if reponse:
                 if reponse.reponse == "Non conforme":
                     ecart = "Majeur"
-                    nb_clauses_non_conformes += 1
+                    non_compliant_clause_count += 1
                 elif reponse.reponse == "Partiellement conforme":
                     ecart = "Modéré"
-                    nb_clauses_non_conformes += 1
+                    non_compliant_clause_count += 1
                 elif reponse.reponse == "Conforme":
-                    ecart = "Aucun"
+                    ecart = "None"
 
-            clauses_info.append({
+            clause_info.append({
                 "numero": clause.numero,
                 "titre": clause.titre,
                 "reponse": reponse.reponse if reponse else None,
@@ -89,126 +89,126 @@ def rassembler_donnees_rapport(evaluation_id: UUID, db: Session):
                 "departement": clause.departement_suggere,
             })
 
-        chapitres_donnees.append({
+        chapter_data.append({
             "numero": chapitre.numero,
             "titre": chapitre.titre,
-            "clauses": clauses_info,
+            "clauses": clause_info,
         })
 
-    risques_bd = db.query(Risque).filter(Risque.evaluation_id == evaluation_id).all()
+    db_risks = db.query(Risk).filter(Risk.evaluation_id == evaluation_id).all()
 
-    risques_donnees = []
-    for r in risques_bd:
-        actions_bd = db.query(ActionCorrective).filter(ActionCorrective.risque_id == r.id).all()
-        actions_info = [{
+    risk_data = []
+    for r in db_risks:
+        db_actions = db.query(CorrectiveAction).filter(CorrectiveAction.risque_id == r.id).all()
+        action_info = [{
             "titre": a.titre,
             "description": a.description,
-            "date_echeance": a.date_echeance.strftime('%d/%m/%Y') if a.date_echeance else "Non définie",
+            "date_echeance": a.due_date.strftime('%d/%m/%Y') if a.due_date else "Not defined",
             "statut": a.statut,
-        } for a in actions_bd]
+        } for a in db_actions]
 
-        risques_donnees.append({
+        risk_data.append({
             "titre": r.titre,
             "description": r.description,
             "categorie": r.categorie,
             "impact": r.impact,
             "probabilite": r.probabilite,
-            "niveau_risque": r.niveau_risque,
+            "niveau_risque": r.risk_level,
             "statut": r.statut,
-            "actions": actions_info,
+            "actions": action_info,
         })
 
-    nb_risques_eleves = sum(1 for r in risques_bd if r.niveau_risque == "Élevé")
-    nb_risques_ouverts = sum(1 for r in risques_bd if r.statut == "Ouvert")
+    high_risk_count = sum(1 for r in db_risks if r.risk_level == "Élevé")
+    open_risk_count = sum(1 for r in db_risks if r.statut == "Ouvert")
 
-    # Configuration de la matrice de risque de l'organisation
+    # Configure the organization risk matrix
     config_matrice = None
-    if organisation_id_reelle:
-        config_matrice = db.query(ConfigurationRisque).filter(
-            ConfigurationRisque.organisation_id == organisation_id_reelle
+    if real_organization_id:
+        config_matrice = db.query(RiskConfiguration).filter(
+            RiskConfiguration.organisation_id == real_organization_id
         ).first()
 
-    niveaux_impact = config_matrice.niveaux_impact if config_matrice else ["Faible", "Moyen", "Élevé"]
-    niveaux_probabilite = config_matrice.niveaux_probabilite if config_matrice else ["Faible", "Moyen", "Élevée"]
+    impact_levels = config_matrice.impact_levels if config_matrice else ["Faible", "Moyen", "Élevé"]
+    probability_levels = config_matrice.probability_levels if config_matrice else ["Faible", "Moyen", "Élevée"]
 
     return {
         "evaluation_id": str(evaluation_id),
-        "organisation_nom": organisation.nom if organisation else "Organisation inconnue",
+        "organisation_nom": organisation.nom if organisation else "Unknown organization",
         "organisation_secteur": organisation.secteur if organisation else None,
         "organisation_pays": organisation.pays if organisation else None,
-        "systeme_ia_nom": systeme_ia_nom,
-        "systeme_ia_description": systeme_ia_description,
-        "systeme_ia_criticite": systeme_ia_criticite,
-        "referentiel_nom": referentiel.nom if referentiel else "Référentiel inconnu",
+        "systeme_ia_nom": ai_system_name,
+        "systeme_ia_description": ai_system_description,
+        "systeme_ia_criticite": ai_system_criticality,
+        "referentiel_nom": referentiel.nom if referentiel else "Unknown framework",
         "score": float(evaluation.score) if evaluation.score is not None else 0,
-        "chapitres": chapitres_donnees,
-        "risques": risques_donnees,
-        "nb_risques_eleves": nb_risques_eleves,
-        "nb_risques_ouverts": nb_risques_ouverts,
-        "nb_clauses_non_conformes": nb_clauses_non_conformes,
-        "nb_clauses_totales": nb_clauses_totales,
-        "type_evaluation": evaluation.type_evaluation,
-        "niveaux_impact": niveaux_impact,
-        "niveaux_probabilite": niveaux_probabilite,
+        "chapitres": chapter_data,
+        "risques": risk_data,
+        "nb_risques_eleves": high_risk_count,
+        "nb_risques_ouverts": open_risk_count,
+        "nb_clauses_non_conformes": non_compliant_clause_count,
+        "nb_clauses_totales": total_clause_count,
+        "type_evaluation": evaluation.evaluation_type,
+        "niveaux_impact": impact_levels,
+        "niveaux_probabilite": probability_levels,
     }
 
-@router.post("/generer/{evaluation_id}", response_model=RapportOut)
-def generer_rapport(
+@router.post("/generer/{evaluation_id}", response_model=ReportOut)
+def generate_report(
     evaluation_id: UUID,
     db: Session = Depends(get_db),
-    current_user: Utilisateur = Depends(get_current_user)
+    current_user: User = Depends(get_current_user)
 ):
-    donnees = rassembler_donnees_rapport(evaluation_id, db)
+    donnees = gather_report_data(evaluation_id, db)
 
-    # Génère la synthèse par IA (si ça échoue, le rapport se génère quand même avec un texte de secours)
+    # Implementation note.
     try:
-        synthese_ia = generer_synthese_rapport(
-            nom_cible=donnees['systeme_ia_nom'] or donnees['organisation_nom'],
-            type_evaluation=donnees['type_evaluation'],
+        synthese_ia = generate_report_summary(
+            target_name=donnees['systeme_ia_nom'] or donnees['organisation_nom'],
+            evaluation_type=donnees['type_evaluation'],
             score=donnees['score'],
-            nb_risques_eleves=donnees['nb_risques_eleves'],
-            nb_risques_ouverts=donnees['nb_risques_ouverts'],
-            nb_clauses_non_conformes=donnees['nb_clauses_non_conformes'],
-            nb_clauses_totales=donnees['nb_clauses_totales'],
+            high_risk_count=donnees['nb_risques_eleves'],
+            open_risk_count=donnees['nb_risques_ouverts'],
+            non_compliant_clause_count=donnees['nb_clauses_non_conformes'],
+            total_clause_count=donnees['nb_clauses_totales'],
         )
     except Exception:
         synthese_ia = None
 
     donnees['synthese_ia'] = synthese_ia
 
-    chemin_fichier = generer_rapport_pdf(donnees)
+    file_path = generate_report_pdf(donnees)
 
-    nouveau_rapport = Rapport(
+    new_report = Report(
         evaluation_id=evaluation_id,
-        score_global=donnees['score'],
-        chemin_fichier=chemin_fichier,
+        global_score=donnees['score'],
+        file_path=file_path,
     )
-    db.add(nouveau_rapport)
+    db.add(new_report)
     db.commit()
-    db.refresh(nouveau_rapport)
+    db.refresh(new_report)
 
-    return nouveau_rapport
+    return new_report
 
 
-@router.get("/", response_model=List[RapportOut])
-def list_rapports(
+@router.get("/", response_model=List[ReportOut])
+def list_reports(
     db: Session = Depends(get_db),
-    current_user: Utilisateur = Depends(get_current_user)
+    current_user: User = Depends(get_current_user)
 ):
-    return db.query(Rapport).order_by(Rapport.date_generation.desc()).all()
+    return db.query(Report).order_by(Report.generation_date.desc()).all()
 
 
 @router.get("/{rapport_id}/telecharger")
-def telecharger_rapport(
+def download_report(
     rapport_id: UUID,
     db: Session = Depends(get_db),
-    current_user: Utilisateur = Depends(get_current_user)
+    current_user: User = Depends(get_current_user)
 ):
-    rapport = db.query(Rapport).filter(Rapport.id == rapport_id).first()
+    rapport = db.query(Report).filter(Report.id == rapport_id).first()
     if not rapport:
-        raise HTTPException(status_code=404, detail="Rapport non trouvé")
+        raise HTTPException(status_code=404, detail="Report not found")
 
-    if not os.path.exists(rapport.chemin_fichier):
+    if not os.path.exists(rapport.file_path):
         raise HTTPException(status_code=404, detail="Fichier PDF introuvable sur le serveur")
 
-    return FileResponse(rapport.chemin_fichier, filename=f"rapport_conformite_{rapport_id}.pdf", media_type="application/pdf")
+    return FileResponse(rapport.file_path, filename=f"rapport_conformite_{rapport_id}.pdf", media_type="application/pdf")

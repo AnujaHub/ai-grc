@@ -4,7 +4,7 @@ from sqlalchemy.orm import relationship
 import uuid
 from database import Base
 
-class Chapitre(Base):
+class Chapter(Base):
     __tablename__ = "chapitres"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)

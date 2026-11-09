@@ -1,42 +1,42 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from database import get_db
-from models.systeme_ia import SystemeIA
-from models.utilisateur import Utilisateur
-from schemas.systeme_ia import SystemeIACreate, SystemeIAOut
+from models.systeme_ia import AISystem
+from models.utilisateur import User
+from schemas.systeme_ia import AISystemCreate, AISystemOut
 from security import get_current_user
 from typing import List
 from uuid import UUID
 from security import require_roles
 
-router = APIRouter(prefix="/systemes-ia", tags=["Systèmes IA"])
+router = APIRouter(prefix="/systemes-ia", tags=["AI Systems"])
 
-@router.post("/", response_model=SystemeIAOut)
+@router.post("/", response_model=AISystemOut)
 def create_systeme_ia(
-    systeme: SystemeIACreate,
+    systeme: AISystemCreate,
     db: Session = Depends(get_db),
-    current_user: Utilisateur = Depends(require_roles("super_admin", "administrateur", "responsable_conformite"))
+    current_user: User = Depends(require_roles("super_admin", "administrateur", "responsable_conformite"))
 ):
-    nouveau_systeme = SystemeIA(**systeme.dict())
-    db.add(nouveau_systeme)
+    new_system = AISystem(**systeme.dict())
+    db.add(new_system)
     db.commit()
-    db.refresh(nouveau_systeme)
-    return nouveau_systeme
+    db.refresh(new_system)
+    return new_system
 
-@router.get("/", response_model=List[SystemeIAOut])
-def list_systemes_ia(
+@router.get("/", response_model=List[AISystemOut])
+def list_ai_systems(
     db: Session = Depends(get_db),
-    current_user: Utilisateur = Depends(get_current_user)
+    current_user: User = Depends(get_current_user)
 ):
-    return db.query(SystemeIA).all()
+    return db.query(AISystem).all()
 
-@router.get("/{systeme_id}", response_model=SystemeIAOut)
-def get_systeme_ia(
+@router.get("/{systeme_id}", response_model=AISystemOut)
+def get_ai_system(
     systeme_id: UUID,
     db: Session = Depends(get_db),
-    current_user: Utilisateur = Depends(get_current_user)
+    current_user: User = Depends(get_current_user)
 ):
-    systeme = db.query(SystemeIA).filter(SystemeIA.id == systeme_id).first()
+    systeme = db.query(AISystem).filter(AISystem.id == systeme_id).first()
     if not systeme:
-        raise HTTPException(status_code=404, detail="Système IA non trouvé")
+        raise HTTPException(status_code=404, detail="AI system not found")
     return systeme

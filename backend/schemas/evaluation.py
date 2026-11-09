@@ -3,38 +3,38 @@ from typing import Optional, List
 from datetime import date, datetime
 from uuid import UUID
 
-class ReponseCreate(BaseModel):
+class ResponseCreate(BaseModel):
     clause_id: UUID
     reponse: str
     commentaire: Optional[str] = None
 
-class ReponseOut(BaseModel):
+class ResponseOut(BaseModel):
     id: UUID
     evaluation_id: UUID
     clause_id: UUID
     reponse: Optional[str] = None
     commentaire: Optional[str] = None
-    date_reponse: datetime
+    response_date: datetime
     repondant_id: Optional[UUID] = None
 
     class Config:
         from_attributes = True
 
 class EvaluationCreate(BaseModel):
-    type_evaluation: str  # "Organisation" ou "Systeme_IA"
+    evaluation_type: str  # "Organisation" ou "Systeme_IA"
     systeme_ia_id: Optional[UUID] = None
     organisation_id: Optional[UUID] = None
     referentiel_id: UUID
 
 class EvaluationOut(BaseModel):
     id: UUID
-    type_evaluation: str
+    evaluation_type: str
     systeme_ia_id: Optional[UUID] = None
     organisation_id: Optional[UUID] = None
     referentiel_id: UUID
     responsable_id: Optional[UUID] = None
-    date_debut: Optional[date] = None
-    date_fin: Optional[date] = None
+    start_date: Optional[date] = None
+    end_date: Optional[date] = None
     score: Optional[float] = None
     statut: str
     commentaire: Optional[str] = None
@@ -43,4 +43,4 @@ class EvaluationOut(BaseModel):
         from_attributes = True
 
 class EvaluationDetailOut(EvaluationOut):
-    reponses: List[ReponseOut] = []
+    reponses: List[ResponseOut] = []

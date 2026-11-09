@@ -5,10 +5,10 @@ export const getPreuvesPourReponse = async (reponseId) => {
   return response.data
 }
 
-export const uploadPreuve = async (reponseId, fichier, description) => {
+export const uploadPreuve = async (reponseId, file, description) => {
   const formData = new FormData()
   formData.append('reponse_id', reponseId)
-  formData.append('fichier', fichier)
+  formData.append('fichier', file)
   if (description) {
     formData.append('description', description)
   }
@@ -20,8 +20,8 @@ export const uploadPreuve = async (reponseId, fichier, description) => {
 }
 
 export const telechargerPreuve = (preuveId) => {
-  // Ouvre le téléchargement dans un nouvel onglet, avec le token dans l'URL n'est pas possible ici,
-  // donc on utilise un lien direct (le token sera vérifié par le navigateur via une requête normale)
+  // Open the download in a new tab. A token cannot be passed in the URL here,
+  // so use a direct link that the browser validates through a normal request.
   return `http://127.0.0.1:8000/preuves/${preuveId}/telecharger`
 }
 

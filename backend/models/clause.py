@@ -11,9 +11,9 @@ class Clause(Base):
     numero = Column(String(50), nullable=False)
     titre = Column(String(255), nullable=False)
     description = Column(Text, nullable=True)
-    type_exigence = Column(String(50), nullable=True)
+    requirement_type = Column("type_exigence", String(50), nullable=True)
     ordre = Column(Integer, default=0)
 
-    # Nouveau : portée de la question
-    type_evaluation = Column(String(20), default="Systeme_IA")  # "Organisation" ou "Systeme_IA"
-    departement_suggere = Column(String(100), nullable=True)    # ex: "Sécurité", "Data", "Direction"
+    # Implementation note.
+    evaluation_type = Column("type_evaluation", String(20), default="Systeme_IA")
+    departement_suggere = Column(String(100), nullable=True)    # Implementation note.
