@@ -1,142 +1,162 @@
-import { useState, useRef, useEffect } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { Link } from 'react-router-dom'
+import { MessageCircle, X, Send, Sparkles, RotateCcw } from 'lucide-react'
 import { envoyerMessageAssistant } from '../services/assistantService'
-import { getOrganisations } from '../services/organisationService'
+import { getOrganisations } from '../services/organizationService'
+
+const GREETING = { role: 'assistant', content: 'Hello. I can help you understand ISO/IEC 27001 controls, your assessments and your compliance status.' }
+
+const SUGGESTIONS = [
+  'What evidence do I need for A.8.5 Secure authentication?',
+  'Explain segregation of duties in simple terms',
+  'Which controls usually fail first in an audit?',
+  'How should we classify information assets?',
+]
 
 function AssistantChatbot() {
   const [open, setOpen] = useState(false)
-  const [messages, setMessages] = useState([
-    { role: 'assistant', content: 'Hello. I can help you interpret ISO/IEC 42001 requirements or your organization’s compliance status.' }
-  ])
+  const [messages, setMessages] = useState([GREETING])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
-  const [organizations, setOrganizations] = useState([])
+  const [organizations, setOrganizations] = useState(null)
   const [organisationId, setOrganisationId] = useState('')
-  const messagesEndRef = useRef(null)
-
-  const loadOrganizations = async () => {
-    try {
-      const data = await getOrganisations()
-      setOrganizations(data)
-    } catch { /* silencieux */ }
-  }
+  const endRef = useRef(null)
+  const inputRef = useRef(null)
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [messages])
+    endRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [messages, loading])
 
-  const toggleOpen = () => {
-    const nextState = !open
-    setOpen(nextState)
-    if (nextState && organizations.length === 0) loadOrganizations()
+  const toggle = () => {
+    const next = !open
+    setOpen(next)
+    if (next && organizations === null) getOrganisations().then(setOrganizations).catch(() => setOrganizations([]))
+    if (next) setTimeout(() => inputRef.current?.focus(), 150)
   }
 
-  const handleSend = async (e) => {
-    e.preventDefault()
-    if (!input.trim()) return
-
-    const newMessage = { role: 'user', content: input }
-    const newMessages = [...messages, newMessage]
-    setMessages(newMessages)
+  const send = async (text) => {
+    const content = text.trim()
+    if (!content || loading) return
+    const next = [...messages, { role: 'user', content }]
+    setMessages(next)
     setInput('')
     setLoading(true)
-
     try {
-      const data = await envoyerMessageAssistant(newMessages, organisationId)
-      setMessages([...newMessages, { role: 'assistant', content: data.reponse }])
+      const data = await envoyerMessageAssistant(next.filter((m) => !m.error), organisationId)
+      setMessages([...next, { role: 'assistant', content: data.reponse }])
     } catch {
-      setMessages([...newMessages, { role: 'assistant', content: 'Something went wrong. Please try again.' }])
+      setMessages([...next, { role: 'assistant', content: 'The assistant is not available right now. Check that the backend is running and try again.', error: true }])
     } finally {
       setLoading(false)
     }
   }
 
+  const onKeyDown = (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault()
+      send(input)
+    }
+  }
+
+  const onlyGreeting = messages.length === 1
+
   return (
     <>
-      <div className="fixed bottom-6 right-6 z-50">
-        {!open && (
-          <motion.span
-            initial={{ opacity: 0.5, scale: 1 }}
-            animate={{ opacity: [0.5, 0, 0.5], scale: [1, 1.4, 1] }}
-            transition={{ duration: 2.2, repeat: Infinity, ease: 'easeInOut' }}
-            className="absolute inset-0 rounded-full border border-ink pointer-events-none"
-          />
-        )}
-        <motion.button
-          onClick={toggleOpen}
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          className="relative w-14 h-14 rounded-2xl bg-accent border border-accent flex items-center justify-center shadow-[0_0_26px_rgba(56,217,194,0.35)] cursor-pointer"
-        >
-          {open ? (
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-              <path d="M2 2L14 14M14 2L2 14" stroke="#ffffff" strokeWidth="1.8" strokeLinecap="round" />
-            </svg>
-          ) : (
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-              <path
-                d="M12 3C7.03 3 3 6.58 3 11c0 2.39 1.19 4.53 3.08 5.99-.1.98-.5 2.31-1.58 3.51 0 0 2.19-.29 4.06-1.7A10.6 10.6 0 0 0 12 19c4.97 0 9-3.58 9-8s-4.03-8-9-8Z"
-                stroke="#ffffff" strokeWidth="1.6" strokeLinejoin="round"
-              />
-              <path d="M8.5 10.5h.01M12 10.5h.01M15.5 10.5h.01" stroke="#ffffff" strokeWidth="2" strokeLinecap="round" />
-            </svg>
-          )}
-        </motion.button>
-      </div>
+      <motion.button
+        type="button"
+        onClick={toggle}
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+        aria-label={open ? 'Close compliance assistant' : 'Open compliance assistant'}
+        aria-expanded={open}
+        className="fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-2xl border border-accent bg-accent text-[#07111f] shadow-[0_0_26px_rgba(56,217,194,0.35)] cursor-pointer"
+      >
+        {open ? <X className="h-5 w-5" /> : <MessageCircle className="h-5 w-5" />}
+      </motion.button>
 
       <AnimatePresence>
         {open && (
           <motion.div
+            role="dialog"
+            aria-label="Compliance assistant"
             initial={{ opacity: 0, y: 20, scale: 0.97 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 10, scale: 0.97 }}
             transition={{ duration: 0.2 }}
-            className="fixed bottom-24 right-6 w-[min(360px,calc(100vw-2rem))] h-[500px] bg-white border border-line shadow-xl rounded-2xl flex flex-col z-50 overflow-hidden"
+            className="fixed inset-x-3 bottom-24 z-50 flex h-[min(560px,calc(100vh-8rem))] flex-col overflow-hidden rounded-2xl border border-line bg-paper-dark shadow-2xl sm:inset-x-auto sm:right-6 sm:w-[380px]"
           >
             <div className="border-b border-line p-4">
-              <p className="font-display text-ink">Compliance assistant</p>
-              <select
-                value={organisationId}
-                onChange={(e) => setOrganisationId(e.target.value)}
-                className="w-full mt-2 px-2 py-1.5 border border-line text-xs bg-paper focus:border-accent outline-none"
-              >
-                <option value="">Without specific context</option>
-                {organizations.map((org) => (
-                  <option key={org.id} value={org.id}>Context: {org.nom}</option>
-                ))}
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-2.5">
+                  <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-violet-400/10 text-violet-300"><Sparkles className="h-4 w-4" /></span>
+                  <div>
+                    <p className="text-sm font-semibold text-ink">Compliance assistant</p>
+                    <p className="text-[11px] text-ink-soft">AI-generated answers. Verify before relying on them.</p>
+                  </div>
+                </div>
+                <button type="button" onClick={() => setMessages([GREETING])} disabled={onlyGreeting} aria-label="New conversation" title="New conversation"
+                  className="rounded-lg p-1.5 text-ink-soft hover:text-accent disabled:opacity-40 cursor-pointer disabled:cursor-default">
+                  <RotateCcw className="h-4 w-4" />
+                </button>
+              </div>
+              <select value={organisationId} onChange={(e) => setOrganisationId(e.target.value)} aria-label="Answer context"
+                className="mt-3 w-full border border-line px-2.5 py-1.5 text-xs text-ink outline-none focus:border-accent cursor-pointer">
+                <option value="">General answers (no organization data)</option>
+                {(organizations || []).map((org) => <option key={org.id} value={org.id}>Use data from {org.nom}</option>)}
               </select>
             </div>
 
-            <div className="flex-1 overflow-y-auto p-4 space-y-3">
-              {messages.map((msg, index) => (
-                <div key={index} className={msg.role === 'user' ? 'text-right' : 'text-left'}>
-                  <span className={`inline-block px-3 py-2 text-sm max-w-[85%] text-left ${
-                    msg.role === 'user' ? 'bg-ink text-white' : 'bg-paper text-ink border border-line'
+            <div className="flex-1 space-y-3 overflow-y-auto p-4">
+              {messages.map((m, i) => (
+                <div key={i} className={m.role === 'user' ? 'flex justify-end' : 'flex justify-start'}>
+                  <div className={`max-w-[88%] whitespace-pre-wrap rounded-2xl px-3.5 py-2.5 text-sm ${
+                    m.role === 'user' ? 'rounded-br-md bg-accent text-[#07111f]' : m.error ? 'rounded-bl-md border border-danger/30 bg-danger-soft text-danger' : 'rounded-bl-md border border-line bg-paper text-ink'
                   }`}>
-                    {msg.content}
-                  </span>
+                    {m.content}
+                    {m.role === 'assistant' && i > 0 && !m.error && (
+                      <p className="mt-2 flex items-center gap-1 border-t border-line pt-1.5 text-[10px] text-violet-300"><Sparkles className="h-3 w-3" /> AI suggestion, not a confirmed decision</p>
+                    )}
+                  </div>
                 </div>
               ))}
               {loading && (
-                <p className="text-xs text-ink-soft font-mono">The assistant is thinking...</p>
+                <div className="flex justify-start">
+                  <div className="flex gap-1 rounded-2xl rounded-bl-md border border-line bg-paper px-3.5 py-3" aria-label="The assistant is typing">
+                    {[0, 1, 2].map((d) => (
+                      <motion.span key={d} className="h-1.5 w-1.5 rounded-full bg-ink-soft" animate={{ opacity: [0.3, 1, 0.3] }} transition={{ duration: 1, repeat: Infinity, delay: d * 0.2 }} />
+                    ))}
+                  </div>
+                </div>
               )}
-              <div ref={messagesEndRef} />
+              {onlyGreeting && (
+                <div className="space-y-2 pt-1">
+                  <p className="text-[11px] uppercase tracking-wide text-ink-soft">Try asking</p>
+                  {SUGGESTIONS.map((s) => (
+                    <button key={s} type="button" onClick={() => send(s)} className="block w-full rounded-lg border border-line px-3 py-2 text-left text-xs text-ink-soft hover:border-accent/50 hover:text-ink cursor-pointer">
+                      {s}
+                    </button>
+                  ))}
+                  <Link to="/ai" onClick={() => setOpen(false)} className="block pt-1 text-xs text-accent hover:underline">See AI insights for your evidence and controls →</Link>
+                </div>
+              )}
+              <div ref={endRef} />
             </div>
 
-            <form onSubmit={handleSend} className="p-3 border-t border-line flex gap-2">
-              <input
-                type="text"
+            <form onSubmit={(e) => { e.preventDefault(); send(input) }} className="flex items-end gap-2 border-t border-line p-3">
+              <textarea
+                ref={inputRef}
+                rows={1}
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                placeholder="Ask your question..."
-                className="flex-1 px-3 py-2 border border-line focus:border-accent outline-none text-sm bg-paper"
+                onKeyDown={onKeyDown}
+                placeholder="Ask a question…"
+                aria-label="Your question"
+                className="max-h-28 flex-1 resize-none border border-line px-3 py-2 text-sm text-ink outline-none focus:border-accent"
               />
-              <button
-                type="submit"
-                disabled={loading}
-                className="px-3 py-2 bg-ink text-white text-sm cursor-pointer hover:bg-[#0d1729] disabled:opacity-50"
-              >
-                →
+              <button type="submit" disabled={loading || !input.trim()} aria-label="Send"
+                className="flex h-9 w-9 items-center justify-center rounded-lg bg-accent text-[#07111f] disabled:opacity-40 cursor-pointer disabled:cursor-default">
+                <Send className="h-4 w-4" />
               </button>
             </form>
           </motion.div>

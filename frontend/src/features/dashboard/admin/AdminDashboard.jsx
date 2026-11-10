@@ -30,7 +30,7 @@ function AdminDashboard() {
             subtitle="Compliance, approvals and team progress for your organisation."
             actions={
               <>
-                <Link to="/evaluations"><Button><ClipboardCheck className="h-4 w-4" /> Start assessment</Button></Link>
+                <Link to="/assessments"><Button><ClipboardCheck className="h-4 w-4" /> Start assessment</Button></Link>
               </>
             }
           />
@@ -48,7 +48,7 @@ function AdminDashboard() {
           </div>
 
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-            <SectionCard title="Compliance by domain" subtitle="Lowest-scoring domains first" action={{ label: 'Assessments', to: '/evaluations' }} className="lg:col-span-2">
+            <SectionCard title="Compliance by theme" subtitle="ISO/IEC 27001:2022 Annex A, lowest first" action={{ label: 'Assessments', to: '/assessments' }} className="lg:col-span-2">
               <DomainCompliance domains={data.domainCompliance} />
             </SectionCard>
             <div className="space-y-4">
@@ -71,10 +71,10 @@ function AdminDashboard() {
           </div>
 
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-            <SectionCard title="Team workload" action={{ label: 'Manage users', to: '/utilisateurs' }}>
+            <SectionCard title="Team workload" action={{ label: 'Manage users', to: '/users' }}>
               <TeamWorkload members={data.team} />
             </SectionCard>
-            <SectionCard title="Recent activity" action={{ label: 'Audit log', to: '/journal-audit' }}>
+            <SectionCard title="Recent activity" action={{ label: 'Audit log', to: '/audit-log' }}>
               <ActivityFeed items={data.activity} />
             </SectionCard>
           </div>

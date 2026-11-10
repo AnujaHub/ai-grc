@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import Navbar from '../components/Navbar'
-import { getOrganisations, createOrganisation } from '../services/organisationService'
+import { getOrganisations, createOrganisation } from '../services/organizationService'
 import { estAdministrateur } from '../utils/permissions'
 
 function Organizations() {
@@ -101,7 +101,7 @@ function Organizations() {
                   </td>
                   <td className="px-4 py-3 text-right">
                     <button
-                      onClick={() => navigate(`/configuration-risque/${org.id}`)}
+                      onClick={() => navigate(`/risk-configuration/${org.id}`)}
                       className="text-xs font-medium text-accent hover:underline cursor-pointer"
                     >
                       Risk matrix

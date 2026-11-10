@@ -2,11 +2,13 @@ import { useState, useEffect, useCallback } from 'react'
 import { motion } from 'framer-motion'
 import Navbar from '../components/Navbar'
 import { getMonProfil, changerMotDePasse } from '../services/authService'
+import { displayLabel } from '../utils/displayLabels'
 
 const LIBELLE_ROLE = {
   super_admin: 'Super admin',
   administrateur: 'Administrateur',
   compliance_owner: 'Compliance officer',
+  responsable_conformite: 'Compliance officer',
   auditeur: 'Auditeur',
   manager: 'Manager',
 }
@@ -81,7 +83,7 @@ function Profile() {
             </div>
             <div>
               <p className="text-xs font-semibold uppercase tracking-wide text-ink-soft mb-1">Status</p>
-              <p className="text-ink text-sm capitalize">{profil.statut}</p>
+              <p className="text-ink text-sm">{displayLabel(profil.statut)}</p>
             </div>
             <div className="col-span-2">
               <p className="text-xs font-semibold uppercase tracking-wide text-ink-soft mb-1">Member since</p>
@@ -142,7 +144,7 @@ function Profile() {
               </button>
               {succes && (
                 <motion.span initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-accent text-sm font-medium">
-                  ✓ Password changed
+                  Password changed
                 </motion.span>
               )}
             </div>

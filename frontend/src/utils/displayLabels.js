@@ -21,6 +21,8 @@ const DISPLAY_LABELS = {
   'Non liée': 'Not linked',
   Actif: 'Active',
   Inactif: 'Inactive',
+  en_attente_approbation: 'Awaiting approval',
+  actif: 'Active',
 }
 
 export const displayLabel = (value) => DISPLAY_LABELS[value] || value

@@ -17,10 +17,12 @@ export function dueLabel(iso) {
   return `Due in ${days} days`
 }
 
+export const REMINDER_DAYS = 10
+
 export const dueTone = (iso) => {
   const days = daysUntil(iso)
   if (days < 0) return 'text-danger'
-  if (days <= 2) return 'text-warning'
+  if (days <= REMINDER_DAYS) return 'text-warning'
   return 'text-ink-soft'
 }
 

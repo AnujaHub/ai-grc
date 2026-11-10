@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import Navbar from '../components/Navbar'
-import { getSystemesIA, createSystemeIA } from '../services/systemeIaService'
-import { getOrganisations } from '../services/organisationService'
+import { getSystemesIA, createSystemeIA } from '../services/aiSystemService'
+import { getOrganisations } from '../services/organizationService'
 import { peutEditer } from '../utils/permissions'
 import { displayLabel } from '../utils/displayLabels'
 

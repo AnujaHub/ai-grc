@@ -20,8 +20,6 @@ export const uploadPreuve = async (reponseId, file, description) => {
 }
 
 export const telechargerPreuve = (preuveId) => {
-  // Open the download in a new tab. A token cannot be passed in the URL here,
-  // so use a direct link that the browser validates through a normal request.
   return `http://127.0.0.1:8000/preuves/${preuveId}/telecharger`
 }
 

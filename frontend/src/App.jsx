@@ -1,19 +1,29 @@
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom'
-import Organizations from './pages/Organisations'
-import AISystems from './pages/SystemesIA'
-import Evaluations from './pages/Evaluations'
-import EvaluationDetail from './pages/EvaluationDetail'
-import Risks from './pages/Risques'
-import RiskDetail from './pages/RisqueDetail'
+import Organizations from './pages/Organizations'
+import AISystems from './pages/AISystems'
+import Assessments from './pages/Assessments'
+import AssessmentDetail from './pages/AssessmentDetail'
+import Risks from './pages/Risks'
+import RiskDetail from './pages/RiskDetail'
+import RiskConfiguration from './pages/RiskConfiguration'
+import Profile from './pages/Profile'
 import ProtectedRoute from './components/ProtectedRoute'
-import RiskConfiguration from './pages/ConfigurationRisque'
+import RoleRoute from './components/RoleRoute'
 import AssistantChatbot from './components/AssistantChatbot'
-import Reports from './pages/Rapports'
-import Users from './pages/Utilisateurs'
-import AuditLog from './pages/JournalAudit'
-import Profile from './pages/Profil'
+import { Toaster } from './components/ui'
+import { ROLES } from './utils/roles'
 import { authRoutes, AUTH_PATHS } from './features/auth/routes'
 import { dashboardRoutes } from './features/dashboard/routes'
+import { controlRoutes } from './features/controls/routes'
+import { evidenceRoutes } from './features/evidence/routes'
+import { grcPlanRoutes } from './features/grc-plan/routes'
+import { userRoutes } from './features/users/routes'
+import { approvalRoutes } from './features/approvals/routes'
+import { notificationRoutes } from './features/notifications/routes'
+import { aiRoutes } from './features/ai/routes'
+import { reportRoutes } from './features/reports/routes'
+
+const MANAGERS = [ROLES.SUPER_ADMIN, ROLES.ADMIN]
 
 function ChatbotOutsideAuth() {
   const { pathname } = useLocation()
@@ -25,21 +35,26 @@ function App() {
     <BrowserRouter>
       <Routes>
         {authRoutes}
-
         {dashboardRoutes}
-        <Route path="/organisations" element={<ProtectedRoute><Organizations /></ProtectedRoute>} />
-        <Route path="/systemes-ia" element={<ProtectedRoute><AISystems /></ProtectedRoute>} />
-        <Route path="/evaluations" element={<ProtectedRoute><Evaluations /></ProtectedRoute>} />
-        <Route path="/evaluations/:evaluationId" element={<ProtectedRoute><EvaluationDetail /></ProtectedRoute>} />
-        <Route path="/risques" element={<ProtectedRoute><Risks /></ProtectedRoute>} />
-        <Route path="/risques/:risqueId" element={<ProtectedRoute><RiskDetail /></ProtectedRoute>} />
-        <Route path="/configuration-risque/:organisationId" element={<ProtectedRoute><RiskConfiguration /></ProtectedRoute>} />
-        <Route path="/rapports" element={<ProtectedRoute><Reports /></ProtectedRoute>} />
-        <Route path="/utilisateurs" element={<ProtectedRoute><Users /></ProtectedRoute>} />
-        <Route path="/journal-audit" element={<ProtectedRoute><AuditLog /></ProtectedRoute>} />
-        <Route path="/profil" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+        {controlRoutes}
+        {evidenceRoutes}
+        {grcPlanRoutes}
+        {userRoutes}
+        {approvalRoutes}
+        {notificationRoutes}
+        {aiRoutes}
+        {reportRoutes}
+        <Route path="/organizations" element={<RoleRoute allow={MANAGERS}><Organizations /></RoleRoute>} />
+        <Route path="/ai-systems" element={<ProtectedRoute><AISystems /></ProtectedRoute>} />
+        <Route path="/assessments" element={<ProtectedRoute><Assessments /></ProtectedRoute>} />
+        <Route path="/assessments/:evaluationId" element={<ProtectedRoute><AssessmentDetail /></ProtectedRoute>} />
+        <Route path="/risks" element={<ProtectedRoute><Risks /></ProtectedRoute>} />
+        <Route path="/risks/:risqueId" element={<ProtectedRoute><RiskDetail /></ProtectedRoute>} />
+        <Route path="/risk-configuration/:organisationId" element={<RoleRoute allow={MANAGERS}><RiskConfiguration /></RoleRoute>} />
+        <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
       </Routes>
       <ChatbotOutsideAuth />
+      <Toaster />
     </BrowserRouter>
   )
 }

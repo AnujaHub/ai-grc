@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import Navbar from '../components/Navbar'
-import { getConfigurationRisque, updateConfigurationRisque } from '../services/configurationRisqueService'
+import { getConfigurationRisque, updateConfigurationRisque } from '../services/riskConfigurationService'
 import { displayLabel } from '../utils/displayLabels'
 
 function RiskConfiguration() {
@@ -65,7 +65,7 @@ function RiskConfiguration() {
     <div className="min-h-screen bg-paper">
       <Navbar />
       <div className="max-w-2xl mx-auto px-6 py-8">
-        <button onClick={() => navigate('/organisations')} className="text-sm text-ink-soft hover:text-ink mb-6 cursor-pointer">
+        <button onClick={() => navigate('/organizations')} className="text-sm text-ink-soft hover:text-ink mb-6 cursor-pointer">
           ← Back to organizations
         </button>
 
@@ -132,7 +132,7 @@ function RiskConfiguration() {
                   animate={{ opacity: 1 }}
                   className="text-accent text-sm font-medium"
                 >
-                  ✓ Configuration saved
+                  Configuration saved
                 </motion.span>
               )}
             </div>

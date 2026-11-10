@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import Navbar from '../components/Navbar'
-import { getRisqueDetail, createActionCorrective, updateStatutAction } from '../services/risqueService'
+import { getRisqueDetail, createActionCorrective, updateStatutAction } from '../services/riskService'
 import { displayLabel } from '../utils/displayLabels'
 
 const COULEUR_NIVEAU = {
@@ -61,7 +61,7 @@ function RiskDetail() {
     <div className="min-h-screen bg-paper">
       <Navbar />
       <div className="max-w-3xl mx-auto px-6 py-8">
-        <button onClick={() => navigate('/risques')} className="text-sm text-ink-soft hover:text-ink mb-6 cursor-pointer">
+        <button onClick={() => navigate('/risks')} className="text-sm text-ink-soft hover:text-ink mb-6 cursor-pointer">
           ← Back to risks
         </button>
 

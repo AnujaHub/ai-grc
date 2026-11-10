@@ -2,10 +2,10 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import Navbar from '../components/Navbar'
-import { getRisques, createRisque, updateStatutRisque } from '../services/risqueService'
+import { getRisques, createRisque, updateStatutRisque } from '../services/riskService'
 import { getEvaluations } from '../services/evaluationService'
-import { getSystemesIA } from '../services/systemeIaService'
-import { getOrganisations } from '../services/organisationService'
+import { getSystemesIA } from '../services/aiSystemService'
+import { getOrganisations } from '../services/organizationService'
 import { peutEditer } from '../utils/permissions'
 import { displayLabel } from '../utils/displayLabels'
 
@@ -79,7 +79,7 @@ function Risks() {
     if (!evaluation) return 'Unknown'
     if (evaluation.evaluation_type === 'Organisation') {
       const org = getOrganisationParId(evaluation.organisation_id)
-      return org ? `🏢 ${org.nom} (governance)` : 'Unknown organization'
+      return org ? `${org.nom} (governance)` : 'Unknown organization'
     }
     const systeme = getSystemeParId(evaluation.systeme_ia_id)
     return systeme ? systeme.nom : 'Unknown system'
@@ -208,7 +208,7 @@ function Risks() {
                         </select>
                       </td>
                       <td className="px-4 py-2.5 text-right">
-                        <button onClick={() => navigate(`/risques/${r.id}`)} className="text-xs font-medium text-accent hover:underline cursor-pointer">
+                        <button onClick={() => navigate(`/risks/${r.id}`)} className="text-xs font-medium text-accent hover:underline cursor-pointer">
                           Actions →
                         </button>
                       </td>

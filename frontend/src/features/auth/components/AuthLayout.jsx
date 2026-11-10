@@ -3,7 +3,7 @@ import { ShieldCheck, ClipboardCheck, FileSearch, Activity } from 'lucide-react'
 import Logo from '../../../components/Logo'
 
 const HIGHLIGHTS = [
-  { Icon: ClipboardCheck, title: 'ISO/IEC 42001 assessments', text: 'Track all 93 controls in one place.' },
+  { Icon: ClipboardCheck, title: 'ISO/IEC 27001 controls', text: 'Track all 93 Annex A controls in one place.' },
   { Icon: FileSearch, title: 'Evidence management', text: 'Link documents and proofs to controls.' },
   { Icon: Activity, title: 'Risk & GRC planning', text: 'Follow tasks, deadlines and milestones.' },
 ]
@@ -44,7 +44,7 @@ function AuthLayout({ children }) {
           </ul>
         </div>
 
-        <p className="font-mono text-xs text-ink-soft">© {new Date().getFullYear()} Nova GRC · ISO/IEC 42001</p>
+        <p className="font-mono text-xs text-ink-soft">© {new Date().getFullYear()} Nova GRC · AI governance, risk & compliance</p>
       </aside>
 
       <main className="flex flex-1 items-center justify-center px-4 py-10 sm:px-8">
