@@ -36,7 +36,7 @@ function Risks() {
 
   useEffect(() => { chargerDonnees() }, [])
 
-  const chargerDonnees = async () => {
+  async function chargerDonnees() {
     try {
       const [risquesData, evalsData, systemesData, orgsData] = await Promise.all([
         getRisques(), getEvaluations(), getSystemesIA(), getOrganisations(),
@@ -45,7 +45,7 @@ function Risks() {
       setEvaluations(evalsData)
       setSystemes(systemesData)
       setOrganizations(orgsData)
-    } catch (err) {
+    } catch {
       setError('Unable to load data')
     }
   }
@@ -56,7 +56,7 @@ function Risks() {
       await createRisque({ evaluation_id: evaluationId, titre, description, categorie, impact, probabilite })
       setTitre(''); setDescription(''); setCategorie(''); setImpact('Moyen'); setProbabilite('Moyen'); setEvaluationId('')
       chargerDonnees()
-    } catch (err) {
+    } catch {
       setError('Risk creation failed')
     }
   }
@@ -65,7 +65,7 @@ function Risks() {
     try {
       await updateStatutRisque(risqueId, nouveauStatut)
       chargerDonnees()
-    } catch (err) {
+    } catch {
       alert('Status update failed')
     }
   }

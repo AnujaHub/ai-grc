@@ -23,6 +23,8 @@ export const getMonProfil = async () => {
   return response.data
 }
 
+export const getGoogleLoginUrl = () => `${api.defaults.baseURL}/auth/google/login`
+
 export const changerMotDePasse = async (ancienMotDePasse, nouveauMotDePasse) => {
   const response = await api.post('/auth/changer-mot-de-passe', {
     ancien_mot_de_passe: ancienMotDePasse,

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { motion } from 'framer-motion'
 import Navbar from '../components/Navbar'
 import { getRapports, telechargerRapport, visualiserRapport } from '../services/rapportService'
@@ -14,9 +14,7 @@ function Reports() {
   const [error, setError] = useState('')
   const [telechargementEnCours, setTelechargementEnCours] = useState(null)
 
-  useEffect(() => { chargerDonnees() }, [])
-
-  const chargerDonnees = async () => {
+  const chargerDonnees = useCallback(async () => {
     try {
       const [rapportsData, evalsData, systemesData, orgsData] = await Promise.all([
         getRapports(), getEvaluations(), getSystemesIA(), getOrganisations(),
@@ -25,16 +23,18 @@ function Reports() {
       setEvaluations(evalsData)
       setSystemes(systemesData)
       setOrganizations(orgsData)
-    } catch (err) {
+    } catch {
       setError('Unable to load reports')
     }
-  }
+  }, [])
+
+  useEffect(() => { queueMicrotask(() => { void chargerDonnees() }) }, [chargerDonnees])
 
   const handleTelecharger = async (rapportId) => {
     setTelechargementEnCours(rapportId)
     try {
       await telechargerRapport(rapportId)
-    } catch (err) {
+    } catch {
       alert('Download failed')
     } finally {
       setTelechargementEnCours(null)
@@ -44,7 +44,7 @@ function Reports() {
   const handleVisualiser = async (rapportId) => {
     try {
       await visualiserRapport(rapportId)
-    } catch (err) {
+    } catch {
       alert('Unable to open the report')
     }
   }

@@ -1,9 +1,18 @@
+import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from starlette.middleware.sessions import SessionMiddleware
 from database import engine
 from routers import organisation, auth, systeme_ia, referentiel, evaluation, risque, preuve, dashboard, configuration_risque, assistant, rapport, gestion_utilisateurs, journal_audit
 
 app = FastAPI(title="GRC Platform - ISO/IEC 42001")
+
+app.add_middleware(
+    SessionMiddleware,
+    secret_key=os.getenv("SESSION_SECRET", "change-this-development-secret"),
+    same_site="lax",
+    https_only=False,
+)
 
 app.add_middleware(
     CORSMiddleware,

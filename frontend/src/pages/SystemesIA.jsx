@@ -26,12 +26,12 @@ function AISystems() {
 
   useEffect(() => { chargerDonnees() }, [])
 
-  const chargerDonnees = async () => {
+  async function chargerDonnees() {
     try {
       const [systemesData, orgsData] = await Promise.all([getSystemesIA(), getOrganisations()])
       setSystemes(systemesData)
       setOrganizations(orgsData)
-    } catch (err) {
+    } catch {
       setError('Unable to load data')
     }
   }
@@ -48,7 +48,7 @@ function AISystems() {
       setNom(''); setDescription(''); setProprietaire('')
       setDomaineUtilisation(''); setNiveauCriticite('Moyen'); setOrganisationId('')
       chargerDonnees()
-    } catch (err) {
+    } catch {
       setError('AI system creation failed')
     }
   }

@@ -1,13 +1,88 @@
-from fastapi import APIRouter, Depends, HTTPException
+import os
+import secrets
+from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi.responses import RedirectResponse
+from authlib.integrations.starlette_client import OAuth
+from authlib.integrations.base_client.errors import OAuthError
 from sqlalchemy.orm import Session
 from database import get_db
 from models.utilisateur import User
 from schemas.utilisateur import UserCreate, UserOut, UserLogin
-from security import hash_password, verify_password, create_access_token
 from security import hash_password, verify_password, create_access_token, get_current_user
 
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
+
+oauth = OAuth()
+oauth.register(
+    name="google",
+    client_id=os.getenv("GOOGLE_CLIENT_ID"),
+    client_secret=os.getenv("GOOGLE_CLIENT_SECRET"),
+    server_metadata_url="https://accounts.google.com/.well-known/openid-configuration",
+    client_kwargs={"scope": "openid email profile"},
+)
+
+FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:5173")
+GOOGLE_REDIRECT_URI = os.getenv(
+    "GOOGLE_REDIRECT_URI",
+    "http://127.0.0.1:8000/auth/google/callback",
+)
+
+
+@router.get("/google/login")
+async def google_login(request: Request):
+    if not os.getenv("GOOGLE_CLIENT_ID") or not os.getenv("GOOGLE_CLIENT_SECRET"):
+        raise HTTPException(status_code=503, detail="Google authentication is not configured")
+    return await oauth.google.authorize_redirect(
+        request,
+        GOOGLE_REDIRECT_URI,
+    )
+
+
+@router.get("/google/callback")
+async def google_callback(request: Request, db: Session = Depends(get_db)):
+    try:
+        token = await oauth.google.authorize_access_token(request)
+        google_user = token.get("userinfo")
+        if not google_user:
+            google_user = await oauth.google.userinfo(token=token)
+    except OAuthError as exc:
+        raise HTTPException(status_code=401, detail="Google authentication failed") from exc
+
+    email = google_user.get("email")
+    google_sub = google_user.get("sub")
+    if not email or not google_sub or not google_user.get("email_verified", False):
+        raise HTTPException(status_code=400, detail="Google account email is not verified")
+
+    user = db.query(User).filter(User.google_sub == google_sub).first()
+    if not user:
+        user = db.query(User).filter(User.email == email).first()
+
+    if user:
+        if user.google_sub != google_sub:
+            user.google_sub = google_sub
+            db.commit()
+            db.refresh(user)
+    else:
+        user = User(
+            nom=google_user.get("family_name") or "Google",
+            prenom=google_user.get("given_name") or "User",
+            email=email,
+            mot_de_passe=hash_password(secrets.token_urlsafe(32)),
+            google_sub=google_sub,
+            job_title="Other",
+            role="responsable_conformite",
+            statut="en_attente_approbation",
+        )
+        db.add(user)
+        db.commit()
+        db.refresh(user)
+
+    access_token = create_access_token(data={"sub": str(user.id), "role": user.role})
+    return RedirectResponse(
+        f"{FRONTEND_URL}/auth/google/callback#access_token={access_token}",
+        status_code=303,
+    )
 
 # Register a new user
 @router.post("/register", response_model=UserOut)
@@ -22,6 +97,7 @@ def register(user: UserCreate, db: Session = Depends(get_db)):
         prenom=user.prenom,
         email=user.email,
         mot_de_passe=hash_password(user.mot_de_passe),
+        job_title=user.job_title,
         role=user.role,
         organisation_id=user.organisation_id
     )

@@ -63,6 +63,25 @@ python create_tables.py
 python seed_referentiel.py
 ```
 
+For an existing database, apply the Google-auth columns before starting the API:
+
+```powershell
+psql -d grc_platform -f migrations\001_google_auth.sql
+```
+
+Configure Google OAuth in `backend\.env`:
+
+```env
+GOOGLE_CLIENT_ID=your-client-id
+GOOGLE_CLIENT_SECRET=your-client-secret
+GOOGLE_REDIRECT_URI=http://127.0.0.1:8000/auth/google/callback
+FRONTEND_URL=http://localhost:5173
+SESSION_SECRET=generate-a-long-random-secret
+```
+
+The Google client must use `http://localhost:5173` as an authorized JavaScript
+origin and `http://127.0.0.1:8000/auth/google/callback` as an authorized redirect URI.
+
 Start the backend:
 
 ```powershell

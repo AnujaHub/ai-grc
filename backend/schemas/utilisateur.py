@@ -9,6 +9,7 @@ class UserCreate(BaseModel):
     prenom: str
     email: EmailStr
     mot_de_passe: str
+    job_title: str
     role: Optional[str] = "responsable_conformite"
     organisation_id: Optional[UUID] = None
 
@@ -24,6 +25,7 @@ class UserOut(BaseModel):
     prenom: str
     email: str
     role: str
+    job_title: Optional[str] = None
     organisation_id: Optional[UUID] = None
     statut: str
     creation_date: datetime

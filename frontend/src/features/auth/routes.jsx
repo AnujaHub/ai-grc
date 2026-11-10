@@ -1,5 +1,6 @@
 import { Route } from 'react-router-dom'
 import LoginPage from './login/LoginPage'
+import GoogleCallbackPage from './login/GoogleCallbackPage'
 import RegisterPage from './register/RegisterPage'
 import VerifyOtpPage from './register/VerifyOtpPage'
 import ApprovalPendingPage from './register/ApprovalPendingPage'
@@ -17,11 +18,13 @@ export const AUTH_PATHS = [
   '/reset-password',
   '/mfa-verify',
   '/mfa-setup',
+  '/auth/google/callback',
 ]
 
 export const authRoutes = (
   <>
     <Route path="/" element={<LoginPage />} />
+    <Route path="/auth/google/callback" element={<GoogleCallbackPage />} />
     <Route path="/register" element={<RegisterPage />} />
     <Route path="/verify-otp" element={<VerifyOtpPage />} />
     <Route path="/approval-pending" element={<ApprovalPendingPage />} />

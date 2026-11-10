@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import Navbar from '../components/Navbar'
@@ -34,9 +34,7 @@ function EvaluationDetail() {
   const [genererationRapport, setGenerationRapport] = useState(false)
   const authorized = peutEditer()
 
-  useEffect(() => { chargerDonnees() }, [evaluationId])
-
-  const chargerDonnees = async () => {
+  const chargerDonnees = useCallback(async () => {
     try {
       const evalData = await getEvaluationDetail(evaluationId)
       const chapitresData = await getChapitres(evalData.referentiel_id)
@@ -49,11 +47,13 @@ function EvaluationDetail() {
       })
       setReponses(reponsesInitiales)
       setLoading(false)
-    } catch (err) {
+    } catch {
       setError('Unable to load the assessment')
       setLoading(false)
     }
-  }
+  }, [evaluationId])
+
+  useEffect(() => { queueMicrotask(() => { void chargerDonnees() }) }, [chargerDonnees])
 
   const handleChangeReponse = (clauseId, champ, valeur) => {
     setReponses((prev) => ({ ...prev, [clauseId]: { ...prev[clauseId], [champ]: valeur } }))
@@ -65,7 +65,7 @@ function EvaluationDetail() {
     try {
       await repondreAClause(evaluationId, clauseId, donnee.reponse, donnee.commentaire || '')
       await chargerDonnees()
-    } catch (err) {
+    } catch {
       alert('Save failed')
     }
   }
@@ -74,7 +74,7 @@ function EvaluationDetail() {
     try {
       const evalFinalisee = await finaliserEvaluation(evaluationId)
       setEvaluation(evalFinalisee)
-    } catch (err) {
+    } catch {
       alert('Completion failed')
     }
   }
@@ -84,7 +84,7 @@ function EvaluationDetail() {
     try {
       const resultat = await genererRisquesIA(evaluationId)
       alert(resultat.message)
-    } catch (err) {
+    } catch {
       alert('AI risk generation failed')
     } finally {
       setGenerationIA(false)

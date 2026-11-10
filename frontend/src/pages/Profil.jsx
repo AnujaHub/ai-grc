@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { motion } from 'framer-motion'
 import Navbar from '../components/Navbar'
 import { getMonProfil, changerMotDePasse } from '../services/authService'
@@ -19,16 +19,16 @@ function Profile() {
   const [error, setError] = useState('')
   const [succes, setSucces] = useState(false)
 
-  useEffect(() => { chargerProfil() }, [])
-
-  const chargerProfil = async () => {
+  const chargerProfil = useCallback(async () => {
     try {
       const data = await getMonProfil()
       setProfil(data)
-    } catch (err) {
+    } catch {
       setError('Unable to load profile')
     }
-  }
+  }, [])
+
+  useEffect(() => { queueMicrotask(() => { void chargerProfil() }) }, [chargerProfil])
 
   const handleSubmit = async (e) => {
     e.preventDefault()

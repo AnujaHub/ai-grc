@@ -15,19 +15,22 @@ function RiskConfiguration() {
   const [loading, setLoading] = useState(true)
   const [confirmation, setConfirmation] = useState(false)
 
-  useEffect(() => { chargerConfiguration() }, [organisationId])
-
-  const chargerConfiguration = async () => {
-    try {
-      const data = await getConfigurationRisque(organisationId)
-      setImpactLevels(data.impact_levels)
-      setProbabilityLevels(data.probability_levels)
-      setLoading(false)
-    } catch (err) {
-      setError('Unable to load risk configuration')
-      setLoading(false)
-    }
-  }
+  useEffect(() => {
+    let active = true
+    getConfigurationRisque(organisationId)
+      .then((data) => {
+        if (!active) return
+        setImpactLevels(data.impact_levels)
+        setProbabilityLevels(data.probability_levels)
+        setLoading(false)
+      })
+      .catch(() => {
+        if (!active) return
+        setError('Unable to load risk configuration')
+        setLoading(false)
+      })
+    return () => { active = false }
+  }, [organisationId])
 
   const appliquerPreset = (nombreNiveaux) => {
     const presets = {
@@ -51,7 +54,7 @@ function RiskConfiguration() {
       await updateConfigurationRisque(organisationId, impactLevels, probabilityLevels)
       setConfirmation(true)
       setTimeout(() => setConfirmation(false), 2500)
-    } catch (err) {
+    } catch {
       alert('Save failed')
     }
   }

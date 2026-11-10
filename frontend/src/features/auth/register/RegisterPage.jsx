@@ -8,7 +8,7 @@ import AuthHeader from '../components/AuthHeader'
 import PasswordStrength from '../components/PasswordStrength'
 import { validateRegister } from '../utils/validation'
 import { registerUser } from '../services/authMockService'
-
+import { JOB_TITLE_OPTIONS } from '../constants'
 const EMPTY_FORM = {
   firstName: '',
   lastName: '',
@@ -88,8 +88,33 @@ function RegisterPage() {
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <TextField label="Organisation" icon={Building2} autoComplete="organization" placeholder="Acme Corp"
               value={form.organisation} onChange={update('organisation')} error={errors.organisation} />
-            <TextField label="Job title (optional)" icon={Briefcase} autoComplete="organization-title"
-              placeholder="Compliance officer" value={form.jobTitle} onChange={update('jobTitle')} />
+            <div>
+              <label htmlFor="job-title"
+                className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-ink-soft">
+                Job title
+              </label>
+              <div className="relative">
+                <Briefcase className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-soft"
+                  aria-hidden="true" />
+                <select
+                  id="job-title"
+                  value={form.jobTitle}
+                  onChange={update('jobTitle')}
+                  required
+                  aria-invalid={Boolean(errors.jobTitle)}
+                  className={[
+                    'w-full appearance-none border py-2.5 pl-9 pr-3 text-sm text-ink outline-none',
+                    errors.jobTitle ? 'border-danger focus:border-danger' : 'border-line focus:border-accent',
+                  ].join(' ')}
+                >
+                  <option value="">Select your job title</option>
+                  {JOB_TITLE_OPTIONS.map((title) => (
+                    <option key={title} value={title}>{title}</option>
+                  ))}
+                </select>
+              </div>
+              {errors.jobTitle && <p className="mt-1.5 text-xs text-danger">{errors.jobTitle}</p>}
+            </div>
           </div>
 
           <div>

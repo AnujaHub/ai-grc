@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import Navbar from '../components/Navbar'
@@ -24,16 +24,16 @@ function RiskDetail() {
   const [dateEcheance, setDateEcheance] = useState('')
   const [error, setError] = useState('')
 
-  useEffect(() => { chargerRisque() }, [risqueId])
-
-  const chargerRisque = async () => {
+  const chargerRisque = useCallback(async () => {
     try {
       const data = await getRisqueDetail(risqueId)
       setRisque(data)
-    } catch (err) {
+    } catch {
       setError('Unable to load the risk')
     }
-  }
+  }, [risqueId])
+
+  useEffect(() => { queueMicrotask(() => { void chargerRisque() }) }, [chargerRisque])
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -41,7 +41,7 @@ function RiskDetail() {
       await createActionCorrective(risqueId, { titre, description, due_date: dateEcheance || null })
       setTitre(''); setDescription(''); setDateEcheance('')
       chargerRisque()
-    } catch (err) {
+    } catch {
       alert('Corrective action creation failed')
     }
   }
@@ -50,7 +50,7 @@ function RiskDetail() {
     try {
       await updateStatutAction(actionId, nouveauStatut)
       chargerRisque()
-    } catch (err) {
+    } catch {
       alert('Status update failed')
     }
   }

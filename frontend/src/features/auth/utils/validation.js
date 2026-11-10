@@ -25,6 +25,7 @@ export function validateRegister(form) {
   else if (!isValidEmail(form.email)) errors.email = 'Enter a valid email address.'
   if (form.phone && !/^\+?[\d\s-]{7,15}$/.test(form.phone)) errors.phone = 'Enter a valid phone number.'
   if (!form.organisation.trim()) errors.organisation = 'Organisation is required.'
+  if (!form.jobTitle.trim()) errors.jobTitle = 'Job title is required.'
   if (!form.password) errors.password = 'Password is required.'
   else if (!isStrongPassword(form.password)) errors.password = 'Password does not meet all requirements.'
   if (form.confirmPassword !== form.password) errors.confirmPassword = 'Passwords do not match.'

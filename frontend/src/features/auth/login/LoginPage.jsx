@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { Mail, LogIn } from 'lucide-react'
-import { login } from '../../../services/authService'
+import { getGoogleLoginUrl, login } from '../../../services/authService'
 import { Alert, Button, PasswordField, TextField } from '../../../components/ui'
 import AuthLayout from '../components/AuthLayout'
 import AuthCard from '../components/AuthCard'
@@ -109,6 +109,24 @@ function LoginPage() {
           <Button type="submit" fullWidth loading={loading}>
             {!loading && <LogIn className="h-4 w-4" />}
             {loading ? 'Signing in…' : 'Sign in'}
+          </Button>
+
+          <div className="relative py-1">
+            <div className="absolute inset-0 flex items-center" aria-hidden="true">
+              <div className="w-full border-t border-line" />
+            </div>
+            <div className="relative flex justify-center">
+              <span className="bg-paper-dark px-3 text-xs text-ink-soft">or</span>
+            </div>
+          </div>
+
+          <Button
+            type="button"
+            variant="secondary"
+            fullWidth
+            onClick={() => { window.location.href = getGoogleLoginUrl() }}
+          >
+            Continue with Google
           </Button>
         </form>
       </AuthCard>

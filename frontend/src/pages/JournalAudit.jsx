@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { motion } from 'framer-motion'
 import Navbar from '../components/Navbar'
 import { getJournalAudit } from '../services/journalAuditService'
@@ -26,16 +26,16 @@ function AuditLog() {
   const [filtreType, setFiltreType] = useState('')
   const [error, setError] = useState('')
 
-  useEffect(() => { chargerJournal() }, [filtreType])
-
-  const chargerJournal = async () => {
+  const chargerJournal = useCallback(async () => {
     try {
       const data = await getJournalAudit(filtreType || null)
       setEntrees(data)
-    } catch (err) {
+    } catch {
       setError('Access denied — this page is restricted to administrators and auditors.')
     }
-  }
+  }, [filtreType])
+
+  useEffect(() => { queueMicrotask(() => { void chargerJournal() }) }, [chargerJournal])
 
   if (error) {
     return (

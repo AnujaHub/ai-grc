@@ -16,11 +16,11 @@ function Organizations() {
 
   useEffect(() => { loadOrganizations() }, [])
 
-  const loadOrganizations = async () => {
+  async function loadOrganizations() {
     try {
       const data = await getOrganisations()
       setOrganizations(data)
-    } catch (err) {
+    } catch {
       setError('Unable to load organizations')
     }
   }
@@ -31,7 +31,7 @@ function Organizations() {
       await createOrganisation(nom, secteur, pays)
       setNom(''); setSecteur(''); setPays('')
       loadOrganizations()
-    } catch (err) {
+    } catch {
       setError('Creation failed')
     }
   }

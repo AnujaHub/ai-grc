@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import Navbar from '../components/Navbar'
@@ -23,9 +23,7 @@ function Evaluations() {
   const navigate = useNavigate()
   const authorized = peutEditer()
 
-  useEffect(() => { chargerDonnees() }, [])
-
-  const chargerDonnees = async () => {
+  const chargerDonnees = useCallback(async () => {
     try {
       const [evalsData, systemesData, refsData, orgsData] = await Promise.all([
         getEvaluations(), getSystemesIA(), getReferentiels(), getOrganisations(),
@@ -34,10 +32,12 @@ function Evaluations() {
       setSystemes(systemesData)
       setReferentiels(refsData)
       setOrganizations(orgsData)
-    } catch (err) {
+    } catch {
       setError('Unable to load assessment data')
     }
-  }
+  }, [])
+
+  useEffect(() => { queueMicrotask(() => { void chargerDonnees() }) }, [chargerDonnees])
 
   const handleCreate = async (e) => {
     e.preventDefault()
@@ -48,7 +48,7 @@ function Evaluations() {
         typeEvaluation === 'Organisation' ? organisationId : null
       )
       navigate(`/evaluations/${nouvelleEval.id}`)
-    } catch (err) {
+    } catch {
       setError('Assessment creation failed')
     }
   }

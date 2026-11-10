@@ -1,0 +1,6 @@
+ALTER TABLE utilisateurs
+    ADD COLUMN IF NOT EXISTS google_sub VARCHAR(255) UNIQUE,
+    ADD COLUMN IF NOT EXISTS job_title VARCHAR(100);
+
+ALTER TABLE utilisateurs
+    ALTER COLUMN statut TYPE VARCHAR(30);

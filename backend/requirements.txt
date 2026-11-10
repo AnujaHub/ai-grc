@@ -29,3 +29,5 @@ reportlab
 pypdf
 python-multipart
 email-validator
+Authlib
+itsdangerous

@@ -24,12 +24,12 @@ function Users() {
 
   useEffect(() => { chargerDonnees() }, [])
 
-  const chargerDonnees = async () => {
+  async function chargerDonnees() {
     try {
       const [utilisateursData, orgsData] = await Promise.all([getUtilisateurs(), getOrganisations()])
       setUtilisateurs(utilisateursData)
       setOrganizations(orgsData)
-    } catch (err) {
+    } catch {
       setError('Access denied — this page is restricted to administrators.')
     }
   }
@@ -44,7 +44,7 @@ function Users() {
       setNom(''); setPrenom(''); setEmail(''); setMotDePasse('')
       setRole('responsable_conformite'); setOrganisationId('')
       chargerDonnees()
-    } catch (err) {
+    } catch {
       setError('Creation failed (the email may already be in use).')
     }
   }
@@ -53,7 +53,7 @@ function Users() {
     try {
       await modifierUtilisateur(utilisateurId, { role: nouveauRole })
       chargerDonnees()
-    } catch (err) {
+    } catch {
       alert('Role update failed')
     }
   }
@@ -62,7 +62,7 @@ function Users() {
     try {
       await modifierUtilisateur(utilisateurId, { statut: nouveauStatut })
       chargerDonnees()
-    } catch (err) {
+    } catch {
       alert('Status update failed')
     }
   }
