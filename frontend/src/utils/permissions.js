@@ -1,4 +1,3 @@
-// Roles allowed to create or modify content (aligned with backend RBAC).
 const ROLES_EDITION = ['super_admin', 'administrateur', 'responsable_conformite']
 
 export const peutEditer = () => {

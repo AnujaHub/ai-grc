@@ -21,5 +21,10 @@ export default function useDashboardData(loader) {
     setAttempt((n) => n + 1)
   }, [])
 
-  return { ...state, reload }
+  const setData = useCallback(
+    (updater) => setState((current) => ({ ...current, data: typeof updater === 'function' ? updater(current.data) : updater })),
+    [],
+  )
+
+  return { ...state, reload, setData }
 }

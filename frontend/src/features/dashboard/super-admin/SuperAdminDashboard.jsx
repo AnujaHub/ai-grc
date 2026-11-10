@@ -26,7 +26,7 @@ function SuperAdminDashboard() {
             subtitle="Platform-wide overview across all organisations."
             actions={
               <>
-                <Link to="/organisations"><Button><Building2 className="h-4 w-4" /> Add organisation</Button></Link>
+                <Link to="/organizations"><Button><Building2 className="h-4 w-4" /> Add organisation</Button></Link>
               </>
             }
           />
@@ -55,21 +55,21 @@ function SuperAdminDashboard() {
             <SectionCard title="Compliance by organisation" subtitle="Current score against the 93 controls" className="lg:col-span-2">
               <ComplianceByOrgChart data={data.complianceByOrganisation} />
             </SectionCard>
-            <SectionCard title="Users by role" action={{ label: 'Manage', to: '/utilisateurs' }}>
+            <SectionCard title="Users by role" action={{ label: 'Manage', to: '/users' }}>
               <DonutChart data={data.roleDistribution} centerLabel="users" />
             </SectionCard>
           </div>
 
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-            <SectionCard title="Pending registrations" subtitle="Approve or reject new accounts" action={{ label: 'View all', to: '/utilisateurs' }}>
+            <SectionCard title="Pending registrations" subtitle="Approve or reject new accounts" action={{ label: 'View all', to: '/users' }}>
               <PendingRegistrations items={data.pendingRegistrations} />
             </SectionCard>
-            <SectionCard title="Organisations" action={{ label: 'View all', to: '/organisations' }} className="lg:col-span-2">
+            <SectionCard title="Organisations" action={{ label: 'View all', to: '/organizations' }} className="lg:col-span-2">
               <OrganisationsTable items={data.organisations} />
             </SectionCard>
           </div>
 
-          <SectionCard title="Recent platform activity" action={{ label: 'Audit log', to: '/journal-audit' }}>
+          <SectionCard title="Recent platform activity" action={{ label: 'Audit log', to: '/audit-log' }}>
             <ActivityFeed items={data.activity} />
           </SectionCard>
         </>

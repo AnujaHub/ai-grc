@@ -74,7 +74,7 @@ function UserDashboard() {
             </SectionCard>
           </div>
 
-          <SectionCard title={isAuditor ? 'Controls in audit scope' : 'My assigned controls'} action={{ label: 'Assessments', to: '/evaluations' }}>
+          <SectionCard title={isAuditor ? 'Controls in audit scope' : 'My assigned controls'} action={{ label: 'Assessments', to: '/assessments' }}>
             <MyControls controls={data.controls} />
           </SectionCard>
         </>

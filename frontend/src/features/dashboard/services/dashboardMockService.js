@@ -11,31 +11,9 @@ const daysFromNow = (days, hours = 0) => {
 
 export const TOTAL_CONTROLS = 93
 
-export const CONTROL_DOMAINS = [
-  'AI Governance Strategy and Principles',
-  'AI Governance Operating Model',
-  'AI Governance Policies, Standards and Procedures',
-  'AI Use Case Inventory and Classification',
-  'AI Risk Management',
-  'EU AI Act Readiness',
-  'Model Risk Management',
-  'AI Lifecycle Management',
-  'Data Governance for AI',
-  'Explainability and Transparency',
-  'Fairness, Bias and Non-Discrimination',
-  'Human Oversight and Accountability',
-  'Testing, Validation and Monitoring',
-  'Security, Robustness and Resilience',
-  'Third-Party and Vendor AI Risk',
-  'Generative AI Governance',
-  'Automated Decision-Making and Customer Impact',
-  'AI Incident Management',
-  'Documentation, Record-Keeping and Auditability',
-  'AI Training and Literacy',
-  'Metrics, Reporting and Continuous Improvement',
-]
+export const CONTROL_DOMAINS = ['Organizational controls', 'People controls', 'Physical controls', 'Technological controls']
 
-const DOMAIN_SCORES = [88, 81, 76, 69, 74, 52, 63, 71, 58, 47, 44, 79, 61, 83, 55, 39, 66, 72, 85, 91, 68]
+const DOMAIN_SCORES = [71, 81, 88, 59]
 
 export async function getSuperAdminDashboard() {
   await wait()
@@ -107,7 +85,7 @@ export async function getAdminDashboard() {
       { name: 'Not started', value: 9 },
       { name: 'Overdue', value: 5 },
     ],
-    domainCompliance: CONTROL_DOMAINS.map((name, i) => ({ code: String(i + 1), name, score: DOMAIN_SCORES[i] })),
+    domainCompliance: CONTROL_DOMAINS.map((name, i) => ({ code: `A.${i + 5}`, name, score: DOMAIN_SCORES[i] })),
     tasksByStatus: [
       { status: 'not_started', count: 6 },
       { status: 'in_progress', count: 11 },
@@ -116,18 +94,18 @@ export async function getAdminDashboard() {
       { status: 'completed', count: 38 },
     ],
     approvals: [
-      { id: 'p1', type: 'Evidence', title: 'Model validation report – Credit scoring v3', requestedBy: 'Priya Sharma', submittedAt: daysFromNow(0, -2), priority: 'high' },
-      { id: 'p2', type: 'Policy', title: 'Generative AI acceptable use policy v2.1', requestedBy: getFullName(getCurrentUser()) || 'Karan Singh', submittedAt: daysFromNow(-1), priority: 'medium' },
+      { id: 'p1', type: 'Evidence', title: 'Penetration test report – retest annex', requestedBy: 'Priya Sharma', submittedAt: daysFromNow(0, -2), priority: 'high' },
+      { id: 'p2', type: 'Policy', title: 'Acceptable use policy v2.1', requestedBy: getFullName(getCurrentUser()) || 'Karan Singh', submittedAt: daysFromNow(-1), priority: 'medium' },
       { id: 'p3', type: 'Registration', title: 'New user: Daniel Okafor (Risk team)', requestedBy: 'Self-registration', submittedAt: daysFromNow(-1, -6), priority: 'low' },
-      { id: 'p4', type: 'Risk acceptance', title: 'Residual bias risk – Loan pre-approval chatbot', requestedBy: 'Emma Wilson', submittedAt: daysFromNow(-2), priority: 'high' },
+      { id: 'p4', type: 'Risk acceptance', title: 'Residual risk – legacy VPN without MFA', requestedBy: 'Emma Wilson', submittedAt: daysFromNow(-2), priority: 'high' },
       { id: 'p5', type: 'Evidence', title: 'Vendor due-diligence questionnaire – OpenAI', requestedBy: 'Rahul Verma', submittedAt: daysFromNow(-3), priority: 'medium' },
     ],
     deadlines: [
-      { id: 'd1', title: 'Complete bias testing for credit model', owner: 'Priya Sharma', dueDate: daysFromNow(-2), status: 'overdue', type: 'Task' },
-      { id: 'd2', title: 'Control 6.3 – High-risk AI identification', owner: 'Karan Singh', dueDate: daysFromNow(1), status: 'in_progress', type: 'Control' },
+      { id: 'd1', title: 'Fix critical penetration test findings', owner: 'Priya Sharma', dueDate: daysFromNow(-2), status: 'overdue', type: 'Task' },
+      { id: 'd2', title: 'Control A.8.5 – Secure authentication', owner: 'Priya Sharma', dueDate: daysFromNow(1), status: 'in_progress', type: 'Control' },
       { id: 'd3', title: 'Upload incident response playbook', owner: 'Emma Wilson', dueDate: daysFromNow(3), status: 'not_started', type: 'Evidence' },
-      { id: 'd4', title: 'Q4 AI governance committee review', owner: 'Anita Desai', dueDate: daysFromNow(6), status: 'pending', type: 'Milestone' },
-      { id: 'd5', title: 'Vendor AI risk reassessment', owner: 'Rahul Verma', dueDate: daysFromNow(9), status: 'in_progress', type: 'Task' },
+      { id: 'd4', title: 'Q4 security steering committee review', owner: 'Anita Desai', dueDate: daysFromNow(6), status: 'pending', type: 'Milestone' },
+      { id: 'd5', title: 'Supplier risk reassessment', owner: 'Rahul Verma', dueDate: daysFromNow(9), status: 'in_progress', type: 'Task' },
     ],
     team: [
       { id: 'u1', name: 'Priya Sharma', role: 'Compliance officer', assignedControls: 14, openTasks: 6, overdue: 2 },
@@ -137,11 +115,11 @@ export async function getAdminDashboard() {
       { id: 'u5', name: 'Meera Iyer', role: 'Auditor', assignedControls: 6, openTasks: 2, overdue: 0 },
     ],
     activity: [
-      { id: 'a1', actor: 'Priya Sharma', action: 'uploaded evidence for', target: 'Control 13.2', type: 'evidence', at: daysFromNow(0, -1) },
-      { id: 'a2', actor: 'Karan Singh', action: 'marked as implemented', target: 'Control 3.1', type: 'control', at: daysFromNow(0, -3) },
-      { id: 'a3', actor: 'Emma Wilson', action: 'raised a new risk on', target: 'Fraud detection model', type: 'risk', at: daysFromNow(0, -6) },
-      { id: 'a4', actor: 'Anita Desai', action: 'approved policy', target: 'AI incident management v1.4', type: 'approval', at: daysFromNow(-1) },
-      { id: 'a5', actor: 'Meera Iyer', action: 'completed assessment of', target: 'Domain 19', type: 'control', at: daysFromNow(-2) },
+      { id: 'a1', actor: 'Priya Sharma', action: 'uploaded evidence for', target: 'Control A.8.13', type: 'evidence', at: daysFromNow(0, -1) },
+      { id: 'a2', actor: 'Karan Singh', action: 'marked as implemented', target: 'Control A.5.1', type: 'control', at: daysFromNow(0, -3) },
+      { id: 'a3', actor: 'Emma Wilson', action: 'raised a new risk on', target: 'Customer portal', type: 'risk', at: daysFromNow(0, -6) },
+      { id: 'a4', actor: 'Anita Desai', action: 'approved policy', target: 'Incident response procedure v1.4', type: 'approval', at: daysFromNow(-1) },
+      { id: 'a5', actor: 'Meera Iyer', action: 'completed assessment of', target: 'Physical controls (A.7)', type: 'control', at: daysFromNow(-2) },
     ],
   }
 }
@@ -157,24 +135,24 @@ export async function getUserDashboard() {
     },
     progress: 63,
     tasks: [
-      { id: 't1', title: 'Document data lineage for the credit scoring dataset', control: '9.2', priority: 'high', status: 'overdue', dueDate: daysFromNow(-1) },
-      { id: 't2', title: 'Run quarterly fairness metrics on loan model', control: '11.1', priority: 'high', status: 'in_progress', dueDate: daysFromNow(1) },
-      { id: 't3', title: 'Review explainability report with business owner', control: '10.3', priority: 'medium', status: 'not_started', dueDate: daysFromNow(3) },
-      { id: 't4', title: 'Update model card after retraining', control: '19.1', priority: 'medium', status: 'in_progress', dueDate: daysFromNow(5) },
-      { id: 't5', title: 'Complete AI literacy training module 3', control: '20.2', priority: 'low', status: 'not_started', dueDate: daysFromNow(12) },
+      { id: 't1', title: 'Classify the assets you own in the asset register', control: 'A.5.12', priority: 'high', status: 'overdue', dueDate: daysFromNow(-1) },
+      { id: 't2', title: 'Complete the quarterly user access review', control: 'A.5.18', priority: 'high', status: 'in_progress', dueDate: daysFromNow(1) },
+      { id: 't3', title: 'Review firewall rules with the network team', control: 'A.8.20', priority: 'medium', status: 'not_started', dueDate: daysFromNow(3) },
+      { id: 't4', title: 'Update the backup restore procedure', control: 'A.8.13', priority: 'medium', status: 'in_progress', dueDate: daysFromNow(5) },
+      { id: 't5', title: 'Complete the annual security awareness course', control: 'A.6.3', priority: 'low', status: 'not_started', dueDate: daysFromNow(12) },
     ],
     evidenceRequests: [
-      { id: 'e1', control: '9.2', controlName: 'Data quality and lineage', requestedBy: 'Anita Desai', dueDate: daysFromNow(2), note: 'Data lineage diagram and data quality checks' },
-      { id: 'e2', control: '13.1', controlName: 'Pre-deployment validation', requestedBy: 'Meera Iyer', dueDate: daysFromNow(4), note: 'Signed validation report for credit model v3' },
-      { id: 'e3', control: '11.1', controlName: 'Bias testing', requestedBy: 'Anita Desai', dueDate: daysFromNow(8), note: 'Fairness metrics export (Q4)' },
+      { id: 'e1', control: 'A.5.12', controlName: 'Classification of information', requestedBy: 'Anita Desai', dueDate: daysFromNow(2), note: 'Asset register export with classification column' },
+      { id: 'e2', control: 'A.8.13', controlName: 'Information backup', requestedBy: 'Meera Iyer', dueDate: daysFromNow(4), note: 'Latest successful restore test log' },
+      { id: 'e3', control: 'A.5.18', controlName: 'Access rights', requestedBy: 'Anita Desai', dueDate: daysFromNow(8), note: 'Signed quarterly access review (Q4)' },
     ],
     controls: [
-      { id: 'c1', code: '9.2', name: 'Data quality and lineage', domain: 'Data Governance for AI', status: 'overdue', progress: 40 },
-      { id: 'c2', code: '10.3', name: 'Explanations to customers', domain: 'Explainability and Transparency', status: 'in_progress', progress: 55 },
-      { id: 'c3', code: '11.1', name: 'Bias testing', domain: 'Fairness, Bias and Non-Discrimination', status: 'in_progress', progress: 70 },
-      { id: 'c4', code: '13.1', name: 'Pre-deployment validation', domain: 'Testing, Validation and Monitoring', status: 'implemented', progress: 100 },
-      { id: 'c5', code: '19.1', name: 'Model documentation', domain: 'Documentation, Record-Keeping and Auditability', status: 'implemented', progress: 100 },
-      { id: 'c6', code: '20.2', name: 'Role-based AI training', domain: 'AI Training and Literacy', status: 'implemented', progress: 100 },
+      { id: 'c1', code: 'A.5.12', name: 'Classification of information', domain: 'Organizational controls', status: 'overdue', progress: 40 },
+      { id: 'c2', code: 'A.5.18', name: 'Access rights', domain: 'Organizational controls', status: 'in_progress', progress: 55 },
+      { id: 'c3', code: 'A.8.20', name: 'Networks security', domain: 'Technological controls', status: 'in_progress', progress: 70 },
+      { id: 'c4', code: 'A.8.13', name: 'Information backup', domain: 'Technological controls', status: 'implemented', progress: 100 },
+      { id: 'c5', code: 'A.6.3', name: 'Information security awareness, education, and training', domain: 'People controls', status: 'implemented', progress: 100 },
+      { id: 'c6', code: 'A.8.15', name: 'Logging', domain: 'Technological controls', status: 'implemented', progress: 100 },
     ],
   }
 }
