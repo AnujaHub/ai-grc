@@ -35,6 +35,7 @@ def create_user(
         mot_de_passe=hash_password(data.mot_de_passe),
         role=data.role,
         organisation_id=data.organisation_id,
+        email_verified=True,
     )
     db.add(new_user)
     db.commit()

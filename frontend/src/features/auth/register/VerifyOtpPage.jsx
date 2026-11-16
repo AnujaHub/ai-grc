@@ -7,10 +7,10 @@ import AuthCard from '../components/AuthCard'
 import AuthHeader from '../components/AuthHeader'
 import OtpInput from '../components/OtpInput'
 import useCountdown, { formatSeconds } from './useCountdown'
-import { DEMO_CODE, sendOtp, verifyOtp } from '../services/authMockService'
+import { resendVerificationEmail, verifyEmail } from '../../../services/authService'
 
-const EXPIRY_SECONDS = 300
-const RESEND_COOLDOWN = 30
+const EXPIRY_SECONDS = 600
+const RESEND_COOLDOWN = 60
 
 function VerifyOtpPage() {
   const navigate = useNavigate()
@@ -32,8 +32,11 @@ function VerifyOtpPage() {
     setError('')
     setLoading(true)
     try {
-      await verifyOtp(email, code)
-      navigate('/approval-pending', { state: { email } })
+      await verifyEmail(email, code)
+      navigate('/', {
+        replace: true,
+        state: { notice: 'Email verified. You can now sign in.' },
+      })
     } catch (err) {
       setError(err.response?.data?.detail || 'Verification failed.')
     } finally {
@@ -44,12 +47,18 @@ function VerifyOtpPage() {
   const handleResend = async () => {
     setResending(true)
     setError('')
-    await sendOtp(email)
-    setResending(false)
-    setCode('')
-    setInfo('A new code has been sent.')
-    expiry.restart()
-    cooldown.restart()
+    setInfo('')
+    try {
+      await resendVerificationEmail(email)
+      setCode('')
+      setInfo('If this address still needs verification, a new code will be sent.')
+      expiry.restart()
+      cooldown.restart()
+    } catch (err) {
+      setError(err.response?.data?.detail || 'Could not resend the code. Please try again.')
+    } finally {
+      setResending(false)
+    }
   }
 
   return (
@@ -99,8 +108,6 @@ function VerifyOtpPage() {
               <span>Resend in <span className="font-mono text-ink">{cooldown.remaining}s</span></span>
             )}
           </div>
-
-          <p className="text-center font-mono text-[11px] text-ink-soft/70">Demo code: {DEMO_CODE}</p>
         </form>
       </AuthCard>
     </AuthLayout>

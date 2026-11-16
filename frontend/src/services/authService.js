@@ -8,13 +8,24 @@ export const login = async (email, password) => {
   return response.data
 }
 
-export const register = async (nom, prenom, email, password) => {
+export const registerUser = async (form) => {
   const response = await api.post('/auth/register', {
-    nom: nom,
-    prenom: prenom,
-    email: email,
-    mot_de_passe: password,
+    nom: form.lastName,
+    prenom: form.firstName,
+    email: form.email,
+    mot_de_passe: form.password,
+    job_title: form.jobTitle,
   })
+  return response.data
+}
+
+export const verifyEmail = async (email, code) => {
+  const response = await api.post('/auth/verify-email', { email, code })
+  return response.data
+}
+
+export const resendVerificationEmail = async (email) => {
+  const response = await api.post('/auth/resend-verification', { email })
   return response.data
 }
 

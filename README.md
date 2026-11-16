@@ -49,12 +49,23 @@ If PowerShell prevents virtual-environment activation, run this once:
 Set-ExecutionPolicy -Scope CurrentUser RemoteSigned
 ```
 
-Create `backend\.env` locally. Do not commit this file:
+Create `backend\.env` locally from `backend\.env.example`. Do not commit this
+file. Add the Brevo transactional email credentials and your database and Groq
+credentials:
 
 ```env
-DATABASE_URL=postgresql://postgres:YOUR_PASSWORD@localhost:5432/grc_platform
+DATABASE_URL=postgresql://postgres:your-password@localhost:5432/grc_platform
 GROQ_API_KEY=your_groq_api_key
+BREVO_API_KEY=your_brevo_api_key
+EMAIL_FROM_EMAIL=verified-sender@your-domain.com
+EMAIL_FROM_NAME=AI GRC Platform
+EMAIL_OTP_HASH_SECRET=at-least-32-random-characters
 ```
+
+Generate a strong OTP hash secret locally with
+`python -c "import secrets; print(secrets.token_hex(32))"`. Verify the sender
+address/domain in Brevo before sending. Email is sent through Brevo's
+transactional email API; no SMTP credentials or browser-side Brevo key are used.
 
 Create a PostgreSQL database named `grc_platform`, then initialize the tables and reference framework:
 
@@ -81,6 +92,11 @@ SESSION_SECRET=generate-a-long-random-secret
 
 The Google client must use `http://localhost:5173` as an authorized JavaScript
 origin and `http://127.0.0.1:8000/auth/google/callback` as an authorized redirect URI.
+
+Set `VITE_API_BASE_URL` in `frontend\.env` to the backend API URL when it
+differs from `http://127.0.0.1:8000`. Only the API base URL belongs in frontend
+configuration; keep Brevo and Google client secrets in backend environment
+variables.
 
 Start the backend:
 

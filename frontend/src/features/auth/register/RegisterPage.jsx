@@ -7,7 +7,7 @@ import AuthCard from '../components/AuthCard'
 import AuthHeader from '../components/AuthHeader'
 import PasswordStrength from '../components/PasswordStrength'
 import { validateRegister } from '../utils/validation'
-import { registerUser } from '../services/authMockService'
+import { registerUser } from '../../../services/authService'
 import { JOB_TITLE_OPTIONS } from '../constants'
 const EMPTY_FORM = {
   firstName: '',
@@ -66,7 +66,7 @@ function RegisterPage() {
       >
         <AuthHeader
           title="Create your account"
-          subtitle="An administrator will review your request before you can sign in."
+          subtitle="Verify your work email to finish creating your account."
         />
 
         <form onSubmit={handleSubmit} noValidate className="space-y-4">

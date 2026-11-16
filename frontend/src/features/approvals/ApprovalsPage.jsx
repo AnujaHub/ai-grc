@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { Hourglass, CheckCircle2, XCircle, Inbox, FileCheck2, ScrollText, UserPlus, ShieldAlert, KeyRound, FileWarning } from 'lucide-react'
+import { Hourglass, CheckCircle2, XCircle, Inbox, FileCheck2, ScrollText, ShieldAlert, KeyRound, FileWarning } from 'lucide-react'
 import { EmptyState, FilterBar, PageHeader, Pagination, SearchInput, SelectFilter, SortableHeader, StatusBadge, Tabs } from '../../components/ui'
 import DashboardState from '../dashboard/components/DashboardState'
 import KpiCard from '../dashboard/components/KpiCard'
@@ -13,7 +13,6 @@ import { APPROVAL_TYPES, listApprovals } from './approvalsData'
 const TYPE_ICONS = {
   Evidence: FileCheck2,
   Policy: ScrollText,
-  Registration: UserPlus,
   'Risk acceptance': ShieldAlert,
   'Access request': KeyRound,
   Exception: FileWarning,
@@ -90,7 +89,7 @@ function ApprovalsPage() {
     <DashboardState loading={loading} error={error} onRetry={reload}>
       {data && (
         <>
-          <PageHeader eyebrow="Approvals & notifications" title="Approval requests" subtitle="Evidence, policies, registrations, risk acceptances and access requests that need a decision." />
+          <PageHeader eyebrow="Approvals & notifications" title="Approval requests" subtitle="Evidence, policies, risk acceptances and access requests that need a decision." />
           <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
             <KpiCard icon={Hourglass} label="Pending" value={count((a) => a.status === 'pending')} tone="warning" />
             <KpiCard icon={ShieldAlert} label="High priority" value={count((a) => a.status === 'pending' && a.priority === 'high')} tone="danger" delay={0.05} />

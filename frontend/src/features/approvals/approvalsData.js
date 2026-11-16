@@ -1,5 +1,4 @@
 import { listEvidence, listPolicies, reviewEvidence, savePolicy } from '../evidence/evidenceData'
-import { decideRegistration, listRegistrations } from '../users/usersData'
 
 const wait = (ms = 300) => new Promise((resolve) => setTimeout(resolve, ms))
 
@@ -10,7 +9,7 @@ const daysFromNow = (days, hours = 0) => {
   return d.toISOString()
 }
 
-export const APPROVAL_TYPES = ['Evidence', 'Policy', 'Registration', 'Risk acceptance', 'Access request', 'Exception']
+export const APPROVAL_TYPES = ['Evidence', 'Policy', 'Risk acceptance', 'Access request', 'Exception']
 
 const manual = [
   {
@@ -45,7 +44,7 @@ const history = {}
 const priorityFor = (confidentiality) => (confidentiality === 'Restricted' ? 'high' : confidentiality === 'Confidential' ? 'medium' : 'low')
 
 async function collect() {
-  const [evidence, policies, registrations] = await Promise.all([listEvidence(), listPolicies(), listRegistrations()])
+  const [evidence, policies] = await Promise.all([listEvidence(), listPolicies()])
   const fromEvidence = evidence
     .filter((e) => ['in_review', 'approved', 'rejected'].includes(e.status) && (e.status === 'in_review' || e.reviewer))
     .slice(0, 8)
@@ -62,13 +61,7 @@ async function collect() {
       description: `New version of the ${p.title.toLowerCase()} submitted for approval.`, details: [['Version', p.version], ['Controls', p.controls.join(', ') || '—']],
       link: `/evidence/documents/${p.id}`,
     }))
-  const fromRegistrations = registrations.map((r) => ({
-    id: `APR-${r.id}`, sourceId: r.id, type: 'Registration', title: `New user: ${r.name}`, requestedBy: 'Self-registration', submittedAt: r.submittedAt, priority: 'low',
-    status: r.status, description: `${r.name} (${r.jobTitle || 'no job title'}) asked to join ${r.organisation}.`,
-    details: [['Email', r.email], ['Email verified', r.emailVerified ? 'Yes' : 'No'], ['Organization', r.organisation]],
-    link: '/users?tab=registrations', decidedBy: r.decidedBy || null, decidedAt: r.decidedAt || null, comment: r.reason || null,
-  }))
-  return [...fromEvidence, ...fromPolicies, ...fromRegistrations, ...manual.map((m) => ({ ...m }))]
+  return [...fromEvidence, ...fromPolicies, ...manual.map((m) => ({ ...m }))]
     .map((a) => ({
       ...a,
       comments: comments[a.id] || [],
@@ -100,7 +93,6 @@ export async function getApproval(id) {
 export async function decideApproval(item, decision, comment, actor) {
   if (item.type === 'Evidence') await reviewEvidence(item.sourceId, decision, comment, actor)
   else if (item.type === 'Policy') await savePolicy(item.sourceId, { status: decision === 'approved' ? 'approved' : 'draft' })
-  else if (item.type === 'Registration') await decideRegistration(item.sourceId, decision, { role: 'responsable_conformite', reason: comment, actor })
   else Object.assign(manual.find((m) => m.id === item.id), { status: decision, decidedBy: actor, decidedAt: new Date().toISOString(), comment })
   history[item.id] = [...(history[item.id] || []), { at: new Date().toISOString(), actor, action: `${decision === 'approved' ? 'Approved' : 'Rejected'}${comment ? `: ${comment}` : ''}` }]
   return getApproval(item.id)

@@ -44,7 +44,7 @@ function LoginPage() {
       } else if (err.response.status === 401) {
         setServerError('Incorrect email or password.')
       } else if (err.response.status === 403) {
-        setServerError('Your account is awaiting administrator approval.')
+        setServerError(err.response.data?.detail || 'Sign-in is not allowed for this account.')
       } else {
         setServerError(err.response.data?.detail || 'Sign-in failed. Please try again.')
       }

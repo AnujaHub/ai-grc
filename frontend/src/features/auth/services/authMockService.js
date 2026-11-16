@@ -10,25 +10,6 @@ const fail = (message) => {
   throw error
 }
 
-export async function registerUser(form) {
-  await wait()
-  if (form.email.toLowerCase() === 'taken@test.com') {
-    fail('An account with this email already exists.')
-  }
-  return { email: form.email, status: 'pending_verification' }
-}
-
-export async function sendOtp(email) {
-  await wait(600)
-  return { sentTo: email, expiresInSeconds: 300 }
-}
-
-export async function verifyOtp(email, code) {
-  await wait()
-  if (code !== DEMO_CODE) fail('The code is incorrect. Please try again.')
-  return { verified: true }
-}
-
 export async function getMfaSetup() {
   await wait(500)
   return {

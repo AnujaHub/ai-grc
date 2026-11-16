@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
-import { Users as UsersIcon, UserPlus, ShieldCheck, Inbox } from 'lucide-react'
+import { Users as UsersIcon, UserPlus, ShieldCheck } from 'lucide-react'
 import { getUtilisateurs, creerUtilisateur, modifierUtilisateur } from '../../services/userService'
 import { getOrganisations } from '../../services/organizationService'
 import { getCurrentUser } from '../../utils/roles'
@@ -13,8 +13,7 @@ import {
 import DashboardShell from '../dashboard/components/DashboardShell'
 import DashboardSkeleton from '../dashboard/components/DashboardSkeleton'
 import { initials } from '../dashboard/utils/format'
-import { ROLE_OPTIONS, STATUS_OPTIONS, pendingRegistrations, roleLabel } from './usersData'
-import RegistrationsPanel from './RegistrationsPanel'
+import { ROLE_OPTIONS, STATUS_OPTIONS, roleLabel } from './usersData'
 import RolesPanel from './RolesPanel'
 
 const EMPTY_USER = { prenom: '', nom: '', email: '', password: '', role: 'responsable_conformite', organisationId: '' }
@@ -223,22 +222,18 @@ function UsersTab() {
 
 const TABS = [
   { id: 'users', label: 'Users', icon: UsersIcon },
-  { id: 'registrations', label: 'Registrations', icon: Inbox },
   { id: 'roles', label: 'Roles & permissions', icon: ShieldCheck },
 ]
 
 function UsersPage() {
   const [params, setParams] = useSearchParams()
   const tab = TABS.some((t) => t.id === params.get('tab')) ? params.get('tab') : 'users'
-  const pendingCount = pendingRegistrations().length
 
   return (
     <DashboardShell>
-      <PageHeader eyebrow="User management" title="Users" subtitle="Manage accounts, approve new registrations and review what each role can do." />
-      <Tabs active={tab} onChange={(id) => setParams(id === 'users' ? {} : { tab: id })}
-        tabs={TABS.map((t) => (t.id === 'registrations' ? { ...t, count: pendingCount } : t))} />
+      <PageHeader eyebrow="User management" title="Users" subtitle="Manage accounts and review what each role can do." />
+      <Tabs active={tab} onChange={(id) => setParams(id === 'users' ? {} : { tab: id })} tabs={TABS} />
       {tab === 'users' && <UsersTab />}
-      {tab === 'registrations' && <RegistrationsPanel />}
       {tab === 'roles' && <RolesPanel />}
     </DashboardShell>
   )

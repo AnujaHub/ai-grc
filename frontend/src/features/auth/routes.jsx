@@ -3,7 +3,6 @@ import LoginPage from './login/LoginPage'
 import GoogleCallbackPage from './login/GoogleCallbackPage'
 import RegisterPage from './register/RegisterPage'
 import VerifyOtpPage from './register/VerifyOtpPage'
-import ApprovalPendingPage from './register/ApprovalPendingPage'
 import ForgotPasswordPage from './forgot-password/ForgotPasswordPage'
 import ResetPasswordPage from './forgot-password/ResetPasswordPage'
 import MfaSetupPage from './mfa/MfaSetupPage'
@@ -13,7 +12,6 @@ export const AUTH_PATHS = [
   '/',
   '/register',
   '/verify-otp',
-  '/approval-pending',
   '/forgot-password',
   '/reset-password',
   '/mfa-verify',
@@ -27,7 +25,6 @@ export const authRoutes = (
     <Route path="/auth/google/callback" element={<GoogleCallbackPage />} />
     <Route path="/register" element={<RegisterPage />} />
     <Route path="/verify-otp" element={<VerifyOtpPage />} />
-    <Route path="/approval-pending" element={<ApprovalPendingPage />} />
     <Route path="/forgot-password" element={<ForgotPasswordPage />} />
     <Route path="/reset-password" element={<ResetPasswordPage />} />
     <Route path="/mfa-verify" element={<MfaVerifyPage />} />

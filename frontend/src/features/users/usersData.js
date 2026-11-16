@@ -5,13 +5,6 @@ import { getPlan } from '../grc-plan/planData'
 
 const wait = (ms = 350) => new Promise((resolve) => setTimeout(resolve, ms))
 
-const daysFromNow = (days, hours = 0) => {
-  const d = new Date()
-  d.setDate(d.getDate() + days)
-  d.setHours(d.getHours() + hours)
-  return d.toISOString()
-}
-
 export const ROLE_OPTIONS = [
   { value: ROLES.ADMIN, label: ROLE_LABELS[ROLES.ADMIN] },
   { value: ROLES.COMPLIANCE_OFFICER, label: ROLE_LABELS[ROLES.COMPLIANCE_OFFICER] },
@@ -26,34 +19,11 @@ export const STATUS_OPTIONS = [
   { value: 'inactif', label: 'Inactive' },
 ]
 
-const registrations = [
-  { id: 'REG-101', name: 'Daniel Okafor', email: 'd.okafor@acmebank.com', organisation: 'Acme Bank', jobTitle: 'Facilities manager', phone: '+44 20 7946 0101', submittedAt: daysFromNow(0, -3), emailVerified: true, status: 'pending' },
-  { id: 'REG-102', name: 'Mei Lin', email: 'mei.lin@acmebank.com', organisation: 'Acme Bank', jobTitle: 'Security engineer', phone: '', submittedAt: daysFromNow(-1), emailVerified: true, status: 'pending' },
-  { id: 'REG-103', name: 'Lucas Martin', email: 'lucas.martin@gmail.com', organisation: 'Acme Bank', jobTitle: 'Contractor', phone: '+33 6 12 34 56 78', submittedAt: daysFromNow(-2), emailVerified: false, status: 'pending' },
-  { id: 'REG-097', name: 'Sofia Rossi', email: 'sofia.rossi@acmebank.com', organisation: 'Acme Bank', jobTitle: 'HR & training lead', phone: '', submittedAt: daysFromNow(-9), emailVerified: true, status: 'approved', decidedBy: 'Anita Desai', decidedAt: daysFromNow(-8), assignedRole: ROLES.COMPLIANCE_OFFICER },
-  { id: 'REG-094', name: 'J. Doe', email: 'jdoe@tempmail.net', organisation: 'Unknown', jobTitle: '', phone: '', submittedAt: daysFromNow(-12), emailVerified: false, status: 'rejected', decidedBy: 'Anita Desai', decidedAt: daysFromNow(-11), reason: 'Personal email address and no matching employee record.' },
-]
-
-export async function listRegistrations() {
-  await wait()
-  return registrations.map((r) => ({ ...r }))
-}
-
-export async function decideRegistration(id, decision, { role, reason, actor }) {
-  await wait(300)
-  const item = registrations.find((r) => r.id === id)
-  Object.assign(item, { status: decision, decidedBy: actor, decidedAt: new Date().toISOString(), assignedRole: role || null, reason: reason || null })
-  return { ...item }
-}
-
-export const pendingRegistrations = () => registrations.filter((r) => r.status === 'pending').map((r) => ({ ...r }))
-
 export const PERMISSION_GROUPS = [
   {
     group: 'Administration',
     items: [
       { id: 'users.manage', label: 'Create and edit users', roles: [ROLES.SUPER_ADMIN, ROLES.ADMIN] },
-      { id: 'registrations.decide', label: 'Approve or reject registrations', roles: [ROLES.SUPER_ADMIN, ROLES.ADMIN] },
       { id: 'roles.configure', label: 'Configure roles and permissions', roles: [ROLES.SUPER_ADMIN], locked: true },
       { id: 'organizations.manage', label: 'Manage organizations', roles: [ROLES.SUPER_ADMIN, ROLES.ADMIN] },
     ],

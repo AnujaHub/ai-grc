@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, DateTime, ForeignKey
+from sqlalchemy import Boolean, Column, String, DateTime, ForeignKey, false
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 import uuid
@@ -19,3 +19,9 @@ class User(Base):
     organisation_id = Column(UUID(as_uuid=True), ForeignKey("organisations.id"), nullable=True)
     statut = Column(String(30), default="actif")
     creation_date = Column("date_creation", DateTime, default=datetime.utcnow)
+    email_verified = Column(Boolean, nullable=False, default=False, server_default=false())
+    verification_tokens = relationship(
+        "VerificationToken",
+        back_populates="user",
+        cascade="all, delete-orphan",
+    )

@@ -1,12 +1,11 @@
 import { useState } from 'react'
-import { FileCheck2, ScrollText, UserPlus, ShieldAlert, Lock } from 'lucide-react'
+import { FileCheck2, ScrollText, ShieldAlert, Lock } from 'lucide-react'
 import { StatusBadge } from '../../../components/ui'
 import { timeAgo } from '../utils/format'
 
 const TYPE_ICONS = {
   Evidence: FileCheck2,
   Policy: ScrollText,
-  Registration: UserPlus,
   'Risk acceptance': ShieldAlert,
 }
 

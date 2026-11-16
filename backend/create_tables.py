@@ -1,6 +1,7 @@
 from database import Base, engine
 from models.organisation import Organization
 from models.utilisateur import User
+from models.verification_token import VerificationToken
 from models.systeme_ia import AISystem
 from models.referentiel import ReferenceFramework
 from models.chapitre import Chapter

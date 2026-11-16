@@ -27,7 +27,7 @@ function AdminDashboard() {
         <>
           <DashboardHeader
             roleLabel={`Admin · ${data.organisation}`}
-            subtitle="Compliance, approvals and team progress for your organisation."
+            subtitle="Compliance, reviews and team progress for your organisation."
             actions={
               <>
                 <Link to="/assessments"><Button><ClipboardCheck className="h-4 w-4" /> Start assessment</Button></Link>
@@ -62,7 +62,7 @@ function AdminDashboard() {
           </div>
 
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-            <SectionCard title="Approval requests" subtitle="Evidence, policies, registrations and risk acceptances">
+            <SectionCard title="Approval requests" subtitle="Evidence, policies and risk acceptances">
               <ApprovalQueue items={data.approvals} currentUserName={getFullName(getCurrentUser())} />
             </SectionCard>
             <SectionCard title="Upcoming deadlines">
