@@ -129,7 +129,7 @@ function RegisterPage() {
           <div>
             <label className="flex cursor-pointer items-start gap-2 text-sm text-ink-soft">
               <input type="checkbox" checked={form.acceptTerms} onChange={update('acceptTerms')}
-                className="mt-1 h-4 w-4 accent-[#38d9c2]" />
+                className="mt-1 h-4 w-4 accent-accent" />
               <span>
                 I agree to the <a href="#" className="text-accent hover:underline">Terms of Service</a> and{' '}
                 <a href="#" className="text-accent hover:underline">Privacy Policy</a>.

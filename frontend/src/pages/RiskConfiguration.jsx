@@ -34,12 +34,12 @@ function RiskConfiguration() {
 
   const appliquerPreset = (nombreNiveaux) => {
     const presets = {
-      3: { impact: ['Faible', 'Moyen', 'Élevé'], probabilite: ['Faible', 'Moyen', 'Élevée'] },
-      4: { impact: ['Faible', 'Modéré', 'Élevé', 'Critique'], probabilite: ['Rare', 'Possible', 'Probable', 'Quasi certaine'] },
-      5: { impact: ['Très faible', 'Faible', 'Modéré', 'Élevé', 'Critique'], probabilite: ['Très rare', 'Rare', 'Possible', 'Probable', 'Quasi certaine'] },
+      3: { impact: ['Faible', 'Moyen', 'Élevé'], probability: ['Faible', 'Moyen', 'Élevée'] },
+      4: { impact: ['Faible', 'Modéré', 'Élevé', 'Critique'], probability: ['Rare', 'Possible', 'Probable', 'Quasi certaine'] },
+      5: { impact: ['Très faible', 'Faible', 'Modéré', 'Élevé', 'Critique'], probability: ['Très rare', 'Rare', 'Possible', 'Probable', 'Quasi certaine'] },
     }
     setImpactLevels(presets[nombreNiveaux].impact)
-    setProbabilityLevels(presets[nombreNiveaux].probabilite)
+    setProbabilityLevels(presets[nombreNiveaux].probability)
   }
 
   const handleChangeNiveau = (liste, setListe, index, valeur) => {

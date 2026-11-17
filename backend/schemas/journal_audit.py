@@ -5,11 +5,11 @@ from uuid import UUID
 
 class AuditLogOut(BaseModel):
     id: UUID
-    utilisateur_id: Optional[UUID] = None
-    utilisateur_email: Optional[str] = None
+    user_id: Optional[UUID] = None
+    user_email: Optional[str] = None
     action: str
-    ressource_type: str
-    ressource_id: Optional[str] = None
+    resource_type: str
+    resource_id: Optional[str] = None
     details: Optional[str] = None
     action_date: datetime
 

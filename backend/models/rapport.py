@@ -5,10 +5,10 @@ from datetime import datetime
 from database import Base
 
 class Report(Base):
-    __tablename__ = "rapports"
+    __tablename__ = "reports"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     evaluation_id = Column(UUID(as_uuid=True), ForeignKey("evaluations.id"), nullable=False)
-    generation_date = Column("date_generation", DateTime, default=datetime.utcnow)
-    global_score = Column("score_global", Numeric(5, 2), nullable=True)
-    file_path = Column("chemin_fichier", String(500), nullable=False)
+    generation_date = Column("generated_at", DateTime, default=datetime.utcnow)
+    global_score = Column("overall_score", Numeric(5, 2), nullable=True)
+    file_path = Column("file_path", String(500), nullable=False)

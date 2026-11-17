@@ -9,8 +9,8 @@ def record_action(
     db: Session,
     utilisateur: User,
     action: str,
-    ressource_type: str,
-    ressource_id: Optional[str] = None,
+    resource_type: str,
+    resource_id: Optional[str] = None,
     details: Optional[str] = None,
 ):
     """
@@ -18,11 +18,11 @@ def record_action(
     Call after every sensitive action (creation, update, deletion, sign-in, etc.).
     """
     entry = AuditLog(
-        utilisateur_id=utilisateur.id if utilisateur else None,
-        utilisateur_email=utilisateur.email if utilisateur else None,
+        user_id=utilisateur.id if utilisateur else None,
+        user_email=utilisateur.email if utilisateur else None,
         action=action,
-        ressource_type=ressource_type,
-        ressource_id=str(ressource_id) if ressource_id else None,
+        resource_type=resource_type,
+        resource_id=str(resource_id) if resource_id else None,
         details=details,
     )
     db.add(entry)

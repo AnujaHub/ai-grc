@@ -7,9 +7,9 @@ import { estAdministrateur } from '../utils/permissions'
 
 function Organizations() {
   const [organizations, setOrganizations] = useState([])
-  const [nom, setNom] = useState('')
-  const [secteur, setSecteur] = useState('')
-  const [pays, setPays] = useState('')
+  const [name, setNom] = useState('')
+  const [sector, setSecteur] = useState('')
+  const [country, setPays] = useState('')
   const [error, setError] = useState('')
   const navigate = useNavigate()
   const peutCreer = estAdministrateur()
@@ -28,7 +28,7 @@ function Organizations() {
   const handleSubmit = async (e) => {
     e.preventDefault()
     try {
-      await createOrganisation(nom, secteur, pays)
+      await createOrganisation(name, sector, country)
       setNom(''); setSecteur(''); setPays('')
       loadOrganizations()
     } catch {
@@ -55,15 +55,15 @@ function Organizations() {
           </h2>
           <form onSubmit={handleSubmit} className="flex flex-wrap gap-3">
             <input
-              type="text" placeholder="Name" value={nom} onChange={(e) => setNom(e.target.value)} required
+              type="text" placeholder="Name" value={name} onChange={(e) => setNom(e.target.value)} required
               className="flex-1 min-w-[180px] px-3 py-2 border border-line focus:border-accent outline-none bg-paper text-sm"
             />
             <input
-              type="text" placeholder="Sector" value={secteur} onChange={(e) => setSecteur(e.target.value)}
+              type="text" placeholder="Sector" value={sector} onChange={(e) => setSecteur(e.target.value)}
               className="flex-1 min-w-[150px] px-3 py-2 border border-line focus:border-accent outline-none bg-paper text-sm"
             />
             <input
-              type="text" placeholder="Country" value={pays} onChange={(e) => setPays(e.target.value)}
+              type="text" placeholder="Country" value={country} onChange={(e) => setPays(e.target.value)}
               className="flex-1 min-w-[130px] px-3 py-2 border border-line focus:border-accent outline-none bg-paper text-sm"
             />
             <button type="submit" className="btn-primary px-5 py-2 text-sm cursor-pointer">
@@ -93,11 +93,11 @@ function Organizations() {
             <tbody>
               {organizations.map((org) => (
                 <tr key={org.id} className="border-b border-line last:border-0 hover:bg-paper/60">
-                  <td className="px-4 py-3 font-medium text-ink">{org.nom}</td>
-                  <td className="px-4 py-3 text-ink-soft">{org.secteur || '—'}</td>
-                  <td className="px-4 py-3 text-ink-soft">{org.pays || '—'}</td>
+                  <td className="px-4 py-3 font-medium text-ink">{org.name}</td>
+                  <td className="px-4 py-3 text-ink-soft">{org.sector || '—'}</td>
+                  <td className="px-4 py-3 text-ink-soft">{org.country || '—'}</td>
                   <td className="px-4 py-3 font-mono text-xs text-ink-soft">
-                    {new Date(org.creation_date).toLocaleDateString()}
+                    {new Date(org.created_at).toLocaleDateString()}
                   </td>
                   <td className="px-4 py-3 text-right">
                     <button

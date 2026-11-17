@@ -1,0 +1,18 @@
+{
+  "include": [
+    "backend"
+  ],
+  "executionEnvironments": [
+    {
+      "root": "backend",
+      "extraPaths": [
+        "backend",
+        "backend/venv/Lib/site-packages"
+      ]
+    }
+  ],
+  "venvPath": "backend",
+  "venv": "venv",
+  "reportMissingImports": "error",
+  "reportMissingModuleSource": "warning"
+}

@@ -16,10 +16,10 @@ import { initials } from '../dashboard/utils/format'
 import { ROLE_OPTIONS, STATUS_OPTIONS, roleLabel } from './usersData'
 import RolesPanel from './RolesPanel'
 
-const EMPTY_USER = { prenom: '', nom: '', email: '', password: '', role: 'responsable_conformite', organisationId: '' }
+const EMPTY_USER = { first_name: '', name: '', email: '', password: '', role: 'responsable_conformite', organisationId: '' }
 const selectClass = 'w-full border border-line px-3 py-2.5 text-sm text-ink outline-none focus:border-accent cursor-pointer'
 const labelClass = 'mb-1.5 block text-xs font-semibold uppercase tracking-wide text-ink-soft'
-const userValue = (row, key) => (key === 'name' ? `${row.prenom} ${row.nom}` : key === 'created' ? new Date(row.creation_date).getTime() : row[key])
+const userValue = (row, key) => (key === 'name' ? `${row.first_name} ${row.name}` : key === 'created' ? new Date(row.created_at).getTime() : row[key])
 
 function CreateUserModal({ open, onClose, organizations, onCreated }) {
   const [form, setForm] = useState(EMPTY_USER)
@@ -37,16 +37,16 @@ function CreateUserModal({ open, onClose, organizations, onCreated }) {
 
   const submit = async () => {
     const found = {}
-    if (!form.prenom.trim()) found.prenom = 'Required.'
-    if (!form.nom.trim()) found.nom = 'Required.'
+    if (!form.first_name.trim()) found.first_name = 'Required.'
+    if (!form.name.trim()) found.name = 'Required.'
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) found.email = 'Enter a valid email.'
     if (form.password.length < 8) found.password = 'At least 8 characters.'
     setErrors(found)
     if (Object.keys(found).length) return
     setBusy(true)
     try {
-      await creerUtilisateur({ nom: form.nom, prenom: form.prenom, email: form.email, mot_de_passe: form.password, role: form.role, organisation_id: form.organisationId || null })
-      toast(`${form.prenom} ${form.nom} added.`)
+      await creerUtilisateur({ name: form.name, first_name: form.first_name, email: form.email, password: form.password, role: form.role, organization_id: form.organisationId || null })
+      toast(`${form.first_name} ${form.name} added.`)
       onCreated()
       close()
     } catch (err) {
@@ -61,8 +61,8 @@ function CreateUserModal({ open, onClose, organizations, onCreated }) {
       footer={<><Button variant="secondary" onClick={close}>Cancel</Button><Button onClick={submit} loading={busy}>Add user</Button></>}>
       <div className="space-y-4">
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <TextField label="First name" value={form.prenom} onChange={set('prenom')} error={errors.prenom} />
-          <TextField label="Last name" value={form.nom} onChange={set('nom')} error={errors.nom} />
+          <TextField label="First name" value={form.first_name} onChange={set('first_name')} error={errors.first_name} />
+          <TextField label="Last name" value={form.name} onChange={set('name')} error={errors.name} />
         </div>
         <TextField label="Email" type="email" value={form.email} onChange={set('email')} error={errors.email} />
         <PasswordField label="Temporary password" value={form.password} onChange={set('password')} error={errors.password} autoComplete="new-password" />
@@ -77,7 +77,7 @@ function CreateUserModal({ open, onClose, organizations, onCreated }) {
             <label htmlFor="new-org" className={labelClass}>Organization</label>
             <select id="new-org" value={form.organisationId} onChange={set('organisationId')} className={selectClass}>
               <option value="">None</option>
-              {organizations.map((o) => <option key={o.id} value={o.id}>{o.nom}</option>)}
+              {organizations.map((o) => <option key={o.id} value={o.id}>{o.name}</option>)}
             </select>
           </div>
         </div>
@@ -105,13 +105,13 @@ function UsersTab() {
     }
   }, [reloadKey])
 
-  const orgName = (id) => data?.organizations.find((o) => o.id === id)?.nom || '—'
+  const orgName = (id) => data?.organizations.find((o) => o.id === id)?.name || '—'
   const q = filters.search.trim().toLowerCase()
   const filtered = useMemo(() => (data?.users || []).filter((u) =>
-    (!q || `${u.prenom} ${u.nom} ${u.email}`.toLowerCase().includes(q)) &&
+    (!q || `${u.first_name} ${u.name} ${u.email}`.toLowerCase().includes(q)) &&
     (!filters.role || u.role === filters.role) &&
-    (!filters.status || u.statut === filters.status) &&
-    (!filters.organisation || u.organisation_id === filters.organisation),
+    (!filters.status || u.status === filters.status) &&
+    (!filters.organisation || u.organization_id === filters.organisation),
   ), [data, q, filters])
   const { rows, sort, onSort, pagination, resetPage } = useTable(filtered, { pageSize: 10, initialSort: { key: 'name', dir: 'asc' }, getValue: userValue })
   const set = (key) => (value) => {
@@ -123,7 +123,7 @@ function UsersTab() {
   const applyChange = async () => {
     try {
       await modifierUtilisateur(pending.user.id, { [pending.field]: pending.value })
-      toast(`${pending.user.prenom} ${pending.user.nom}: ${pending.field === 'role' ? `role changed to ${roleLabel(pending.value)}` : `account ${pending.value === 'actif' ? 'activated' : 'deactivated'}`}.`)
+      toast(`${pending.user.first_name} ${pending.user.name}: ${pending.field === 'role' ? `role changed to ${roleLabel(pending.value)}` : `account ${pending.value === 'actif' ? 'activated' : 'deactivated'}`}.`)
       setReloadKey((k) => k + 1)
     } catch {
       toast('Update failed.', 'error')
@@ -141,7 +141,7 @@ function UsersTab() {
         <SearchInput value={filters.search} onChange={set('search')} placeholder="Search name or email…" className="sm:w-64" />
         <SelectFilter label="Role" value={filters.role} onChange={set('role')} options={[{ value: 'super_admin', label: 'Super admin' }, ...ROLE_OPTIONS]} />
         <SelectFilter label="Status" value={filters.status} onChange={set('status')} options={STATUS_OPTIONS} />
-        <SelectFilter label="Organization" value={filters.organisation} onChange={set('organisation')} options={data.organizations.map((o) => ({ value: o.id, label: o.nom }))} />
+        <SelectFilter label="Organization" value={filters.organisation} onChange={set('organisation')} options={data.organizations.map((o) => ({ value: o.id, label: o.name }))} />
         <Button onClick={() => setCreating(true)} className="sm:ml-auto"><UserPlus className="h-4 w-4" /> Add user</Button>
       </FilterBar>
 
@@ -154,9 +154,9 @@ function UsersTab() {
               <thead>
                 <tr className="border-b border-line text-left text-xs text-ink-soft">
                   {head('Name', 'name', 'px-5 py-3')}
-                  {head('Organization', 'organisation_id', 'px-3 py-3')}
+                  {head('Organization', 'organization_id', 'px-3 py-3')}
                   {head('Role', 'role', 'px-3 py-3')}
-                  {head('Status', 'statut', 'px-3 py-3')}
+                  {head('Status', 'status', 'px-3 py-3')}
                   {head('Joined', 'created', 'px-5 py-3')}
                 </tr>
               </thead>
@@ -167,19 +167,19 @@ function UsersTab() {
                     <tr key={u.id} className="border-b border-line last:border-0 hover:bg-paper">
                       <td className="px-5 py-3">
                         <Link to={`/users/${u.id}`} className="flex items-center gap-3">
-                          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-accent-soft font-mono text-[11px] text-accent">{initials(`${u.prenom} ${u.nom}`)}</span>
+                          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-accent-soft font-mono text-[11px] text-accent">{initials(`${u.first_name} ${u.name}`)}</span>
                           <span className="min-w-0">
-                            <span className="block truncate text-ink hover:text-accent">{u.prenom} {u.nom}{self && <span className="ml-1.5 text-xs text-ink-soft">(you)</span>}</span>
+                            <span className="block truncate text-ink hover:text-accent">{u.first_name} {u.name}{self && <span className="ml-1.5 text-xs text-ink-soft">(you)</span>}</span>
                             <span className="block truncate text-xs text-ink-soft">{u.email}</span>
                           </span>
                         </Link>
                       </td>
-                      <td className="px-3 py-3 text-ink-soft">{orgName(u.organisation_id)}</td>
+                      <td className="px-3 py-3 text-ink-soft">{orgName(u.organization_id)}</td>
                       <td className="px-3 py-3">
                         {u.role === 'super_admin' || self ? (
                           <span className="text-ink-soft" title={self ? 'You cannot change your own role' : undefined}>{roleLabel(u.role)}</span>
                         ) : (
-                          <select value={u.role} aria-label={`Role of ${u.prenom} ${u.nom}`} onChange={(e) => setPending({ user: u, field: 'role', value: e.target.value })}
+                          <select value={u.role} aria-label={`Role of ${u.first_name} ${u.name}`} onChange={(e) => setPending({ user: u, field: 'role', value: e.target.value })}
                             className="border border-line py-1 pl-2 pr-7 text-sm text-ink outline-none focus:border-accent cursor-pointer">
                             {ROLE_OPTIONS.map((r) => <option key={r.value} value={r.value}>{r.label}</option>)}
                           </select>
@@ -187,13 +187,13 @@ function UsersTab() {
                       </td>
                       <td className="px-3 py-3">
                         {self ? <StatusBadge status="active" /> : (
-                          <button type="button" onClick={() => setPending({ user: u, field: 'statut', value: u.statut === 'actif' ? 'inactif' : 'actif' })}
-                            className="cursor-pointer" title={u.statut === 'actif' ? 'Deactivate' : 'Activate'}>
-                            <StatusBadge status={u.statut === 'actif' ? 'active' : 'suspended'} label={u.statut === 'actif' ? 'Active' : 'Inactive'} />
+                          <button type="button" onClick={() => setPending({ user: u, field: 'status', value: u.status === 'actif' ? 'inactif' : 'actif' })}
+                            className="cursor-pointer" title={u.status === 'actif' ? 'Deactivate' : 'Activate'}>
+                            <StatusBadge status={u.status === 'actif' ? 'active' : 'suspended'} label={u.status === 'actif' ? 'Active' : 'Inactive'} />
                           </button>
                         )}
                       </td>
-                      <td className="px-5 py-3 font-mono text-xs text-ink-soft">{u.creation_date ? new Date(u.creation_date).toLocaleDateString('en-GB') : '—'}</td>
+                      <td className="px-5 py-3 font-mono text-xs text-ink-soft">{u.created_at ? new Date(u.created_at).toLocaleDateString('en-GB') : '—'}</td>
                     </tr>
                   )
                 })}
@@ -210,8 +210,8 @@ function UsersTab() {
         tone={pending?.value === 'inactif' ? 'danger' : 'warning'}
         title={pending?.field === 'role' ? 'Change role?' : pending?.value === 'inactif' ? 'Deactivate account?' : 'Activate account?'}
         message={pending ? (pending.field === 'role'
-          ? `${pending.user.prenom} ${pending.user.nom} will become ${roleLabel(pending.value)}. Their access changes immediately.`
-          : pending.value === 'inactif' ? `${pending.user.prenom} ${pending.user.nom} will no longer be able to sign in.` : `${pending.user.prenom} ${pending.user.nom} will be able to sign in again.`) : ''}
+          ? `${pending.user.first_name} ${pending.user.name} will become ${roleLabel(pending.value)}. Their access changes immediately.`
+          : pending.value === 'inactif' ? `${pending.user.first_name} ${pending.user.name} will no longer be able to sign in.` : `${pending.user.first_name} ${pending.user.name} will be able to sign in again.`) : ''}
         confirmLabel={pending?.field === 'role' ? 'Change role' : pending?.value === 'inactif' ? 'Deactivate' : 'Activate'}
         onConfirm={applyChange}
         onCancel={() => setPending(null)}

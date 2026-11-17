@@ -15,7 +15,7 @@ class VerificationToken(Base):
 
     id = Column(Integer, primary_key=True)
     user_id = Column(
-        ForeignKey("utilisateurs.id", ondelete="CASCADE"),
+        ForeignKey("users.id", ondelete="CASCADE"),
         nullable=False,
     )
     token_hash = Column(String(64), nullable=False)

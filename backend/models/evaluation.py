@@ -10,16 +10,15 @@ class Evaluation(Base):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
 
     # Implementation note.
-    evaluation_type = Column("type_evaluation", String(20), nullable=False, default="Systeme_IA")
-    systeme_ia_id = Column(UUID(as_uuid=True), ForeignKey("systemes_ia.id"), nullable=True)
-    organisation_id = Column(UUID(as_uuid=True), ForeignKey("organisations.id"), nullable=True)
-
-    referentiel_id = Column(UUID(as_uuid=True), ForeignKey("referentiels.id"), nullable=False)
-    responsable_id = Column(UUID(as_uuid=True), ForeignKey("utilisateurs.id"), nullable=True)
-    start_date = Column("date_debut", Date, nullable=True)
-    end_date = Column("date_fin", Date, nullable=True)
+    evaluation_type = Column("evaluation_type", String(20), nullable=False, default="Systeme_IA")
+    ai_system_id = Column(UUID(as_uuid=True), ForeignKey("ai_systems.id"), nullable=True)
+    organization_id = Column(UUID(as_uuid=True), ForeignKey("organizations.id"), nullable=True)
+    framework_id = Column(UUID(as_uuid=True), ForeignKey("frameworks.id"), nullable=False)
+    responsible_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)
+    start_date = Column("start_date", Date, nullable=True)
+    end_date = Column("end_date", Date, nullable=True)
     score = Column(Numeric(5, 2), nullable=True)
-    statut = Column(String(50), default="Brouillon")
-    commentaire = Column(Text, nullable=True)
+    status = Column(String(50), default="Brouillon")
+    comment = Column(Text, nullable=True)
 
-    reponses = relationship("Response", backref="evaluation", cascade="all, delete-orphan")
+    responses = relationship("Response", backref="evaluation", cascade="all, delete-orphan")

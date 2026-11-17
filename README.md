@@ -74,11 +74,24 @@ python create_tables.py
 python seed_referentiel.py
 ```
 
-For an existing database, apply the Google-auth columns before starting the API:
+For an existing database, apply the English schema migration before starting
+the API. It makes English tables canonical without dropping French tables or
+data. If a French table contains rows while its English duplicate is empty,
+the populated table is promoted and the empty duplicate is retained with an
+`__empty_duplicate` suffix. If both copies contain rows, the migration stops
+for manual review rather than guessing. Foreign keys, indexes, constraints,
+triggers, and RLS policies are preserved or repaired:
 
 ```powershell
-psql -d grc_platform -f migrations\001_google_auth.sql
+psql "$env:DATABASE_URL" -f migrations\002_english_schema.sql
+psql "$env:DATABASE_URL" -f migrations\003_email_verification.sql
 ```
+
+`001_google_auth.sql` is the historical Google-auth migration. Its changes are
+included conditionally in `002_english_schema.sql`, so `002` is sufficient for
+an existing pre-migration database. Apply `003_email_verification.sql` after
+`002` to add the email verification fields and OTP table. Do not run
+`drop_tables.py`.
 
 Configure Google OAuth in `backend\.env`:
 
@@ -89,6 +102,13 @@ GOOGLE_REDIRECT_URI=http://127.0.0.1:8000/auth/google/callback
 FRONTEND_URL=http://localhost:5173
 SESSION_SECRET=generate-a-long-random-secret
 ```
+
+For Supabase, set `DATABASE_URL` to the connection string from the Supabase
+project's Connect dialog and set `JWT_SECRET_KEY` to a separate random secret.
+The frontend reads `VITE_SUPABASE_URL` and
+`VITE_SUPABASE_PUBLISHABLE_KEY` from `frontend\.env`. These values only
+initialize the reusable Supabase client; application data and authentication
+continue to use the FastAPI API and SQLAlchemy.
 
 The Google client must use `http://localhost:5173` as an authorized JavaScript
 origin and `http://127.0.0.1:8000/auth/google/callback` as an authorized redirect URI.

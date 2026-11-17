@@ -9,7 +9,7 @@ import DonutChart from '../components/DonutChart'
 import ActivityFeed from '../components/ActivityFeed'
 import ProgressBar from '../components/ProgressBar'
 import useDashboardData from '../hooks/useDashboardData'
-import { getSuperAdminDashboard } from '../services/dashboardMockService'
+import { getSuperAdminDashboard } from '../../../services/dashboardService'
 import ComplianceByOrgChart from './ComplianceByOrgChart'
 import PendingRegistrations from './PendingRegistrations'
 import OrganisationsTable from './OrganisationsTable'
@@ -23,7 +23,7 @@ function SuperAdminDashboard() {
         <>
           <DashboardHeader
             roleLabel="Super admin"
-            subtitle="Platform-wide overview across all organisations."
+            subtitle="Platform-wide overview across all organizations."
             actions={
               <>
                 <Link to="/organizations"><Button><Building2 className="h-4 w-4" /> Add organisation</Button></Link>
@@ -32,15 +32,15 @@ function SuperAdminDashboard() {
           />
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-6">
-            <KpiCard className="xl:col-span-2" icon={Building2} label="Organisations" value={data.kpis.organisations.total}
-              hint={`${data.kpis.organisations.active} active`} />
+            <KpiCard className="xl:col-span-2" icon={Building2} label="Organisations" value={data.kpis.organizations.total}
+              hint={`${data.kpis.organizations.active} active`} />
             <KpiCard icon={Users} label="Users" value={data.kpis.users.total} tone="info"
               trend={{ up: true, good: true, text: `+${data.kpis.users.newThisMonth}` }} hint="this month" delay={0.05} />
             <KpiCard icon={UserPlus} label="Pending sign-ups" value={data.kpis.pendingRegistrations} tone="warning" hint="awaiting approval" delay={0.1} />
             <KpiCard icon={Gauge} label="Avg. compliance" value={data.kpis.averageCompliance.value} suffix="%"
               trend={{ up: true, good: true, text: `+${data.kpis.averageCompliance.change}%` }} hint="vs last quarter" delay={0.15} />
             <KpiCard icon={Cpu} label="AI systems" value={data.kpis.aiSystems} tone="info" hint="registered" delay={0.2} />
-            <div className="rounded-xl border border-line bg-paper-dark p-5 sm:col-span-2 xl:col-span-6">
+            {data.kpis.storage.limitGb > 0 && <div className="rounded-xl border border-line bg-paper-dark p-5 sm:col-span-2 xl:col-span-6">
               <div className="mb-2 flex items-center justify-between text-sm">
                 <span className="inline-flex items-center gap-2 text-ink-soft"><HardDrive className="h-4 w-4" /> Platform storage</span>
                 <span className="font-mono text-ink">
@@ -48,7 +48,7 @@ function SuperAdminDashboard() {
                 </span>
               </div>
               <ProgressBar value={(data.kpis.storage.usedGb / data.kpis.storage.limitGb) * 100} tone="info" />
-            </div>
+            </div>}
           </div>
 
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
@@ -65,7 +65,7 @@ function SuperAdminDashboard() {
               <PendingRegistrations items={data.pendingRegistrations} />
             </SectionCard>
             <SectionCard title="Organisations" action={{ label: 'View all', to: '/organizations' }} className="lg:col-span-2">
-              <OrganisationsTable items={data.organisations} />
+              <OrganisationsTable items={data.organizations} />
             </SectionCard>
           </div>
 

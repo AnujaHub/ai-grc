@@ -73,10 +73,10 @@ function UserDetailPage() {
       .then(async ([users, organizations, audit]) => {
         const user = users.find((u) => u.id === id)
         if (!user) throw new Error('missing')
-        const fullName = `${user.prenom} ${user.nom}`
+        const fullName = `${user.first_name} ${user.name}`
         const responsibilities = await getResponsibilities(fullName)
-        const activity = audit.filter((e) => e.utilisateur_email === user.email).slice(0, 10)
-        if (active) setData({ user, organization: organizations.find((o) => o.id === user.organisation_id), responsibilities, activity })
+        const activity = audit.filter((e) => e.user_email === user.email).slice(0, 10)
+        if (active) setData({ user, organization: organizations.find((o) => o.id === user.organization_id), responsibilities, activity })
       })
       .catch(() => active && setError('User not found, or the backend is not reachable.'))
     return () => {
@@ -108,18 +108,18 @@ function UserDetailPage() {
   const { user, organization, responsibilities, activity } = data
   const self = user.id === me?.id
   const editable = !self && user.role !== 'super_admin'
-  const active = user.statut === 'actif'
+  const active = user.status === 'actif'
 
   return (
     <DashboardShell>
       <PageHeader
         back={{ to: '/users', label: 'Users' }}
-        crumb={`${user.prenom} ${user.nom}`}
+        crumb={`${user.first_name} ${user.name}`}
         eyebrow={user.email}
-        title={`${user.prenom} ${user.nom}`}
+        title={`${user.first_name} ${user.name}`}
         badge={<StatusBadge status={active ? 'active' : 'suspended'} label={active ? 'Active' : 'Inactive'} />}
         actions={editable && (
-          <Button variant="secondary" onClick={() => setPending({ field: 'statut', value: active ? 'inactif' : 'actif' })}>
+          <Button variant="secondary" onClick={() => setPending({ field: 'status', value: active ? 'inactif' : 'actif' })}>
             {active ? 'Deactivate account' : 'Activate account'}
           </Button>
         )}
@@ -130,9 +130,9 @@ function UserDetailPage() {
         <div className="space-y-4">
           <SectionCard title="Details">
             <div className="mb-4 flex items-center gap-3">
-              <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-accent-soft font-mono text-sm text-accent">{initials(`${user.prenom} ${user.nom}`)}</span>
+              <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-accent-soft font-mono text-sm text-accent">{initials(`${user.first_name} ${user.name}`)}</span>
               <div>
-                <p className="text-sm font-medium text-ink">{user.prenom} {user.nom}</p>
+                <p className="text-sm font-medium text-ink">{user.first_name} {user.name}</p>
                 <p className="text-xs text-ink-soft">{roleLabel(user.role)}</p>
               </div>
             </div>
@@ -145,8 +145,8 @@ function UserDetailPage() {
                   </select>
                 ) : roleLabel(user.role)}
               </Info>
-              <Info label="Organization">{organization?.nom || '—'}</Info>
-              <Info label="Joined">{user.creation_date ? new Date(user.creation_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : '—'}</Info>
+              <Info label="Organization">{organization?.name || '—'}</Info>
+              <Info label="Joined">{user.created_at ? new Date(user.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : '—'}</Info>
               <Info label="Controls owned">{responsibilities.controls.length}</Info>
               <Info label="Open tasks">{responsibilities.tasks.filter((t) => t.status !== 'completed').length}</Info>
             </dl>
@@ -157,7 +157,7 @@ function UserDetailPage() {
               <ul className="divide-y divide-line">
                 {activity.map((e) => (
                   <li key={e.id} className="px-5 py-2.5 text-sm">
-                    <p className="text-ink">{e.action} · <span className="text-ink-soft">{e.ressource_type}</span></p>
+                    <p className="text-ink">{e.action} · <span className="text-ink-soft">{e.resource_type}</span></p>
                     <p className="text-xs text-ink-soft">{timeAgo(e.action_date)}{e.details ? ` · ${e.details}` : ''}</p>
                   </li>
                 ))}
@@ -178,7 +178,7 @@ function UserDetailPage() {
         open={Boolean(pending)}
         tone={pending?.value === 'inactif' ? 'danger' : 'warning'}
         title={pending?.field === 'role' ? 'Change role?' : active ? 'Deactivate account?' : 'Activate account?'}
-        message={pending?.field === 'role' ? `${user.prenom} will become ${roleLabel(pending.value)}. Their access changes immediately.` : active ? `${user.prenom} will no longer be able to sign in.` : `${user.prenom} will be able to sign in again.`}
+        message={pending?.field === 'role' ? `${user.first_name} will become ${roleLabel(pending.value)}. Their access changes immediately.` : active ? `${user.first_name} will no longer be able to sign in.` : `${user.first_name} will be able to sign in again.`}
         confirmLabel={pending?.field === 'role' ? 'Change role' : active ? 'Deactivate' : 'Activate'}
         onConfirm={apply}
         onCancel={() => setPending(null)}

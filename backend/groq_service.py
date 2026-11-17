@@ -30,7 +30,7 @@ client = Groq(api_key=os.getenv("GROQ_API_KEY"))
 
 def generate_risks_and_actions(ai_system_name, reponses_non_conformes):
     """
-    reponses_non_conformes: list of dicts with 'clause_titre', 'clause_description', 'reponse', and 'commentaire'.
+    reponses_non_conformes: list of dicts with 'clause_titre', 'clause_description', 'response', and 'comment'.
     Return suggested risks, each with suggested corrective actions.
     """
 
@@ -38,9 +38,9 @@ def generate_risks_and_actions(ai_system_name, reponses_non_conformes):
     for r in reponses_non_conformes:
         clause_summary += f"- Clause: {r['clause_titre']}\n"
         clause_summary += f"  Question: {r['clause_description']}\n"
-        clause_summary += f"  Submitted answer: {r['reponse']}\n"
-        if r.get('commentaire'):
-            clause_summary += f"  Comment: {r['commentaire']}\n"
+        clause_summary += f"  Submitted answer: {r['response']}\n"
+        if r.get('comment'):
+            clause_summary += f"  Comment: {r['comment']}\n"
         clause_summary += "\n"
 
     prompt = f"""You are an expert in artificial intelligence governance and ISO/IEC 42001 compliance.
@@ -54,15 +54,15 @@ For each clause, identify a concrete associated risk and propose a realistic cor
 
 Respond ONLY with valid JSON (no text before or after), using this format:
 {{
-  "risques": [
+  "risks": [
     {{
-      "titre": "Short risk title",
+      "title": "Short risk title",
       "description": "Risk description in 1-2 sentences",
-      "categorie": "Risk category (e.g. Documentation, Security, Ethics, Data...)",
+      "category": "Risk category (e.g. Documentation, Security, Ethics, Data...)",
       "impact": "Low" or "Medium" or "High",
-      "probabilite": "Low" or "Medium" or "High",
+      "probability": "Low" or "Medium" or "High",
       "action_corrective": {{
-        "titre": "Short action title",
+        "title": "Short action title",
         "description": "Description of the action to take"
       }}
     }}
@@ -87,7 +87,7 @@ Respond ONLY with valid JSON (no text before or after), using this format:
             contenu = contenu[4:]
 
     resultat = json.loads(contenu)
-    return resultat.get("risques", [])
+    return resultat.get("risks", [])
 
 
 def repondre_assistant_ia(messages_historique, organization_context=None):

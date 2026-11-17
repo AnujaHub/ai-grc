@@ -10,20 +10,20 @@ from uuid import UUID
 router = APIRouter(prefix="/configuration-risque", tags=["Risk Configuration"])
 
 
-@router.get("/{organisation_id}", response_model=RiskConfigurationOut)
+@router.get("/{organization_id}", response_model=RiskConfigurationOut)
 def get_configuration(
-    organisation_id: UUID,
+    organization_id: UUID,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
     config = db.query(RiskConfiguration).filter(
-        RiskConfiguration.organisation_id == organisation_id
+        RiskConfiguration.organization_id == organization_id
     ).first()
 
     if not config:
         # Implementation note.
         config = RiskConfiguration(
-            organisation_id=organisation_id,
+            organization_id=organization_id,
             impact_levels=["Faible", "Moyen", "Élevé"],
             probability_levels=["Faible", "Moyen", "Élevée"],
         )
@@ -34,9 +34,9 @@ def get_configuration(
     return config
 
 
-@router.put("/{organisation_id}", response_model=RiskConfigurationOut)
+@router.put("/{organization_id}", response_model=RiskConfigurationOut)
 def update_configuration(
-    organisation_id: UUID,
+    organization_id: UUID,
     data: RiskConfigurationUpdate,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
@@ -45,11 +45,11 @@ def update_configuration(
         raise HTTPException(status_code=400, detail="At least 2 impact and probability levels are required")
 
     config = db.query(RiskConfiguration).filter(
-        RiskConfiguration.organisation_id == organisation_id
+        RiskConfiguration.organization_id == organization_id
     ).first()
 
     if not config:
-        config = RiskConfiguration(organisation_id=organisation_id)
+        config = RiskConfiguration(organization_id=organization_id)
         db.add(config)
 
     config.impact_levels = data.impact_levels

@@ -20,7 +20,7 @@ export const getCurrentUser = () => {
   }
 }
 
-export const getFullName = (user) => [user?.prenom, user?.nom].filter(Boolean).join(' ')
+export const getFullName = (user) => [user?.first_name, user?.name].filter(Boolean).join(' ')
 
 export const hasRole = (user, allowedRoles) => Boolean(user && allowedRoles.includes(user.role))
 

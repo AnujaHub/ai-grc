@@ -42,7 +42,7 @@ function Login() {
         className="w-full max-w-sm"
       >
         <div className="flex justify-center mb-10">
-          <Logo taille="grand" />
+          <Logo size_bytes="grand" />
         </div>
 
         <div className="bg-white border border-line p-8">

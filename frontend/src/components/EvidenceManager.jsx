@@ -112,7 +112,7 @@ function EvidenceManager({ responseId }) {
 
   const handleDownload = async (id, fileName) => {
     try {
-      const response = await api.get(`/preuves/${id}/telecharger`, { responseType: 'blob' })
+      const response = await api.get(`/evidence/${id}/telecharger`, { responseType: 'blob' })
       const url = window.URL.createObjectURL(new Blob([response.data]))
       const link = document.createElement('a')
       link.href = url
@@ -136,17 +136,17 @@ function EvidenceManager({ responseId }) {
         <ul className="mb-3 space-y-2">
           {evidence.map((p) => {
             const Icon = ICONS[p.file_type] || File
-            const verdict = VERDICTS[p.analyse_verdict]
+            const verdict = VERDICTS[p.analysis_verdict]
             return (
               <li key={p.id} className="rounded-lg border border-line bg-paper px-3 py-2.5">
                 <div className="flex flex-wrap items-center gap-3 text-sm">
                   <Icon className="h-4 w-4 shrink-0 text-ink-soft" />
                   <span className="min-w-0 flex-1 truncate text-ink">{p.file_name}</span>
-                  <span className="font-mono text-xs text-ink-soft">{sizeLabel(p.taille)}</span>
+                  <span className="font-mono text-xs text-ink-soft">{sizeLabel(p.size_bytes)}</span>
                   {editable && ['pdf', 'png', 'jpg', 'jpeg'].includes(p.file_type) && (
                     <button type="button" onClick={() => handleAnalyse(p.id)} disabled={analysing === p.id}
                       className="inline-flex items-center gap-1 text-xs text-sky-300 hover:underline disabled:opacity-50 cursor-pointer">
-                      <Sparkles className="h-3.5 w-3.5" /> {analysing === p.id ? 'Analysing…' : p.analyse_verdict ? 'Re-analyse' : 'Analyse (AI)'}
+                      <Sparkles className="h-3.5 w-3.5" /> {analysing === p.id ? 'Analysing…' : p.analysis_verdict ? 'Re-analyse' : 'Analyse (AI)'}
                     </button>
                   )}
                   <button type="button" onClick={() => handleDownload(p.id, p.file_name)} className="rounded p-1 text-ink-soft hover:text-accent cursor-pointer" aria-label={`Download ${p.file_name}`}>
@@ -164,7 +164,7 @@ function EvidenceManager({ responseId }) {
                       <Sparkles className="h-3 w-3" /> AI suggestion · not a confirmed decision
                       <span className={`rounded-full border px-2 py-0.5 normal-case tracking-normal ${verdict.cls}`}>{verdict.label}</span>
                     </p>
-                    <p className="text-xs text-ink-soft">{p.analyse_details}</p>
+                    <p className="text-xs text-ink-soft">{p.analysis_details}</p>
                   </div>
                 )}
               </li>

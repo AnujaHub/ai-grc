@@ -13,18 +13,18 @@ export const getEvaluationDetail = async (evaluationId) => {
 export const createEvaluation = async (typeEvaluation, referentielId, systemeIaId, organisationId) => {
   const response = await api.post('/evaluations/', {
     evaluation_type: typeEvaluation,
-    referentiel_id: referentielId,
-    systeme_ia_id: systemeIaId || null,
-    organisation_id: organisationId || null,
+    framework_id: referentielId,
+    ai_system_id: systemeIaId || null,
+    organization_id: organisationId || null,
   })
   return response.data
 }
 
-export const repondreAClause = async (evaluationId, clauseId, reponse, commentaire) => {
-  const response = await api.post(`/evaluations/${evaluationId}/reponses`, {
+export const repondreAClause = async (evaluationId, clauseId, answer, comment) => {
+  const response = await api.post(`/evaluations/${evaluationId}/responses`, {
     clause_id: clauseId,
-    reponse: reponse,
-    commentaire: commentaire,
+    response: answer,
+    comment: comment,
   })
   return response.data
 }

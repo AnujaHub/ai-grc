@@ -87,13 +87,13 @@ function AuditLog() {
                   <td className="px-4 py-3 font-mono text-xs text-ink-soft whitespace-nowrap">
                     {new Date(e.action_date).toLocaleString()}
                   </td>
-                  <td className="px-4 py-3 text-ink">{e.utilisateur_email || 'System'}</td>
+                  <td className="px-4 py-3 text-ink">{e.user_email || 'System'}</td>
                   <td className="px-4 py-3">
                     <span className={`font-mono text-xs font-medium ${COULEUR_ACTION[e.action] || 'text-ink'}`}>
                       {LIBELLE_ACTION[e.action] || e.action}
                     </span>
                   </td>
-                  <td className="px-4 py-3 text-ink-soft">{e.ressource_type}</td>
+                  <td className="px-4 py-3 text-ink-soft">{e.resource_type}</td>
                   <td className="px-4 py-3 text-ink-soft text-xs">{e.details || '—'}</td>
                 </tr>
               ))}

@@ -27,7 +27,7 @@ const labelClass = 'mb-1.5 block text-xs font-semibold uppercase tracking-wide t
 
 const rowValue = (row, key) => (key === 'score' ? row.score ?? -1 : row[key])
 
-function NewAssessment({ systemes, organizations, referentiels, onCreate }) {
+function NewAssessment({ systemes, organizations, frameworks, onCreate }) {
   const [type, setType] = useState('Systeme_IA')
   const [targetId, setTargetId] = useState('')
   const [referentielId, setReferentielId] = useState('')
@@ -67,7 +67,7 @@ function NewAssessment({ systemes, organizations, referentiels, onCreate }) {
             <select id="target" value={targetId} onChange={(e) => { setTargetId(e.target.value); setErrors((er) => ({ ...er, target: undefined })) }}
               className={`${selectClass} ${errors.target ? 'border-danger' : ''}`}>
               <option value="">Select…</option>
-              {targets.map((t) => <option key={t.id} value={t.id}>{t.nom}</option>)}
+              {targets.map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}
             </select>
             {errors.target && <p className="mt-1.5 text-xs text-danger">{errors.target}</p>}
             {targets.length === 0 && <p className="mt-1.5 text-xs text-ink-soft">None available yet.</p>}
@@ -77,7 +77,7 @@ function NewAssessment({ systemes, organizations, referentiels, onCreate }) {
             <select id="framework" value={referentielId} onChange={(e) => { setReferentielId(e.target.value); setErrors((er) => ({ ...er, referentiel: undefined })) }}
               className={`${selectClass} ${errors.referentiel ? 'border-danger' : ''}`}>
               <option value="">Select…</option>
-              {referentiels.map((r) => <option key={r.id} value={r.id}>{r.nom}</option>)}
+              {frameworks.map((r) => <option key={r.id} value={r.id}>{r.name}</option>)}
             </select>
             {errors.referentiel && <p className="mt-1.5 text-xs text-danger">{errors.referentiel}</p>}
           </div>
@@ -100,7 +100,7 @@ function Assessments() {
   useEffect(() => {
     let active = true
     Promise.all([getEvaluations(), getSystemesIA(), getReferentiels(), getOrganisations()])
-      .then(([evaluations, systemes, referentiels, organizations]) => active && setData({ evaluations, systemes, referentiels, organizations }))
+      .then(([evaluations, systemes, frameworks, organizations]) => active && setData({ evaluations, systemes, frameworks, organizations }))
       .catch(() => active && setError('Unable to load assessment data. Make sure the backend is running.'))
     return () => {
       active = false
@@ -109,13 +109,13 @@ function Assessments() {
 
   const rows = useMemo(() => {
     if (!data) return []
-    const name = (list, id) => list.find((x) => x.id === id)?.nom
+    const name = (list, id) => list.find((x) => x.id === id)?.name
     return data.evaluations.map((ev) => ({
       id: ev.id,
-      target: ev.evaluation_type === 'Organisation' ? name(data.organizations, ev.organisation_id) || 'Unknown organization' : name(data.systemes, ev.systeme_ia_id) || 'Unknown AI system',
+      target: ev.evaluation_type === 'Organisation' ? name(data.organizations, ev.organization_id) || 'Unknown organization' : name(data.systemes, ev.ai_system_id) || 'Unknown AI system',
       kind: ev.evaluation_type === 'Organisation' ? 'Organization-wide' : 'AI system',
-      framework: name(data.referentiels, ev.referentiel_id) || 'Unknown',
-      status: STATUS_MAP[ev.statut] || 'not_started',
+      framework: name(data.frameworks, ev.framework_id) || 'Unknown',
+      status: STATUS_MAP[ev.status] || 'not_started',
       score: ev.score,
       started: ev.start_date,
     }))
@@ -167,7 +167,7 @@ function Assessments() {
             <KpiCard icon={Gauge} label="Average score" value={average ?? '—'} suffix={average !== null ? '%' : ''} hint="of completed" delay={0.15} />
           </div>
 
-          {authorized && <NewAssessment systemes={data.systemes} organizations={data.organizations} referentiels={data.referentiels} onCreate={handleCreate} />}
+          {authorized && <NewAssessment systemes={data.systemes} organizations={data.organizations} frameworks={data.frameworks} onCreate={handleCreate} />}
 
           <FilterBar resultCount={filtered.length} showReset={Boolean(filters.search || filters.status)} onReset={() => { setFilters({ search: '', status: '' }); resetPage() }}>
             <SearchInput value={filters.search} onChange={set('search')} placeholder="Search target or framework…" className="sm:w-72" />

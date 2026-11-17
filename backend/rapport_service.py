@@ -11,7 +11,7 @@ import os
 
 from contenu_statique_rapport import CADRE_REGLEMENTAIRE, DEMARCHE_GOUVERNANCE_IA, GLOSSAIRE, REFERENCES
 
-DOSSIER_RAPPORTS = "rapports"
+DOSSIER_RAPPORTS = "reports"
 
 
 def safe_paragraph_text(value):
@@ -196,7 +196,7 @@ def generate_report_pdf(donnees):
     elements.append(Spacer(1, 8))
     elements.append(Paragraph(
         f"<b>Framework used:</b> {safe_paragraph_text(donnees['referentiel_nom'])}. "
-        f"The assessment covers {donnees['nb_clauses_totales']} requirements across {len(donnees['chapitres'])} chapters.",
+        f"The assessment covers {donnees['nb_clauses_totales']} requirements across {len(donnees['chapters'])} chapters.",
         style_normal
     ))
     elements.append(PageBreak())
@@ -211,17 +211,17 @@ def generate_report_pdf(donnees):
     # ============ 4. RISK ANALYSIS ============
     elements.append(Paragraph("4. Analysis of identified risks", style_section))
 
-    if not donnees['risques']:
+    if not donnees['risks']:
         elements.append(Paragraph("No risks were identified for this assessment.", style_normal))
     else:
-        for i, r in enumerate(donnees['risques'], start=1):
-            elements.append(Paragraph(f"Risk R{i} — {safe_paragraph_text(r['titre'])}", style_sous_section))
+        for i, r in enumerate(donnees['risks'], start=1):
+            elements.append(Paragraph(f"Risk R{i} — {safe_paragraph_text(r['title'])}", style_sous_section))
             if r['description']:
                 elements.append(Paragraph(safe_paragraph_text(r['description']), style_normal))
             elements.append(Spacer(1, 4))
 
             risk_data = [["Category", "Impact", "Probability", "Criticality level"]]
-            risk_data.append([r['categorie'] or "-", libelle_anglais(r['impact']), libelle_anglais(r['probabilite']), libelle_anglais(r['niveau_risque'])])
+            risk_data.append([r['category'] or "-", libelle_anglais(r['impact']), libelle_anglais(r['probability']), libelle_anglais(r['risk_level'])])
             table_r = Table(risk_data, colWidths=[4*cm, 3.5*cm, 3.5*cm, 4*cm])
             style_r = [
                 ('BACKGROUND', (0, 0), (-1, 0), COULEUR_PRINCIPALE),
@@ -231,7 +231,7 @@ def generate_report_pdf(donnees):
                 ('TOPPADDING', (0, 0), (-1, -1), 5),
                 ('BOTTOMPADDING', (0, 0), (-1, -1), 5),
             ]
-            couleur_niv = RISK_COLORS.get(r['niveau_risque'])
+            couleur_niv = RISK_COLORS.get(r['risk_level'])
             if couleur_niv:
                 style_r.append(('TEXTCOLOR', (3, 1), (3, 1), couleur_niv))
                 style_r.append(('FONTNAME', (3, 1), (3, 1), 'Helvetica-Bold'))
@@ -243,8 +243,8 @@ def generate_report_pdf(donnees):
     # Implementation note.
     elements.append(Paragraph("5. Risk map and criticality matrix", style_section))
 
-    impact_levels = donnees.get('niveaux_impact', ["Faible", "Moyen", "Élevé"])
-    probability_levels = donnees.get('niveaux_probabilite', ["Faible", "Moyen", "Élevée"])
+    impact_levels = donnees.get('impact_levels', ["Faible", "Moyen", "Élevé"])
+    probability_levels = donnees.get('probability_levels', ["Faible", "Moyen", "Élevée"])
     nb_i = len(impact_levels)
     nb_p = len(probability_levels)
 
@@ -288,11 +288,11 @@ def generate_report_pdf(donnees):
     elements.append(table_matrice)
     elements.append(Spacer(1, 20))
 
-    if donnees['risques']:
+    if donnees['risks']:
         elements.append(Paragraph("Positioning of identified risks:", style_sous_section))
         data_position = [["Ref.", "Risk", "Impact", "Probability", "Criticality"]]
-        for i, r in enumerate(donnees['risques'], start=1):
-            data_position.append([f"R{i}", r['titre'], libelle_anglais(r['impact']), libelle_anglais(r['probabilite']), libelle_anglais(r['niveau_risque'])])
+        for i, r in enumerate(donnees['risks'], start=1):
+            data_position.append([f"R{i}", r['title'], libelle_anglais(r['impact']), libelle_anglais(r['probability']), libelle_anglais(r['risk_level'])])
         table_pos = Table(data_position, colWidths=[1.5*cm, 6*cm, 3*cm, 3*cm, 2.5*cm])
         style_pos = [
             ('BACKGROUND', (0, 0), (-1, 0), COULEUR_PRINCIPALE),
@@ -302,8 +302,8 @@ def generate_report_pdf(donnees):
             ('TOPPADDING', (0, 0), (-1, -1), 5),
             ('BOTTOMPADDING', (0, 0), (-1, -1), 5),
         ]
-        for i, r in enumerate(donnees['risques'], start=1):
-            couleur = RISK_COLORS.get(r['niveau_risque'])
+        for i, r in enumerate(donnees['risks'], start=1):
+            couleur = RISK_COLORS.get(r['risk_level'])
             if couleur:
                 style_pos.append(('TEXTCOLOR', (4, i), (4, i), couleur))
                 style_pos.append(('FONTNAME', (4, i), (4, i), 'Helvetica-Bold'))
@@ -314,14 +314,14 @@ def generate_report_pdf(donnees):
     # ============ 6. GAP ANALYSIS ============
     elements.append(Paragraph("6. Compliance assessment (gap analysis)", style_section))
 
-    for chapitre in donnees['chapitres']:
-        elements.append(Paragraph(f"{chapitre['numero']}. {safe_paragraph_text(chapitre['titre'])}", style_sous_section))
+    for chapitre in donnees['chapters']:
+        elements.append(Paragraph(f"{chapitre['number']}. {safe_paragraph_text(chapitre['title'])}", style_sous_section))
 
         data_table = [["Clause", "Answer", "Gap", "Department"]]
         for clause_info in chapitre['clauses']:
             data_table.append([
-                Paragraph(f"{clause_info['numero']} — {safe_paragraph_text(clause_info['titre'])}", style_petit),
-                libelle_anglais(clause_info['reponse']) if clause_info['reponse'] else "Not answered",
+                Paragraph(f"{clause_info['number']} — {safe_paragraph_text(clause_info['title'])}", style_petit),
+                libelle_anglais(clause_info['response']) if clause_info['response'] else "Not answered",
                 clause_info['ecart'] or "-",
                 clause_info['departement'] or "-",
             ])
@@ -337,7 +337,7 @@ def generate_report_pdf(donnees):
             ('BOTTOMPADDING', (0, 0), (-1, -1), 4),
         ]
         for i, clause_info in enumerate(chapitre['clauses'], start=1):
-            couleur = LEVEL_COLORS.get(clause_info['reponse'])
+            couleur = LEVEL_COLORS.get(clause_info['response'])
             if couleur:
                 style_commandes.append(('TEXTCOLOR', (1, i), (1, i), couleur))
                 style_commandes.append(('FONTNAME', (1, i), (1, i), 'Helvetica-Bold'))
@@ -351,12 +351,12 @@ def generate_report_pdf(donnees):
     elements.append(Paragraph("7. Prioritized remediation plan", style_section))
 
     all_actions = []
-    for i, r in enumerate(donnees['risques'], start=1):
+    for i, r in enumerate(donnees['risks'], start=1):
         for a in r.get('actions', []):
             all_actions.append({
                 "risque_ref": f"R{i}",
-                "risque_titre": r['titre'],
-                "risque_niveau": r['niveau_risque'],
+                "risque_titre": r['title'],
+                "risque_niveau": r['risk_level'],
                 **a
             })
 
@@ -370,9 +370,9 @@ def generate_report_pdf(donnees):
         for a in all_actions:
             action_data.append([
                 a['risque_ref'],
-                Paragraph(f"{safe_paragraph_text(a['titre'])} (linked to: {safe_paragraph_text(a['risque_titre'])})", style_petit),
-                a['date_echeance'],
-                libelle_anglais(a['statut']),
+                Paragraph(f"{safe_paragraph_text(a['title'])} (linked to: {safe_paragraph_text(a['risque_titre'])})", style_petit),
+                a['due_date'],
+                libelle_anglais(a['status']),
             ])
         actions_table = Table(action_data, colWidths=[1.5*cm, 8.5*cm, 3*cm, 3*cm])
         actions_style = [
@@ -409,7 +409,7 @@ def generate_report_pdf(donnees):
         ["Compliance level", overall_level],
         ["Assessed clauses", str(donnees.get('nb_clauses_totales', 0))],
         ["Non-compliant or partial clauses", str(donnees.get('nb_clauses_non_conformes', 0))],
-        ["Identified risks", str(len(donnees['risques']))],
+        ["Identified risks", str(len(donnees['risks']))],
         ["High-level risks", str(donnees.get('nb_risques_eleves', 0))],
         ["Open (untreated) risks", str(donnees.get('nb_risques_ouverts', 0))],
         ["Defined corrective actions", str(len(all_actions))],

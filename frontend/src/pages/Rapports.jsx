@@ -7,7 +7,7 @@ import { getSystemesIA } from '../services/systemeIaService'
 import { getOrganisations } from '../services/organisationService'
 
 function Reports() {
-  const [rapports, setRapports] = useState([])
+  const [reports, setRapports] = useState([])
   const [evaluations, setEvaluations] = useState([])
   const [systemes, setSystemes] = useState([])
   const [organizations, setOrganizations] = useState([])
@@ -53,12 +53,12 @@ function Reports() {
     const evaluation = evaluations.find((e) => e.id === evaluationId)
     if (!evaluation) return { cible: 'Unknown', organisation: 'Unknown' }
     if (evaluation.evaluation_type === 'Organisation') {
-      const org = organizations.find((o) => o.id === evaluation.organisation_id)
-      return { cible: 'Organization-wide governance', organisation: org ? org.nom : 'Unknown' }
+      const org = organizations.find((o) => o.id === evaluation.organization_id)
+      return { cible: 'Organization-wide governance', organisation: org ? org.name : 'Unknown' }
     }
-    const systeme = systemes.find((s) => s.id === evaluation.systeme_ia_id)
-    const org = systeme ? organizations.find((o) => o.id === systeme.organisation_id) : null
-    return { cible: systeme ? systeme.nom : 'Unknown', organisation: org ? org.nom : 'Unknown' }
+    const systeme = systemes.find((s) => s.id === evaluation.ai_system_id)
+    const org = systeme ? organizations.find((o) => o.id === systeme.organization_id) : null
+    return { cible: systeme ? systeme.name : 'Unknown', organisation: org ? org.name : 'Unknown' }
   }
 
   return (
@@ -71,7 +71,7 @@ function Reports() {
 
         {error && <p className="text-danger text-sm mb-4">{error}</p>}
 
-        {rapports.length === 0 ? (
+        {reports.length === 0 ? (
           <p className="text-ink-soft text-sm">
             No reports generated yet. Open a completed assessment and click “Generate PDF report”.
           </p>
@@ -88,13 +88,13 @@ function Reports() {
                 </tr>
               </thead>
               <tbody>
-                {rapports.map((rapport) => {
+                {reports.map((rapport) => {
                   const infos = getInfosEvaluation(rapport.evaluation_id)
                   return (
                     <tr key={rapport.id} className="border-b border-line last:border-0 hover:bg-paper/60">
                       <td className="px-4 py-3 text-ink">{infos.organisation}</td>
                       <td className="px-4 py-3 text-ink-soft">{infos.cible}</td>
-                      <td className="px-4 py-3 font-mono text-ink">{rapport.score_global !== null ? `${rapport.score_global}%` : '—'}</td>
+                      <td className="px-4 py-3 font-mono text-ink">{rapport.overall_score !== null ? `${rapport.overall_score}%` : '—'}</td>
                       <td className="px-4 py-3 font-mono text-xs text-ink-soft">{new Date(rapport.generation_date).toLocaleString()}</td>
                       <td className="px-4 py-3 text-right space-x-3">
                         <button

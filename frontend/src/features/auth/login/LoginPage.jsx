@@ -7,7 +7,6 @@ import AuthLayout from '../components/AuthLayout'
 import AuthCard from '../components/AuthCard'
 import AuthHeader from '../components/AuthHeader'
 import { validateLogin } from '../utils/validation'
-import { MFA_ENABLED_FOR_DEMO } from '../services/authMockService'
 
 function LoginPage() {
   const navigate = useNavigate()
@@ -37,7 +36,7 @@ function LoginPage() {
       const data = await login(form.email, form.password)
       localStorage.setItem('token', data.access_token)
       localStorage.setItem('utilisateur', JSON.stringify(data.utilisateur))
-      navigate(MFA_ENABLED_FOR_DEMO ? '/mfa-verify' : '/dashboard')
+      navigate('/dashboard')
     } catch (err) {
       if (!err.response) {
         setServerError('Unable to reach the server. Make sure the backend is running on port 8000.')

@@ -26,8 +26,8 @@ function EvaluationDetail() {
   const navigate = useNavigate()
 
   const [evaluation, setEvaluation] = useState(null)
-  const [chapitres, setChapitres] = useState([])
-  const [reponses, setReponses] = useState({})
+  const [chapters, setChapitres] = useState([])
+  const [responses, setReponses] = useState({})
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(true)
   const [genererationIA, setGenerationIA] = useState(false)
@@ -37,13 +37,13 @@ function EvaluationDetail() {
   const chargerDonnees = useCallback(async () => {
     try {
       const evalData = await getEvaluationDetail(evaluationId)
-      const chapitresData = await getChapitres(evalData.referentiel_id)
+      const chapitresData = await getChapitres(evalData.framework_id)
       setEvaluation(evalData)
       setChapitres(chapitresData)
 
       const reponsesInitiales = {}
-      evalData.reponses.forEach((r) => {
-        reponsesInitiales[r.clause_id] = { reponse: r.reponse || '', commentaire: r.commentaire || '' }
+      evalData.responses.forEach((r) => {
+        reponsesInitiales[r.clause_id] = { response: r.response || '', comment: r.comment || '' }
       })
       setReponses(reponsesInitiales)
       setLoading(false)
@@ -60,10 +60,10 @@ function EvaluationDetail() {
   }
 
   const handleSave = async (clauseId) => {
-    const donnee = reponses[clauseId]
-    if (!donnee || !donnee.reponse) { alert('Select a response before saving'); return }
+    const donnee = responses[clauseId]
+    if (!donnee || !donnee.response) { alert('Select a response before saving'); return }
     try {
-      await repondreAClause(evaluationId, clauseId, donnee.reponse, donnee.commentaire || '')
+      await repondreAClause(evaluationId, clauseId, donnee.response, donnee.comment || '')
       await chargerDonnees()
     } catch {
       alert('Save failed')
@@ -105,14 +105,14 @@ function EvaluationDetail() {
   }
 
   const getReponseIdPourClause = (clauseId) => {
-    const reponseExistante = evaluation.reponses.find((r) => r.clause_id === clauseId)
+    const reponseExistante = evaluation.responses.find((r) => r.clause_id === clauseId)
     return reponseExistante ? reponseExistante.id : null
   }
 
   if (loading) return <div><Navbar /><div className="max-w-4xl mx-auto px-6 py-10 text-ink-soft font-mono text-sm">Loading...</div></div>
   if (error) return <div><Navbar /><div className="max-w-4xl mx-auto px-6 py-10 text-danger">{error}</div></div>
 
-  const chapitresFiltres = chapitres
+  const chapitresFiltres = chapters
     .filter((ch) => ch.clauses.some((c) => c.evaluation_type === evaluation.evaluation_type))
     .map((ch) => ({ ...ch, clauses: ch.clauses.filter((c) => c.evaluation_type === evaluation.evaluation_type) }))
 
@@ -128,11 +128,11 @@ function EvaluationDetail() {
           <div>
             <h1 className="font-display text-xl text-ink mb-1">Assessment questionnaire</h1>
             <p className="text-sm text-ink-soft">
-              Status: <span className="font-medium text-ink">{displayLabel(evaluation.statut)}</span>
+              Status: <span className="font-medium text-ink">{displayLabel(evaluation.status)}</span>
             </p>
 
             <div className="flex flex-wrap gap-3 mt-4">
-              {authorized && evaluation.statut !== 'Terminée' && (
+              {authorized && evaluation.status !== 'Terminée' && (
                 <button onClick={handleFinaliser}
                   className="px-4 py-2 bg-accent text-white text-sm font-medium cursor-pointer hover:opacity-90">
                   Complete and calculate score
@@ -144,7 +144,7 @@ function EvaluationDetail() {
                   {genererationIA ? 'Analyzing...' : 'Generate risks (AI)'}
                 </button>
               )}
-              {evaluation.statut === 'Terminée' && (
+              {evaluation.status === 'Terminée' && (
                 <button onClick={handleGenererRapport} disabled={genererationRapport}
                   className="px-4 py-2 border border-line text-ink-soft text-sm font-medium cursor-pointer hover:border-ink hover:text-ink disabled:opacity-50">
                   {genererationRapport ? 'Generating...' : 'Generate PDF report'}
@@ -154,11 +154,11 @@ function EvaluationDetail() {
           </div>
 
           {evaluation.score !== null && (
-            <ComplianceBadge score={evaluation.score} taille={90} />
+            <ComplianceBadge score={evaluation.score} size_bytes={90} />
           )}
         </div>
 
-        <ComplianceSimulator reponses={evaluation.reponses} chapitresFiltres={chapitresFiltres} />
+        <ComplianceSimulator responses={evaluation.responses} chapitresFiltres={chapitresFiltres} />
         {chapitresFiltres.map((chapitre, idxChap) => (
           <motion.div
             key={chapitre.id}
@@ -168,19 +168,19 @@ function EvaluationDetail() {
             className="mb-6"
           >
             <h2 className="font-display text-lg text-ink mb-3 pb-2 border-b border-line">
-              {chapitre.numero}. {chapitre.titre}
+              {chapitre.number}. {chapitre.title}
             </h2>
 
             {chapitre.clauses.map((clause) => (
               <div key={clause.id} className="bg-white border border-line p-5 mb-3">
                 <div className="flex items-start justify-between gap-4 mb-2">
                   <p className="font-medium text-ink text-sm">
-                    <span className="font-mono text-ink-soft mr-2">{clause.numero}</span>
-                    {clause.titre}
+                    <span className="font-mono text-ink-soft mr-2">{clause.number}</span>
+                    {clause.title}
                   </p>
-                  {clause.departement_suggere && (
+                  {clause.suggested_department && (
                     <span className="shrink-0 font-mono text-[10px] uppercase tracking-wide text-ink-soft border border-line px-2 py-0.5">
-                      {clause.departement_suggere}
+                      {clause.suggested_department}
                     </span>
                   )}
                 </div>
@@ -191,13 +191,13 @@ function EvaluationDetail() {
                     <label key={option} className="flex items-center gap-1.5 text-sm cursor-pointer">
                       <input
                         type="radio"
-                        name={`reponse-${clause.id}`}
+                        name={`response-${clause.id}`}
                         value={option}
-                        checked={reponses[clause.id]?.reponse === option}
-                        onChange={(e) => handleChangeReponse(clause.id, 'reponse', e.target.value)}
+                        checked={responses[clause.id]?.response === option}
+                        onChange={(e) => handleChangeReponse(clause.id, 'response', e.target.value)}
                         className="accent-accent"
                       />
-                      <span className={reponses[clause.id]?.reponse === option ? `font-medium ${COULEUR_REPONSE[option]}` : 'text-ink-soft'}>
+                      <span className={responses[clause.id]?.response === option ? `font-medium ${COULEUR_REPONSE[option]}` : 'text-ink-soft'}>
                         {option}
                       </span>
                     </label>
@@ -209,8 +209,8 @@ function EvaluationDetail() {
                     <input
                       type="text"
                       placeholder="Comment (optional)"
-                      value={reponses[clause.id]?.commentaire || ''}
-                      onChange={(e) => handleChangeReponse(clause.id, 'commentaire', e.target.value)}
+                      value={responses[clause.id]?.comment || ''}
+                      onChange={(e) => handleChangeReponse(clause.id, 'comment', e.target.value)}
                       className="flex-1 px-3 py-1.5 border border-line focus:border-accent outline-none bg-paper text-sm"
                     />
                     <button
@@ -221,8 +221,8 @@ function EvaluationDetail() {
                     </button>
                   </div>
                 ) : (
-                  reponses[clause.id]?.commentaire && (
-                    <p className="text-ink-soft text-xs italic">« {reponses[clause.id].commentaire} »</p>
+                  responses[clause.id]?.comment && (
+                    <p className="text-ink-soft text-xs italic">« {responses[clause.id].comment} »</p>
                   )
                 )}
 

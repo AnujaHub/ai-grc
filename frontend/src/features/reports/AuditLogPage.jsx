@@ -19,13 +19,13 @@ const RESOURCES = { Organisation: 'Organization', Evaluation: 'Assessment', Risq
 
 const resourceLabel = (type) => RESOURCES[type] || type
 const actionLabel = (action) => ACTIONS[action]?.label || action
-const value = (row, key) => (key === 'action_date' ? new Date(row.action_date).getTime() : key === 'user' ? row.utilisateur_email || 'System' : row[key])
+const value = (row, key) => (key === 'action_date' ? new Date(row.action_date).getTime() : key === 'user' ? row.user_email || 'System' : row[key])
 const formatDateTime = (iso) => new Date(iso).toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' })
 
 const toCsv = (rows) => {
   const escape = (v) => `"${String(v ?? '').replace(/"/g, '""')}"`
   const header = ['Date', 'User', 'Action', 'Resource', 'Resource ID', 'Details']
-  const lines = rows.map((e) => [new Date(e.action_date).toISOString(), e.utilisateur_email || 'System', actionLabel(e.action), resourceLabel(e.ressource_type), e.ressource_id, e.details].map(escape).join(','))
+  const lines = rows.map((e) => [new Date(e.action_date).toISOString(), e.user_email || 'System', actionLabel(e.action), resourceLabel(e.resource_type), e.resource_id, e.details].map(escape).join(','))
   return [header.map(escape).join(','), ...lines].join('\n')
 }
 
@@ -48,8 +48,8 @@ function AuditLogPage() {
   const filtered = useMemo(() => (entries || []).filter((e) => {
     const q = filters.search.trim().toLowerCase()
     const at = new Date(e.action_date)
-    return (!q || `${e.utilisateur_email || 'system'} ${e.details || ''} ${e.ressource_id || ''}`.toLowerCase().includes(q)) &&
-      (!filters.resource || e.ressource_type === filters.resource) &&
+    return (!q || `${e.user_email || 'system'} ${e.details || ''} ${e.resource_id || ''}`.toLowerCase().includes(q)) &&
+      (!filters.resource || e.resource_type === filters.resource) &&
       (!filters.action || e.action === filters.action) &&
       (!filters.from || at >= new Date(`${filters.from}T00:00:00`)) &&
       (!filters.to || at <= new Date(`${filters.to}T23:59:59`))
@@ -72,7 +72,7 @@ function AuditLogPage() {
     toast(`${filtered.length} events exported.`)
   }
 
-  const resourceTypes = [...new Set((entries || []).map((e) => e.ressource_type))]
+  const resourceTypes = [...new Set((entries || []).map((e) => e.resource_type))]
   const actionTypes = [...new Set((entries || []).map((e) => e.action))]
 
   return (
@@ -103,7 +103,7 @@ function AuditLogPage() {
                       {head('Date', 'action_date', 'px-5 py-3')}
                       {head('User', 'user', 'px-3 py-3')}
                       {head('Action', 'action', 'px-3 py-3')}
-                      {head('Resource', 'ressource_type', 'px-3 py-3')}
+                      {head('Resource', 'resource_type', 'px-3 py-3')}
                       <th className="px-3 py-3 font-semibold uppercase tracking-wide">Details</th>
                       <th className="px-5 py-3" />
                     </tr>
@@ -112,9 +112,9 @@ function AuditLogPage() {
                     {rows.map((e) => (
                       <tr key={e.id} onClick={() => setSelected(e)} className="cursor-pointer border-b border-line last:border-0 hover:bg-paper">
                         <td className="whitespace-nowrap px-5 py-2.5 font-mono text-xs text-ink-soft">{formatDateTime(e.action_date)}</td>
-                        <td className="px-3 py-2.5 text-ink">{e.utilisateur_email || 'System'}</td>
+                        <td className="px-3 py-2.5 text-ink">{e.user_email || 'System'}</td>
                         <td className="px-3 py-2.5"><StatusBadge status={e.action} label={actionLabel(e.action)} tone={ACTIONS[e.action]?.tone} /></td>
-                        <td className="px-3 py-2.5 text-ink-soft">{resourceLabel(e.ressource_type)}</td>
+                        <td className="px-3 py-2.5 text-ink-soft">{resourceLabel(e.resource_type)}</td>
                         <td className="max-w-xs truncate px-3 py-2.5 text-xs text-ink-soft">{e.details || '—'}</td>
                         <td className="px-5 py-2.5 text-right"><Eye className="ml-auto h-4 w-4 text-ink-soft" /></td>
                       </tr>
@@ -133,11 +133,11 @@ function AuditLogPage() {
           <dl className="divide-y divide-line text-sm">
             {[
               ['Event ID', <span key="id" className="font-mono text-xs">{selected.id}</span>],
-              ['User', selected.utilisateur_email || 'System'],
-              ['User ID', <span key="uid" className="font-mono text-xs">{selected.utilisateur_id || '—'}</span>],
+              ['User', selected.user_email || 'System'],
+              ['User ID', <span key="uid" className="font-mono text-xs">{selected.user_id || '—'}</span>],
               ['Action', actionLabel(selected.action)],
-              ['Resource', resourceLabel(selected.ressource_type)],
-              ['Resource ID', <span key="rid" className="font-mono text-xs">{selected.ressource_id || '—'}</span>],
+              ['Resource', resourceLabel(selected.resource_type)],
+              ['Resource ID', <span key="rid" className="font-mono text-xs">{selected.resource_id || '—'}</span>],
               ['Date', formatDateTime(selected.action_date)],
               ['Details', selected.details || '—'],
             ].map(([k, v]) => (

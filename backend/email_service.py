@@ -7,7 +7,6 @@ from urllib.request import Request, urlopen
 from dotenv import load_dotenv
 
 load_dotenv()
-
 BREVO_EMAILS_URL = "https://api.brevo.com/v3/smtp/email"
 logger = logging.getLogger(__name__)
 

@@ -1,17 +1,17 @@
 import api from './api'
 
 export const genererRapport = async (evaluationId) => {
-  const response = await api.post(`/rapports/generer/${evaluationId}`)
+  const response = await api.post(`/reports/generer/${evaluationId}`)
   return response.data
 }
 
 export const getRapports = async () => {
-  const response = await api.get('/rapports/')
+  const response = await api.get('/reports/')
   return response.data
 }
 
 export const telechargerRapport = async (rapportId) => {
-  const response = await api.get(`/rapports/${rapportId}/telecharger`, {
+  const response = await api.get(`/reports/${rapportId}/telecharger`, {
     responseType: 'blob',
   })
   const url = window.URL.createObjectURL(new Blob([response.data], { type: 'application/pdf' }))
@@ -23,7 +23,7 @@ export const telechargerRapport = async (rapportId) => {
   link.remove()
 }
 export const visualiserRapport = async (rapportId) => {
-  const response = await api.get(`/rapports/${rapportId}/telecharger`, {
+  const response = await api.get(`/reports/${rapportId}/telecharger`, {
     responseType: 'blob',
   })
   const url = window.URL.createObjectURL(new Blob([response.data], { type: 'application/pdf' }))

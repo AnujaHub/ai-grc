@@ -56,7 +56,7 @@ function Profile() {
 
   if (!profil) return <div><Navbar /><div className="max-w-2xl mx-auto px-6 py-10 text-ink-soft font-mono text-sm">Loading...</div></div>
 
-  const initiales = `${profil.prenom?.[0] || ''}${profil.nom?.[0] || ''}`.toUpperCase()
+  const initiales = `${profil.first_name?.[0] || ''}${profil.name?.[0] || ''}`.toUpperCase()
 
   return (
     <div className="min-h-screen bg-paper">
@@ -71,7 +71,7 @@ function Profile() {
               {initiales}
             </div>
             <div>
-              <p className="font-display text-lg text-ink">{profil.prenom} {profil.nom}</p>
+              <p className="font-display text-lg text-ink">{profil.first_name} {profil.name}</p>
               <p className="text-ink-soft text-sm">{profil.email}</p>
             </div>
           </div>
@@ -83,11 +83,11 @@ function Profile() {
             </div>
             <div>
               <p className="text-xs font-semibold uppercase tracking-wide text-ink-soft mb-1">Status</p>
-              <p className="text-ink text-sm">{displayLabel(profil.statut)}</p>
+              <p className="text-ink text-sm">{displayLabel(profil.status)}</p>
             </div>
             <div className="col-span-2">
               <p className="text-xs font-semibold uppercase tracking-wide text-ink-soft mb-1">Member since</p>
-              <p className="text-ink text-sm font-mono">{new Date(profil.creation_date).toLocaleDateString()}</p>
+              <p className="text-ink text-sm font-mono">{new Date(profil.created_at).toLocaleDateString()}</p>
             </div>
           </div>
         </motion.div>

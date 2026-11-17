@@ -13,7 +13,7 @@ import os
 import shutil
 from security import require_roles
 
-router = APIRouter(prefix="/preuves", tags=["Documentary Evidence"])
+router = APIRouter(prefix="/evidence", tags=["Documentary Evidence"])
 
 DOSSIER_UPLOADS = "uploads"
 ALLOWED_EXTENSIONS = {".pdf", ".docx", ".doc", ".xlsx", ".xls", ".png", ".jpg", ".jpeg"}
@@ -22,15 +22,15 @@ MAX_SIZE_MB = 10  # 10 Mo max par fichier
 
 @router.post("/", response_model=EvidenceOut)
 def upload_evidence(
-    reponse_id: UUID = Form(...),
+    response_id: UUID = Form(...),
     description: Optional[str] = Form(None),
     file: UploadFile = File(...),
     db: Session = Depends(get_db),
     current_user: User = Depends(require_roles("super_admin", "administrateur", "responsable_conformite"))
 ):
     # Implementation note.
-    reponse = db.query(Response).filter(Response.id == reponse_id).first()
-    if not reponse:
+    response = db.query(Response).filter(Response.id == response_id).first()
+    if not response:
         raise HTTPException(status_code=404, detail="Response not found")
 
     # Implementation note.
@@ -57,11 +57,11 @@ def upload_evidence(
         raise HTTPException(status_code=400, detail=f"Fichier trop volumineux (max {TAILLE_MAX_MO} Mo)")
 
     new_evidence = Evidence(
-        reponse_id=reponse_id,
+        response_id=response_id,
         file_name=file.filename,
         file_path=full_path,
         file_type=extension.replace(".", ""),
-        taille=file_size,
+        size_bytes=file_size,
         description=description,
         uploaded_by=current_user.id,
     )
@@ -71,13 +71,13 @@ def upload_evidence(
     return new_evidence
 
 
-@router.get("/reponse/{reponse_id}", response_model=List[EvidenceOut])
+@router.get("/response/{response_id}", response_model=List[EvidenceOut])
 def list_evidence_for_response(
-    reponse_id: UUID,
+    response_id: UUID,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    return db.query(Evidence).filter(Evidence.reponse_id == reponse_id).all()
+    return db.query(Evidence).filter(Evidence.response_id == response_id).all()
 
 
 @router.get("/{preuve_id}/telecharger")
@@ -146,11 +146,11 @@ def analyze_evidence(
         raise HTTPException(status_code=404, detail="File not found on the server")
 
     # Implementation note.
-    reponse = db.query(Response).filter(Response.id == preuve.reponse_id).first()
-    if not reponse:
+    response = db.query(Response).filter(Response.id == preuve.response_id).first()
+    if not response:
         raise HTTPException(status_code=404, detail="Associated response not found")
 
-    clause = db.query(Clause).filter(Clause.id == reponse.clause_id).first()
+    clause = db.query(Clause).filter(Clause.id == response.clause_id).first()
     if not clause:
         raise HTTPException(status_code=404, detail="Associated clause not found")
 
@@ -159,10 +159,10 @@ def analyze_evidence(
             texte = extraire_texte_pdf(preuve.file_path)
             if not texte.strip():
                 raise HTTPException(status_code=400, detail="Unable to extract text from this PDF (it may be scanned or image-based)")
-            resultat = analyze_evidence_text(texte, clause.titre, clause.description, reponse.reponse)
+            resultat = analyze_evidence_text(texte, clause.title, clause.description, response.response)
 
         elif preuve.file_type in ["png", "jpg", "jpeg"]:
-            resultat = analyze_evidence_image(preuve.file_path, clause.titre, clause.description, reponse.reponse)
+            resultat = analyze_evidence_image(preuve.file_path, clause.title, clause.description, response.response)
 
         else:
             raise HTTPException(status_code=400, detail="AI analysis is available only for PDFs and images")
@@ -172,13 +172,13 @@ def analyze_evidence(
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"AI analysis failed: {str(e)}")
 
-    preuve.analyse_verdict = resultat.get("verdict")
+    preuve.analysis_verdict = resultat.get("verdict")
     preuve.analysis_details = resultat.get("explication")
     preuve.analysis_date = datetime.utcnow()
     db.commit()
     db.refresh(preuve)
 
     return {
-        "verdict": preuve.analyse_verdict,
+        "verdict": preuve.analysis_verdict,
         "explication": preuve.analysis_details,
     }

@@ -1,5 +1,5 @@
-function Logo({ taille = 'normal' }) {
-  const titleSize = taille === 'grand' ? 'text-2xl' : 'text-base'
+function Logo({ size_bytes = 'normal' }) {
+  const titleSize = size_bytes === 'grand' ? 'text-2xl' : 'text-base'
 
   return (
     <div className="flex items-center gap-2.5">

@@ -29,7 +29,7 @@ DONNEES = [
         ("Shadow AI", "How are shadow AI, local experiments, public GenAI use, copilots, embedded SaaS AI and vendor AI identified and brought into governance?"),
         ("Reclassification triggers", "Do changes to data, model, prompts, RAG sources, vendor versions, user groups, decision impact or regulatory scope trigger reclassification?"),
     ]),
-    ("5", "AI Risk Management", "Organisation", "Gestion des risques", [
+    ("5", "AI Risk Management", "Organisation", "Gestion des risks", [
         ("Risk assessment", "Are AI risks assessed across model performance, data, privacy, security, conduct, financial crime, resilience, legal, outsourcing and customer harm dimensions?"),
         ("Timing of assessments", "Are risk assessments performed before development, procurement, deployment and material change, and refreshed periodically based on risk tier?"),
         ("Risk tolerance", "Are risk tolerances defined by use-case type, customer impact, automation level, reversibility, model complexity, criticality and regulatory classification?"),
@@ -145,10 +145,10 @@ def seed():
 
     referentiel = ReferenceFramework(
         code="ISO42001-MAT",
-        nom="ISO/IEC 42001 - AI Governance Maturity Assessment",
+        name="ISO/IEC 42001 - AI Governance Maturity Assessment",
         description="AI governance maturity assessment framework based on ISO/IEC 42001, ISO/IEC 23894, and the EU AI Act.",
         version="1.0",
-        statut="actif"
+        status="actif"
     )
     db.add(referentiel)
     db.commit()
@@ -156,9 +156,9 @@ def seed():
 
     for chap_numero, chapter_title, evaluation_type_local, departement, clauses in DONNEES:
         chapitre = Chapter(
-            referentiel_id=referentiel.id,
-            numero=chap_numero,
-            titre=chapter_title
+            framework_id=referentiel.id,
+            number=chap_numero,
+            title=chapter_title
         )
         db.add(chapitre)
         db.commit()
@@ -166,14 +166,14 @@ def seed():
 
         for index, (clause_title, question) in enumerate(clauses, start=1):
             clause = Clause(
-                chapitre_id=chapitre.id,
-                numero=f"{chap_numero}.{index}",
-                titre=clause_title,
+                chapter_id=chapitre.id,
+                number=f"{chap_numero}.{index}",
+                title=clause_title,
                 description=question,
                 requirement_type="Hybrid",
-                ordre=index,
+                sort_order=index,
                 evaluation_type=evaluation_type_local,
-                departement_suggere=departement,
+                suggested_department=departement,
             )
             db.add(clause)
 

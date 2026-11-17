@@ -8,7 +8,7 @@ from security import get_current_user, require_roles
 from typing import List
 from uuid import UUID
 
-router = APIRouter(prefix="/organisations", tags=["Organisations"])
+router = APIRouter(prefix="/organizations", tags=["Organisations"])
 
 @router.post("/", response_model=OrganizationOut)
 def create_organization(
@@ -16,13 +16,13 @@ def create_organization(
     db: Session = Depends(get_db),
     current_user: User = Depends(require_roles("administrateur", "super_admin"))
 ):
-    new_organization = Organization(nom=org.nom, secteur=org.secteur, pays=org.pays)
+    new_organization = Organization(name=org.name, sector=org.sector, country=org.country)
     db.add(new_organization)
     db.commit()
     db.refresh(new_organization)
 
     from audit_logger import record_action
-    record_action(db, current_user, "creation", "Organisation", str(new_organization.id), f"Name:  {new_organization.nom}")
+    record_action(db, current_user, "creation", "Organisation", str(new_organization.id), f"Name:  {new_organization.name}")
 
     return new_organization
 

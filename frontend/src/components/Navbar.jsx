@@ -80,7 +80,7 @@ function Navbar() {
     navigate(path)
   }
 
-  const initiales = utilisateur ? `${utilisateur.prenom?.[0] || ''}${utilisateur.nom?.[0] || ''}`.toUpperCase() : '?'
+  const initiales = utilisateur ? `${utilisateur.first_name?.[0] || ''}${utilisateur.name?.[0] || ''}`.toUpperCase() : '?'
   const roleLabel = ROLE_LABELS[utilisateur?.role] || utilisateur?.role
 
   return (
@@ -95,7 +95,7 @@ function Navbar() {
             <button onClick={() => navigate('/profile')} className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left hover:bg-paper-dark cursor-pointer">
               <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-accent-soft font-mono text-xs text-accent">{initiales}</div>
               <div className="min-w-0">
-                <p className="truncate text-sm font-medium text-ink">{utilisateur.prenom} {utilisateur.nom}</p>
+                <p className="truncate text-sm font-medium text-ink">{utilisateur.first_name} {utilisateur.name}</p>
                 <p className="truncate text-xs text-ink-soft">{roleLabel}</p>
               </div>
             </button>
@@ -133,7 +133,7 @@ function Navbar() {
             </div>
             <div className="flex-1 overflow-y-auto"><NavLinks onNavigate={go} /></div>
             <div className="border-t border-line pt-4">
-              <p className="px-3 text-sm text-ink">{utilisateur?.prenom} {utilisateur?.nom}</p>
+              <p className="px-3 text-sm text-ink">{utilisateur?.first_name} {utilisateur?.name}</p>
               <p className="px-3 text-xs text-ink-soft">{roleLabel}</p>
               <button onClick={handleLogout} className="mt-3 w-full px-3 py-2 text-left text-xs text-ink-soft hover:text-danger cursor-pointer">Sign out</button>
             </div>

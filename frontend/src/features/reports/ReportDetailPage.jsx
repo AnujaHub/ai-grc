@@ -29,7 +29,7 @@ function PdfPreview({ reportId }) {
   useEffect(() => {
     let active = true
     let objectUrl = null
-    api.get(`/rapports/${reportId}/telecharger`, { responseType: 'blob' })
+    api.get(`/reports/${reportId}/telecharger`, { responseType: 'blob' })
       .then((res) => {
         objectUrl = URL.createObjectURL(new Blob([res.data], { type: 'application/pdf' }))
         if (active) setUrl(objectUrl)
@@ -58,8 +58,8 @@ function ReportDetailPage() {
         const report = rows.find((r) => r.id === id)
         if (!report) throw new Error('missing')
         const evaluation = await getEvaluationDetail(report.evaluationId).catch(() => null)
-        const chapters = evaluation ? await getChapitres(evaluation.referentiel_id).catch(() => []) : []
-        const titles = Object.fromEntries(chapters.flatMap((c) => c.clauses.map((cl) => [cl.id, `${cl.numero} ${cl.titre}`])))
+        const chapters = evaluation ? await getChapitres(evaluation.framework_id).catch(() => []) : []
+        const titles = Object.fromEntries(chapters.flatMap((c) => c.clauses.map((cl) => [cl.id, `${cl.number} ${cl.title}`])))
         if (active) setData({ report, evaluation, titles })
       })
       .catch(() => active && setError('Report not found, or the backend is not reachable.'))
@@ -78,9 +78,9 @@ function ReportDetailPage() {
   }
 
   const { report, evaluation, titles } = data
-  const answers = evaluation?.reponses || []
-  const answered = answers.filter((a) => a.reponse)
-  const gaps = answered.filter((a) => a.reponse === 'Non conforme' || a.reponse === 'Partiellement conforme')
+  const answers = evaluation?.responses || []
+  const answered = answers.filter((a) => a.response)
+  const gaps = answered.filter((a) => a.response === 'Non conforme' || a.response === 'Partiellement conforme')
 
   const download = () => telechargerRapport(report.id).catch(() => toast('Download failed.', 'error'))
   const open = () => visualiserRapport(report.id).catch(() => toast('Unable to open the report.', 'error'))
@@ -109,7 +109,7 @@ function ReportDetailPage() {
         <div className="space-y-4">
           <SectionCard title="Result">
             <div className="flex items-center gap-4">
-              {report.score !== null && <ComplianceBadge score={report.score} taille={96} />}
+              {report.score !== null && <ComplianceBadge score={report.score} size_bytes={96} />}
               <dl className="flex-1 space-y-2 text-sm">
                 <div className="flex justify-between"><dt className="text-ink-soft">Questions answered</dt><dd className="font-mono text-ink">{answered.length}</dd></div>
                 <div className="flex justify-between"><dt className="text-ink-soft">Gaps</dt><dd className="font-mono text-ink">{gaps.length}</dd></div>
@@ -125,7 +125,7 @@ function ReportDetailPage() {
             {answered.length === 0 ? <p className="text-sm text-ink-soft">No answers available.</p> : (
               <ul className="space-y-3">
                 {ANSWERS.map((a) => {
-                  const n = answered.filter((x) => x.reponse === a.value).length
+                  const n = answered.filter((x) => x.response === a.value).length
                   return (
                     <li key={a.value}>
                       <div className="mb-1 flex justify-between text-sm"><span className="text-ink">{displayLabel(a.value)}</span><span className="font-mono text-ink-soft">{n}</span></div>
@@ -150,8 +150,8 @@ function ReportDetailPage() {
             {gaps.map((g) => (
               <li key={g.id} className="flex flex-col gap-1 px-5 py-3 sm:flex-row sm:items-center sm:gap-4">
                 <span className="flex-1 text-sm text-ink">{titles[g.clause_id] || 'Question'}</span>
-                {g.commentaire && <span className="text-xs italic text-ink-soft sm:max-w-xs sm:truncate">“{g.commentaire}”</span>}
-                <StatusBadge status={g.reponse === 'Non conforme' ? 'overdue' : 'pending'} label={displayLabel(g.reponse)} />
+                {g.comment && <span className="text-xs italic text-ink-soft sm:max-w-xs sm:truncate">“{g.comment}”</span>}
+                <StatusBadge status={g.response === 'Non conforme' ? 'overdue' : 'pending'} label={displayLabel(g.response)} />
               </li>
             ))}
           </ul>

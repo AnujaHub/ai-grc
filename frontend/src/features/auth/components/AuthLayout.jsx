@@ -16,7 +16,7 @@ function AuthLayout({ children }) {
           className="pointer-events-none absolute -left-24 -top-24 h-96 w-96 rounded-full bg-accent/10 blur-3xl"
           aria-hidden="true"
         />
-        <Logo taille="grand" />
+        <Logo size_bytes="grand" />
 
         <div className="relative">
           <p className="mb-3 inline-flex items-center gap-2 rounded-full border border-accent/30 bg-accent-soft px-3 py-1 font-mono text-xs text-accent">
@@ -55,7 +55,7 @@ function AuthLayout({ children }) {
           className="w-full max-w-md"
         >
           <div className="mb-8 flex justify-center lg:hidden">
-            <Logo taille="grand" />
+            <Logo size_bytes="grand" />
           </div>
           {children}
         </motion.div>

@@ -5,7 +5,7 @@ import { getOrganisations } from '../../services/organizationService'
 import { getReferentiels } from '../../services/frameworkService'
 
 export const scoreOf = (report) => {
-  const value = report.global_score ?? report.score_global
+  const value = report.global_score ?? report.overall_score
   return value === null || value === undefined ? null : Number(value)
 }
 
@@ -21,29 +21,29 @@ export async function loadReports() {
   const [reports, evaluations, systems, organizations, frameworks] = await Promise.all([
     getRapports(), getEvaluations(), getSystemesIA(), getOrganisations(), getReferentiels().catch(() => []),
   ])
-  const name = (list, id) => list.find((x) => x.id === id)?.nom
+  const name = (list, id) => list.find((x) => x.id === id)?.name
   const rows = reports.map((r) => {
     const ev = evaluations.find((e) => e.id === r.evaluation_id)
-    const system = ev && systems.find((s) => s.id === ev.systeme_ia_id)
-    const orgId = ev?.evaluation_type === 'Organisation' ? ev.organisation_id : system?.organisation_id
+    const system = ev && systems.find((s) => s.id === ev.ai_system_id)
+    const orgId = ev?.evaluation_type === 'Organisation' ? ev.organization_id : system?.organization_id
     return {
       id: r.id,
       evaluationId: r.evaluation_id,
-      referentielId: ev?.referentiel_id,
-      target: ev ? (ev.evaluation_type === 'Organisation' ? 'Organization-wide governance' : system?.nom || 'Unknown AI system') : 'Unknown assessment',
+      referentielId: ev?.framework_id,
+      target: ev ? (ev.evaluation_type === 'Organisation' ? 'Organization-wide governance' : system?.name || 'Unknown AI system') : 'Unknown assessment',
       kind: ev?.evaluation_type === 'Organisation' ? 'organization' : 'system',
       organisation: name(organizations, orgId) || '—',
-      framework: name(frameworks, ev?.referentiel_id) || '—',
+      framework: name(frameworks, ev?.framework_id) || '—',
       score: scoreOf(r),
       generatedAt: r.generation_date,
       fileName: (r.file_path || '').split(/[\\/]/).pop() || `report_${r.id}.pdf`,
     }
   })
   const reportable = evaluations
-    .filter((e) => e.statut === 'Terminée')
+    .filter((e) => e.status === 'Terminée')
     .map((e) => ({
       id: e.id,
-      label: `${e.evaluation_type === 'Organisation' ? name(organizations, e.organisation_id) || 'Organization' : name(systems, e.systeme_ia_id) || 'AI system'} · ${name(frameworks, e.referentiel_id) || 'framework'} · ${e.score ?? '—'}%`,
+      label: `${e.evaluation_type === 'Organisation' ? name(organizations, e.organization_id) || 'Organization' : name(systems, e.ai_system_id) || 'AI system'} · ${name(frameworks, e.framework_id) || 'framework'} · ${e.score ?? '—'}%`,
     }))
   return { rows, reportable }
 }

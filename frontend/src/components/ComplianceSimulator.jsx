@@ -18,7 +18,7 @@ const average = (values) => {
   return Math.round((valid.reduce((a, b) => a + b, 0) / valid.length) * 100) / 100
 }
 
-function ComplianceSimulator({ reponses, chapitresFiltres }) {
+function ComplianceSimulator({ responses, chapitresFiltres }) {
   const [corrigees, setCorrigees] = useState(new Set())
   const [open, setOpen] = useState(false)
 
@@ -26,17 +26,17 @@ function ComplianceSimulator({ reponses, chapitresFiltres }) {
     () =>
       chapitresFiltres.flatMap((chapitre) =>
         chapitre.clauses
-          .map((clause) => ({ clause, reponse: reponses.find((r) => r.clause_id === clause.id) }))
-          .filter(({ reponse }) => reponse && (reponse.reponse === 'Non conforme' || reponse.reponse === 'Partiellement conforme'))
-          .map(({ clause, reponse }) => ({ clauseId: clause.id, titre: clause.titre, numero: clause.numero, reponseActuelle: reponse.reponse })),
+          .map((clause) => ({ clause, response: responses.find((r) => r.clause_id === clause.id) }))
+          .filter(({ response }) => response && (response.response === 'Non conforme' || response.response === 'Partiellement conforme'))
+          .map(({ clause, response }) => ({ clauseId: clause.id, title: clause.title, number: clause.number, reponseActuelle: response.response })),
       ),
-    [reponses, chapitresFiltres],
+    [responses, chapitresFiltres],
   )
 
-  const scoreActuel = useMemo(() => average(reponses.map((r) => SCORE_PAR_REPONSE[r.reponse])), [reponses])
+  const scoreActuel = useMemo(() => average(responses.map((r) => SCORE_PAR_REPONSE[r.response])), [responses])
   const scoreProjete = useMemo(
-    () => average(reponses.map((r) => (corrigees.has(r.clause_id) ? 100 : SCORE_PAR_REPONSE[r.reponse]))),
-    [reponses, corrigees],
+    () => average(responses.map((r) => (corrigees.has(r.clause_id) ? 100 : SCORE_PAR_REPONSE[r.response]))),
+    [responses, corrigees],
   )
 
   const toggle = (clauseId) =>
@@ -72,7 +72,7 @@ function ComplianceSimulator({ reponses, chapitresFiltres }) {
               <div className="flex items-center justify-center gap-4 rounded-xl border border-line bg-paper p-4">
                 <div className="text-center">
                   <p className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-ink-soft">Current</p>
-                  <ComplianceBadge score={scoreActuel} taille={84} />
+                  <ComplianceBadge score={scoreActuel} size_bytes={84} />
                 </div>
                 <div className="flex flex-col items-center gap-1">
                   <ArrowRight className="h-5 w-5 text-ink-soft" />
@@ -84,7 +84,7 @@ function ComplianceSimulator({ reponses, chapitresFiltres }) {
                 </div>
                 <div className="text-center">
                   <p className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-ink-soft">Projected</p>
-                  <ComplianceBadge score={scoreProjete} taille={84} />
+                  <ComplianceBadge score={scoreProjete} size_bytes={84} />
                 </div>
               </div>
 
@@ -101,8 +101,8 @@ function ComplianceSimulator({ reponses, chapitresFiltres }) {
                       <label className={`flex cursor-pointer items-center gap-3 rounded-lg border px-3 py-2 text-sm ${corrigees.has(e.clauseId) ? 'border-accent/50 bg-accent-soft' : 'border-line hover:border-accent/40'}`}>
                         <input type="checkbox" checked={corrigees.has(e.clauseId)} onChange={() => toggle(e.clauseId)} className="h-4 w-4 accent-[#38d9c2]" />
                         <span className="min-w-0 flex-1 truncate">
-                          <span className="mr-2 font-mono text-xs text-ink-soft">{e.numero}</span>
-                          <span className="text-ink">{e.titre}</span>
+                          <span className="mr-2 font-mono text-xs text-ink-soft">{e.number}</span>
+                          <span className="text-ink">{e.title}</span>
                         </span>
                         <StatusBadge status={e.reponseActuelle === 'Non conforme' ? 'overdue' : 'pending'} label={displayLabel(e.reponseActuelle)} />
                       </label>

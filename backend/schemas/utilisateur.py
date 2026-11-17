@@ -5,14 +5,15 @@ from uuid import UUID
 
 # Implementation note.
 class UserCreate(BaseModel):
-    nom: str
-    prenom: str
+    name: str
+    first_name: str
     email: EmailStr
-    mot_de_passe: str = Field(min_length=8, max_length=72)
+    password: str = Field(min_length=8, max_length=72)
     job_title: str
-    organisation_id: Optional[UUID] = None
+    role: Optional[str] = "responsable_conformite"
+    organization_id: Optional[UUID] = None
 
-    @field_validator("mot_de_passe")
+    @field_validator("password")
     @classmethod
     def password_fits_bcrypt(cls, value: str) -> str:
         if len(value.encode("utf-8")) > 72:
@@ -32,19 +33,19 @@ class EmailVerificationResend(BaseModel):
 # Payload sent to sign in
 class UserLogin(BaseModel):
     email: EmailStr
-    mot_de_passe: str
+    password: str
 
 # Response returned by the API (never includes the password)
 class UserOut(BaseModel):
     id: UUID
-    nom: str
-    prenom: str
+    name: str
+    first_name: str
     email: str
     role: str
     job_title: Optional[str] = None
-    organisation_id: Optional[UUID] = None
-    statut: str
-    creation_date: datetime
+    organization_id: Optional[UUID] = None
+    status: str
+    created_at: datetime
 
     class Config:
         from_attributes = True

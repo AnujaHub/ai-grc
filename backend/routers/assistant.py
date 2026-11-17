@@ -15,30 +15,30 @@ from datetime import date
 router = APIRouter(prefix="/assistant", tags=["AI Assistant"])
 
 
-def build_organization_context(organisation_id, db: Session):
-    system_ids = [s.id for s in db.query(AISystem.id).filter(AISystem.organisation_id == organisation_id).all()]
+def build_organization_context(organization_id, db: Session):
+    system_ids = [s.id for s in db.query(AISystem.id).filter(AISystem.organization_id == organization_id).all()]
 
     evaluations = db.query(Evaluation).filter(
-        (Evaluation.organisation_id == organisation_id) |
-        (Evaluation.systeme_ia_id.in_(system_ids))
+        (Evaluation.organization_id == organization_id) |
+        (Evaluation.ai_system_id.in_(system_ids))
     ).all()
     evaluation_ids = [e.id for e in evaluations]
 
     ai_system_count = len(system_ids)
     evaluation_count = len(evaluations)
 
-    scores = [float(e.score) for e in evaluations if e.statut == "Terminée" and e.score is not None]
+    scores = [float(e.score) for e in evaluations if e.status == "Terminée" and e.score is not None]
     average_score = round(sum(scores) / len(scores), 2) if scores else 0
 
     open_risk_count = db.query(Risk).filter(
         Risk.evaluation_id.in_(evaluation_ids),
-        Risk.statut == "Ouvert"
+        Risk.status == "Ouvert"
     ).count()
 
     risk_ids = [r.id for r in db.query(Risk.id).filter(Risk.evaluation_id.in_(evaluation_ids)).all()]
     overdue_action_count = db.query(CorrectiveAction).filter(
-        CorrectiveAction.risque_id.in_(risk_ids),
-        CorrectiveAction.statut != "Terminée",
+        CorrectiveAction.risk_id.in_(risk_ids),
+        CorrectiveAction.status != "Terminée",
         CorrectiveAction.due_date != None,
         CorrectiveAction.due_date < date.today()
     ).count()
@@ -59,11 +59,11 @@ def chat_avec_assistant(
     current_user: User = Depends(get_current_user)
 ):
     contexte = None
-    if data.organisation_id:
-        contexte = build_organization_context(data.organisation_id, db)
+    if data.organization_id:
+        contexte = build_organization_context(data.organization_id, db)
 
     messages_historique = [{"role": m.role, "content": m.content} for m in data.messages]
 
-    reponse = repondre_assistant_ia(messages_historique, contexte)
+    response = repondre_assistant_ia(messages_historique, contexte)
 
-    return {"reponse": reponse}
+    return {"response": response}

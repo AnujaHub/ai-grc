@@ -15,9 +15,9 @@ const BADGE_CRITICITE = {
 function AISystems() {
   const [systemes, setSystemes] = useState([])
   const [organizations, setOrganizations] = useState([])
-  const [nom, setNom] = useState('')
+  const [name, setNom] = useState('')
   const [description, setDescription] = useState('')
-  const [proprietaire, setProprietaire] = useState('')
+  const [owner, setProprietaire] = useState('')
   const [domaineUtilisation, setDomaineUtilisation] = useState('')
   const [niveauCriticite, setNiveauCriticite] = useState('Moyen')
   const [organisationId, setOrganisationId] = useState('')
@@ -40,10 +40,10 @@ function AISystems() {
     e.preventDefault()
     try {
       await createSystemeIA({
-        nom, description, proprietaire,
-        domaine_utilisation: domaineUtilisation,
+        name, description, owner,
+        usage_domain: domaineUtilisation,
         criticality_level: niveauCriticite,
-        organisation_id: organisationId,
+        organization_id: organisationId,
       })
       setNom(''); setDescription(''); setProprietaire('')
       setDomaineUtilisation(''); setNiveauCriticite('Moyen'); setOrganisationId('')
@@ -53,7 +53,7 @@ function AISystems() {
     }
   }
 
-  const getNomOrganisation = (orgId) => organizations.find((o) => o.id === orgId)?.nom || 'Unknown'
+  const getNomOrganisation = (orgId) => organizations.find((o) => o.id === orgId)?.name || 'Unknown'
 
   return (
     <div className="min-h-screen bg-paper">
@@ -73,10 +73,10 @@ function AISystems() {
                 className="px-3 py-2 border border-line focus:border-accent outline-none bg-paper text-sm"
               >
                 <option value="">— Organization —</option>
-                {organizations.map((org) => <option key={org.id} value={org.id}>{org.nom}</option>)}
+                {organizations.map((org) => <option key={org.id} value={org.id}>{org.name}</option>)}
               </select>
               <input
-                type="text" placeholder="System name" value={nom} onChange={(e) => setNom(e.target.value)} required
+                type="text" placeholder="System name" value={name} onChange={(e) => setNom(e.target.value)} required
                 className="flex-1 min-w-[180px] px-3 py-2 border border-line focus:border-accent outline-none bg-paper text-sm"
               />
               <select
@@ -94,7 +94,7 @@ function AISystems() {
                 className="flex-1 min-w-[200px] px-3 py-2 border border-line focus:border-accent outline-none bg-paper text-sm"
               />
               <input
-                type="text" placeholder="Owner" value={proprietaire} onChange={(e) => setProprietaire(e.target.value)}
+                type="text" placeholder="Owner" value={owner} onChange={(e) => setProprietaire(e.target.value)}
                 className="flex-1 min-w-[160px] px-3 py-2 border border-line focus:border-accent outline-none bg-paper text-sm"
               />
               <input
@@ -125,17 +125,17 @@ function AISystems() {
               {systemes.map((sys) => (
                 <tr key={sys.id} className="border-b border-line last:border-0 hover:bg-paper/60">
                   <td className="px-4 py-3">
-                    <p className="font-medium text-ink">{sys.nom}</p>
+                    <p className="font-medium text-ink">{sys.name}</p>
                     {sys.description && <p className="text-ink-soft text-xs mt-0.5">{sys.description}</p>}
                   </td>
-                  <td className="px-4 py-3 text-ink-soft">{sys.domaine_utilisation || '—'}</td>
+                  <td className="px-4 py-3 text-ink-soft">{sys.usage_domain || '—'}</td>
                   <td className="px-4 py-3">
-                    <span className={`px-2 py-0.5 text-xs font-mono font-medium ${BADGE_CRITICITE[sys.niveau_criticite] || ''}`}>
+                    <span className={`px-2 py-0.5 text-xs font-mono font-medium ${BADGE_CRITICITE[sys.criticality_level] || ''}`}>
                       {displayLabel(sys.criticality_level)}
                     </span>
                   </td>
-                  <td className="px-4 py-3 text-ink-soft">{getNomOrganisation(sys.organisation_id)}</td>
-                  <td className="px-4 py-3 text-ink-soft font-mono text-xs">{displayLabel(sys.statut)}</td>
+                  <td className="px-4 py-3 text-ink-soft">{getNomOrganisation(sys.organization_id)}</td>
+                  <td className="px-4 py-3 text-ink-soft font-mono text-xs">{displayLabel(sys.status)}</td>
                 </tr>
               ))}
               {systemes.length === 0 && (

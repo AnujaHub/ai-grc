@@ -19,7 +19,7 @@ function RiskDetail() {
   const navigate = useNavigate()
 
   const [risque, setRisque] = useState(null)
-  const [titre, setTitre] = useState('')
+  const [title, setTitre] = useState('')
   const [description, setDescription] = useState('')
   const [dateEcheance, setDateEcheance] = useState('')
   const [error, setError] = useState('')
@@ -38,7 +38,7 @@ function RiskDetail() {
   const handleSubmit = async (e) => {
     e.preventDefault()
     try {
-      await createActionCorrective(risqueId, { titre, description, due_date: dateEcheance || null })
+      await createActionCorrective(risqueId, { title, description, due_date: dateEcheance || null })
       setTitre(''); setDescription(''); setDateEcheance('')
       chargerRisque()
     } catch {
@@ -67,16 +67,16 @@ function RiskDetail() {
 
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="bg-white border border-line p-6 mb-6">
           <div className="flex items-start justify-between gap-4 mb-3">
-            <h1 className="font-display text-xl text-ink">{risque.titre}</h1>
-            <span className={`shrink-0 px-2 py-0.5 text-xs font-mono font-medium ${COULEUR_NIVEAU[risque.niveau_risque] || ''}`}>
+            <h1 className="font-display text-xl text-ink">{risque.title}</h1>
+            <span className={`shrink-0 px-2 py-0.5 text-xs font-mono font-medium ${COULEUR_NIVEAU[risque.risk_level] || ''}`}>
               {displayLabel(risque.risk_level)}
             </span>
           </div>
           <p className="text-ink-soft text-sm mb-4">{risque.description}</p>
           <div className="flex gap-6 text-xs font-mono text-ink-soft">
             <span>Impact: <span className="text-ink">{displayLabel(risque.impact)}</span></span>
-            <span>Probability: <span className="text-ink">{displayLabel(risque.probabilite)}</span></span>
-            <span>Status: <span className="text-ink">{displayLabel(risque.statut)}</span></span>
+            <span>Probability: <span className="text-ink">{displayLabel(risque.probability)}</span></span>
+            <span>Status: <span className="text-ink">{displayLabel(risque.status)}</span></span>
           </div>
         </motion.div>
 
@@ -85,7 +85,7 @@ function RiskDetail() {
           {error && <p className="text-danger text-sm mb-3">{error}</p>}
           <form onSubmit={handleSubmit} className="space-y-3">
             <div className="flex flex-wrap gap-3">
-              <input type="text" placeholder="Action title" value={titre} onChange={(e) => setTitre(e.target.value)} required
+              <input type="text" placeholder="Action title" value={title} onChange={(e) => setTitre(e.target.value)} required
                 className="flex-1 min-w-[220px] px-3 py-2 border border-line focus:border-accent outline-none bg-paper text-sm" />
               <input type="date" value={dateEcheance} onChange={(e) => setDateEcheance(e.target.value)}
                 className="px-3 py-2 border border-line focus:border-accent outline-none bg-paper text-sm font-mono" />
@@ -111,12 +111,12 @@ function RiskDetail() {
             <tbody>
               {risque.corrective_actions.map((action) => (
                 <tr key={action.id} className="border-b border-line last:border-0">
-                  <td className="px-4 py-3 text-ink font-medium">{action.titre}</td>
+                  <td className="px-4 py-3 text-ink font-medium">{action.title}</td>
                   <td className="px-4 py-3 text-ink-soft">{action.description || '—'}</td>
                   <td className="px-4 py-3 font-mono text-xs text-ink-soft">{action.due_date || '—'}</td>
                   <td className="px-4 py-3">
                     <select
-                      value={action.statut}
+                      value={action.status}
                       onChange={(e) => handleChangeStatutAction(action.id, e.target.value)}
                       className="px-2 py-1 border border-line text-xs bg-paper focus:border-accent outline-none"
                     >

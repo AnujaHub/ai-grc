@@ -12,7 +12,7 @@ import { displayLabel } from '../utils/displayLabels'
 function Evaluations() {
   const [evaluations, setEvaluations] = useState([])
   const [systemes, setSystemes] = useState([])
-  const [referentiels, setReferentiels] = useState([])
+  const [frameworks, setReferentiels] = useState([])
   const [organizations, setOrganizations] = useState([])
 
   const [typeEvaluation, setTypeEvaluation] = useState('Systeme_IA')
@@ -53,13 +53,13 @@ function Evaluations() {
     }
   }
 
-  const getNomSysteme = (id) => systemes.find((s) => s.id === id)?.nom || null
-  const getNomOrganisation = (id) => organizations.find((o) => o.id === id)?.nom || null
-  const getNomReferentiel = (id) => referentiels.find((r) => r.id === id)?.nom || 'Unknown'
+  const getNomSysteme = (id) => systemes.find((s) => s.id === id)?.name || null
+  const getNomOrganisation = (id) => organizations.find((o) => o.id === id)?.name || null
+  const getNomReferentiel = (id) => frameworks.find((r) => r.id === id)?.name || 'Unknown'
 
-  const couleurStatut = (statut) =>
-    statut === 'Terminée' ? 'bg-accent-soft text-accent' :
-    statut === 'En cours' ? 'bg-warning-soft text-warning' : 'bg-line text-ink-soft'
+  const couleurStatut = (status) =>
+    status === 'Terminée' ? 'bg-accent-soft text-accent' :
+    status === 'En cours' ? 'bg-warning-soft text-warning' : 'bg-line text-ink-soft'
 
   return (
     <div className="min-h-screen bg-paper">
@@ -96,20 +96,20 @@ function Evaluations() {
                 <select value={systemeId} onChange={(e) => setSystemeId(e.target.value)} required
                   className="px-3 py-2 border border-line focus:border-accent outline-none bg-paper text-sm">
                   <option value="">— AI system —</option>
-                  {systemes.map((s) => <option key={s.id} value={s.id}>{s.nom}</option>)}
+                  {systemes.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
                 </select>
               ) : (
                 <select value={organisationId} onChange={(e) => setOrganisationId(e.target.value)} required
                   className="px-3 py-2 border border-line focus:border-accent outline-none bg-paper text-sm">
                   <option value="">— Organization —</option>
-                  {organizations.map((o) => <option key={o.id} value={o.id}>{o.nom}</option>)}
+                  {organizations.map((o) => <option key={o.id} value={o.id}>{o.name}</option>)}
                 </select>
               )}
 
               <select value={referentielId} onChange={(e) => setReferentielId(e.target.value)} required
                 className="px-3 py-2 border border-line focus:border-accent outline-none bg-paper text-sm">
                 <option value="">— Reference framework —</option>
-                {referentiels.map((r) => <option key={r.id} value={r.id}>{r.nom}</option>)}
+                {frameworks.map((r) => <option key={r.id} value={r.id}>{r.name}</option>)}
               </select>
 
               <button type="submit" className="btn-primary px-5 py-2 text-sm cursor-pointer">
@@ -138,13 +138,13 @@ function Evaluations() {
                 <tr key={ev.id} className="border-b border-line last:border-0 hover:bg-paper/60">
                   <td className="px-4 py-3 text-ink">
                     {ev.evaluation_type === 'Organisation'
-                      ? <span>{getNomOrganisation(ev.organisation_id) || 'Unknown'} <span className="text-ink-soft text-xs font-mono">— governance</span></span>
-                      : (getNomSysteme(ev.systeme_ia_id) || 'Unknown')}
+                      ? <span>{getNomOrganisation(ev.organization_id) || 'Unknown'} <span className="text-ink-soft text-xs font-mono">— governance</span></span>
+                      : (getNomSysteme(ev.ai_system_id) || 'Unknown')}
                   </td>
-                  <td className="px-4 py-3 text-ink-soft">{getNomReferentiel(ev.referentiel_id)}</td>
+                  <td className="px-4 py-3 text-ink-soft">{getNomReferentiel(ev.framework_id)}</td>
                   <td className="px-4 py-3">
-                    <span className={`px-2 py-0.5 text-xs font-mono font-medium ${couleurStatut(ev.statut)}`}>
-                      {displayLabel(ev.statut)}
+                    <span className={`px-2 py-0.5 text-xs font-mono font-medium ${couleurStatut(ev.status)}`}>
+                      {displayLabel(ev.status)}
                     </span>
                   </td>
                   <td className="px-4 py-3 font-mono text-ink">{ev.score !== null ? `${ev.score}%` : '—'}</td>

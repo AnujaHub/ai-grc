@@ -4,23 +4,23 @@ from datetime import datetime
 from uuid import UUID
 
 class AISystemCreate(BaseModel):
-    nom: str
+    name: str
     description: Optional[str] = None
-    proprietaire: Optional[str] = None
-    domaine_utilisation: Optional[str] = None
+    owner: Optional[str] = None
+    usage_domain: Optional[str] = None
     criticality_level: Optional[str] = "Moyen"
-    organisation_id: UUID
+    organization_id: UUID
 
 class AISystemOut(BaseModel):
     id: UUID
-    nom: str
+    name: str
     description: Optional[str] = None
-    proprietaire: Optional[str] = None
-    domaine_utilisation: Optional[str] = None
+    owner: Optional[str] = None
+    usage_domain: Optional[str] = None
     criticality_level: str
-    statut: str
-    organisation_id: UUID
-    creation_date: datetime
+    status: str
+    organization_id: UUID
+    created_at: datetime
 
     class Config:
         from_attributes = True

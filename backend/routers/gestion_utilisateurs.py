@@ -7,7 +7,7 @@ from security import require_roles, hash_password
 from typing import List
 from uuid import UUID
 
-router = APIRouter(prefix="/utilisateurs", tags=["User Management"])
+router = APIRouter(prefix="/users", tags=["User Management"])
 
 
 @router.get("/", response_model=List[UserListOut])
@@ -29,12 +29,12 @@ def create_user(
         raise HTTPException(status_code=400, detail="This email is already in use")
 
     new_user = User(
-        nom=data.nom,
-        prenom=data.prenom,
+        name=data.name,
+        first_name=data.first_name,
         email=data.email,
-        mot_de_passe=hash_password(data.mot_de_passe),
+        password_hash=hash_password(data.password),
         role=data.role,
-        organisation_id=data.organisation_id,
+        organization_id=data.organization_id,
         email_verified=True,
     )
     db.add(new_user)
@@ -43,23 +43,23 @@ def create_user(
     return new_user
 
 
-@router.patch("/{utilisateur_id}", response_model=UserListOut)
+@router.patch("/{user_id}", response_model=UserListOut)
 def update_user(
-    utilisateur_id: UUID,
+    user_id: UUID,
     data: UserUpdate,
     db: Session = Depends(get_db),
     current_user: User = Depends(require_roles("super_admin", "administrateur"))
 ):
-    utilisateur = db.query(User).filter(User.id == utilisateur_id).first()
+    utilisateur = db.query(User).filter(User.id == user_id).first()
     if not utilisateur:
         raise HTTPException(status_code=404, detail="User not found")
 
     if data.role is not None:
         utilisateur.role = data.role
-    if data.statut is not None:
-        utilisateur.statut = data.statut
-    if data.organisation_id is not None:
-        utilisateur.organisation_id = data.organisation_id
+    if data.status is not None:
+        utilisateur.status = data.status
+    if data.organization_id is not None:
+        utilisateur.organization_id = data.organization_id
 
     db.commit()
     db.refresh(utilisateur)

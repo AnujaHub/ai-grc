@@ -4,23 +4,23 @@ from uuid import UUID
 
 class ClauseOut(BaseModel):
     id: UUID
-    chapitre_id: UUID
-    numero: str
-    titre: str
+    chapter_id: UUID
+    number: str
+    title: str
     description: Optional[str] = None
     requirement_type: Optional[str] = None
-    ordre: int
+    sort_order: int
     evaluation_type: str
-    departement_suggere: Optional[str] = None
+    suggested_department: Optional[str] = None
 
     class Config:
         from_attributes = True
 
 class ChapterOut(BaseModel):
     id: UUID
-    referentiel_id: UUID
-    numero: str
-    titre: str
+    framework_id: UUID
+    number: str
+    title: str
     clauses: List[ClauseOut] = []
 
     class Config:
@@ -29,10 +29,10 @@ class ChapterOut(BaseModel):
 class ReferenceFrameworkOut(BaseModel):
     id: UUID
     code: str
-    nom: str
+    name: str
     description: Optional[str] = None
     version: Optional[str] = None
-    statut: str
+    status: str
 
     class Config:
         from_attributes = True

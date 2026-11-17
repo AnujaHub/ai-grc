@@ -19,17 +19,17 @@ const COULEUR_NIVEAU = {
 }
 
 function Risks() {
-  const [risques, setRisques] = useState([])
+  const [risks, setRisques] = useState([])
   const [evaluations, setEvaluations] = useState([])
   const [systemes, setSystemes] = useState([])
   const [organizations, setOrganizations] = useState([])
 
   const [evaluationId, setEvaluationId] = useState('')
-  const [titre, setTitre] = useState('')
+  const [title, setTitre] = useState('')
   const [description, setDescription] = useState('')
-  const [categorie, setCategorie] = useState('')
+  const [category, setCategorie] = useState('')
   const [impact, setImpact] = useState('Moyen')
-  const [probabilite, setProbabilite] = useState('Moyen')
+  const [probability, setProbabilite] = useState('Moyen')
   const [error, setError] = useState('')
   const navigate = useNavigate()
   const authorized = peutEditer()
@@ -53,7 +53,7 @@ function Risks() {
   const handleSubmit = async (e) => {
     e.preventDefault()
     try {
-      await createRisque({ evaluation_id: evaluationId, titre, description, categorie, impact, probabilite })
+      await createRisque({ evaluation_id: evaluationId, title, description, category, impact, probability })
       setTitre(''); setDescription(''); setCategorie(''); setImpact('Moyen'); setProbabilite('Moyen'); setEvaluationId('')
       chargerDonnees()
     } catch {
@@ -78,25 +78,25 @@ function Risks() {
     const evaluation = getEvaluationParId(risque.evaluation_id)
     if (!evaluation) return 'Unknown'
     if (evaluation.evaluation_type === 'Organisation') {
-      const org = getOrganisationParId(evaluation.organisation_id)
-      return org ? `${org.nom} (governance)` : 'Unknown organization'
+      const org = getOrganisationParId(evaluation.organization_id)
+      return org ? `${org.name} (governance)` : 'Unknown organization'
     }
-    const systeme = getSystemeParId(evaluation.systeme_ia_id)
-    return systeme ? systeme.nom : 'Unknown system'
+    const systeme = getSystemeParId(evaluation.ai_system_id)
+    return systeme ? systeme.name : 'Unknown system'
   }
 
   const getNomOrganisationPourRisque = (risque) => {
     const evaluation = getEvaluationParId(risque.evaluation_id)
     if (!evaluation) return 'Unknown'
     if (evaluation.evaluation_type === 'Organisation') {
-      return getOrganisationParId(evaluation.organisation_id)?.nom || 'Unknown'
+      return getOrganisationParId(evaluation.organization_id)?.name || 'Unknown'
     }
-    const systeme = getSystemeParId(evaluation.systeme_ia_id)
-    return systeme ? getOrganisationParId(systeme.organisation_id)?.nom || 'Unknown' : 'Unknown'
+    const systeme = getSystemeParId(evaluation.ai_system_id)
+    return systeme ? getOrganisationParId(systeme.organization_id)?.name || 'Unknown' : 'Unknown'
   }
 
   const risquesParSysteme = {}
-  risques.forEach((r) => {
+  risks.forEach((r) => {
     const cle = getNomSystemePourRisque(r)
     if (!risquesParSysteme[cle]) risquesParSysteme[cle] = []
     risquesParSysteme[cle].push(r)
@@ -120,16 +120,16 @@ function Risks() {
               {evaluations.map((ev) => (
                 <option key={ev.id} value={ev.id}>
                   {ev.evaluation_type === 'Organisation'
-                    ? `${getOrganisationParId(ev.organisation_id)?.nom || '?'} (gouvernance)`
-                    : (getSystemeParId(ev.systeme_ia_id)?.nom || '?')} — {displayLabel(ev.statut)}
+                    ? `${getOrganisationParId(ev.organization_id)?.name || '?'} (gouvernance)`
+                    : (getSystemeParId(ev.ai_system_id)?.name || '?')} — {displayLabel(ev.status)}
                 </option>
               ))}
             </select>
 
             <div className="flex flex-wrap gap-3">
-              <input type="text" placeholder="Risk title" value={titre} onChange={(e) => setTitre(e.target.value)} required
+              <input type="text" placeholder="Risk title" value={title} onChange={(e) => setTitre(e.target.value)} required
                 className="flex-1 min-w-[220px] px-3 py-2 border border-line focus:border-accent outline-none bg-paper text-sm" />
-              <input type="text" placeholder="Category" value={categorie} onChange={(e) => setCategorie(e.target.value)}
+              <input type="text" placeholder="Category" value={category} onChange={(e) => setCategorie(e.target.value)}
                 className="flex-1 min-w-[160px] px-3 py-2 border border-line focus:border-accent outline-none bg-paper text-sm" />
             </div>
 
@@ -144,7 +144,7 @@ function Risks() {
                 </select>
               </label>
               <label className="text-sm text-ink-soft">Probability
-                <select value={probabilite} onChange={(e) => setProbabilite(e.target.value)}
+                <select value={probability} onChange={(e) => setProbabilite(e.target.value)}
                   className="ml-2 px-3 py-1.5 border border-line focus:border-accent outline-none bg-paper text-sm">
                   <option value="Faible">Low</option><option value="Moyen">Medium</option><option value="Élevée">High</option>
                 </select>
@@ -189,16 +189,16 @@ function Risks() {
                 <tbody>
                   {risquesDuGroupe.map((r) => (
                     <tr key={r.id} className="border-b border-line last:border-0 hover:bg-paper/60">
-                      <td className="px-4 py-2.5 text-ink">{r.titre}</td>
-                      <td className="px-4 py-2.5 text-ink-soft">{r.categorie || '—'}</td>
+                      <td className="px-4 py-2.5 text-ink">{r.title}</td>
+                      <td className="px-4 py-2.5 text-ink-soft">{r.category || '—'}</td>
                       <td className="px-4 py-2.5">
-                        <span className={`px-2 py-0.5 text-xs font-mono font-medium ${COULEUR_NIVEAU[r.niveau_risque] || ''}`}>
+                        <span className={`px-2 py-0.5 text-xs font-mono font-medium ${COULEUR_NIVEAU[r.risk_level] || ''}`}>
                           {displayLabel(r.risk_level)}
                         </span>
                       </td>
                       <td className="px-4 py-2.5">
                         <select
-                          value={r.statut}
+                          value={r.status}
                           onChange={(e) => handleChangeStatut(r.id, e.target.value)}
                           className="px-2 py-1 border border-line text-xs bg-paper focus:border-accent outline-none"
                         >

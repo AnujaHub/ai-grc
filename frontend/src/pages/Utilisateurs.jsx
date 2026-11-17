@@ -12,10 +12,10 @@ const ROLES = [
 ]
 
 function Users() {
-  const [utilisateurs, setUtilisateurs] = useState([])
+  const [users, setUtilisateurs] = useState([])
   const [organizations, setOrganizations] = useState([])
-  const [nom, setNom] = useState('')
-  const [prenom, setPrenom] = useState('')
+  const [name, setNom] = useState('')
+  const [first_name, setPrenom] = useState('')
   const [email, setEmail] = useState('')
   const [password, setMotDePasse] = useState('')
   const [role, setRole] = useState('responsable_conformite')
@@ -38,8 +38,8 @@ function Users() {
     e.preventDefault()
     try {
       await creerUtilisateur({
-        nom, prenom, email, mot_de_passe: password, role,
-        organisation_id: organisationId || null,
+        name, first_name, email, password, role,
+        organization_id: organisationId || null,
       })
       setNom(''); setPrenom(''); setEmail(''); setMotDePasse('')
       setRole('responsable_conformite'); setOrganisationId('')
@@ -60,16 +60,16 @@ function Users() {
 
   const handleChangeStatut = async (utilisateurId, nouveauStatut) => {
     try {
-      await modifierUtilisateur(utilisateurId, { statut: nouveauStatut })
+      await modifierUtilisateur(utilisateurId, { status: nouveauStatut })
       chargerDonnees()
     } catch {
       alert('Status update failed')
     }
   }
 
-  const getNomOrganisation = (id) => organizations.find((o) => o.id === id)?.nom || '—'
+  const getNomOrganisation = (id) => organizations.find((o) => o.id === id)?.name || '—'
 
-  if (error && utilisateurs.length === 0) {
+  if (error && users.length === 0) {
     return (
       <div className="min-h-screen bg-paper">
         <Navbar />
@@ -92,9 +92,9 @@ function Users() {
           <h2 className="text-xs font-semibold uppercase tracking-wide text-ink-soft mb-4">Create a user account</h2>
           <form onSubmit={handleSubmit} className="space-y-3">
             <div className="flex flex-wrap gap-3">
-              <input type="text" placeholder="First name" value={prenom} onChange={(e) => setPrenom(e.target.value)} required
+              <input type="text" placeholder="First name" value={first_name} onChange={(e) => setPrenom(e.target.value)} required
                 className="flex-1 min-w-[140px] px-3 py-2 border border-line focus:border-accent outline-none bg-paper text-sm" />
-              <input type="text" placeholder="Last name" value={nom} onChange={(e) => setNom(e.target.value)} required
+              <input type="text" placeholder="Last name" value={name} onChange={(e) => setNom(e.target.value)} required
                 className="flex-1 min-w-[140px] px-3 py-2 border border-line focus:border-accent outline-none bg-paper text-sm" />
               <input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} required
                 className="flex-1 min-w-[200px] px-3 py-2 border border-line focus:border-accent outline-none bg-paper text-sm" />
@@ -109,7 +109,7 @@ function Users() {
               <select value={organisationId} onChange={(e) => setOrganisationId(e.target.value)}
                 className="px-3 py-2 border border-line focus:border-accent outline-none bg-paper text-sm">
                 <option value="">— Organization (optional) —</option>
-                {organizations.map((org) => <option key={org.id} value={org.id}>{org.nom}</option>)}
+                {organizations.map((org) => <option key={org.id} value={org.id}>{org.name}</option>)}
               </select>
               <button type="submit" className="btn-primary px-5 py-2 text-sm cursor-pointer">
                 Create account
@@ -131,11 +131,11 @@ function Users() {
               </tr>
             </thead>
             <tbody>
-              {utilisateurs.map((u) => (
+              {users.map((u) => (
                 <tr key={u.id} className="border-b border-line last:border-0 hover:bg-paper/60">
-                  <td className="px-4 py-3 text-ink font-medium">{u.prenom} {u.nom}</td>
+                  <td className="px-4 py-3 text-ink font-medium">{u.first_name} {u.name}</td>
                   <td className="px-4 py-3 text-ink-soft">{u.email}</td>
-                  <td className="px-4 py-3 text-ink-soft">{getNomOrganisation(u.organisation_id)}</td>
+                  <td className="px-4 py-3 text-ink-soft">{getNomOrganisation(u.organization_id)}</td>
                   <td className="px-4 py-3">
                     <select
                       value={u.role}
@@ -147,7 +147,7 @@ function Users() {
                   </td>
                   <td className="px-4 py-3">
                     <select
-                      value={u.statut}
+                      value={u.status}
                       onChange={(e) => handleChangeStatut(u.id, e.target.value)}
                       className="px-2 py-1 border border-line text-xs bg-paper focus:border-accent outline-none"
                     >

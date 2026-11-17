@@ -44,7 +44,7 @@ function AssistantChatbot() {
     setLoading(true)
     try {
       const data = await envoyerMessageAssistant(next.filter((m) => !m.error), organisationId)
-      setMessages([...next, { role: 'assistant', content: data.reponse }])
+      setMessages([...next, { role: 'assistant', content: data.response }])
     } catch {
       setMessages([...next, { role: 'assistant', content: 'The assistant is not available right now. Check that the backend is running and try again.', error: true }])
     } finally {
@@ -103,7 +103,7 @@ function AssistantChatbot() {
               <select value={organisationId} onChange={(e) => setOrganisationId(e.target.value)} aria-label="Answer context"
                 className="mt-3 w-full border border-line px-2.5 py-1.5 text-xs text-ink outline-none focus:border-accent cursor-pointer">
                 <option value="">General answers (no organization data)</option>
-                {(organizations || []).map((org) => <option key={org.id} value={org.id}>Use data from {org.nom}</option>)}
+                {(organizations || []).map((org) => <option key={org.id} value={org.id}>Use data from {org.name}</option>)}
               </select>
             </div>
 

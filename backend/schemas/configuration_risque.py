@@ -8,7 +8,7 @@ class RiskConfigurationUpdate(BaseModel):
 
 class RiskConfigurationOut(BaseModel):
     id: UUID
-    organisation_id: UUID
+    organization_id: UUID
     impact_levels: List[str]
     probability_levels: List[str]
 

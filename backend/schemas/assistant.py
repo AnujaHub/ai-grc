@@ -8,7 +8,7 @@ class ChatMessage(BaseModel):
 
 class ChatRequest(BaseModel):
     messages: List[ChatMessage]
-    organisation_id: Optional[UUID] = None
+    organization_id: Optional[UUID] = None
 
 class ChatResponse(BaseModel):
-    reponse: str
+    response: str

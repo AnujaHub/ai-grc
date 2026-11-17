@@ -174,58 +174,77 @@ async def google_login(request: Request):
     )
 
 
+
 @router.get("/google/callback")
 async def google_callback(request: Request, db: Session = Depends(get_db)):
     try:
         token = await oauth.google.authorize_access_token(request)
         google_user = token.get("userinfo")
+
         if not google_user:
             google_user = await oauth.google.userinfo(token=token)
+
     except OAuthError as exc:
-        raise HTTPException(status_code=401, detail="Google authentication failed") from exc
+        logger.exception("Google OAuth callback failed")
+        raise HTTPException(
+            status_code=401,
+            detail=f"Google authentication failed: {exc}"
+        ) from exc
 
     email = google_user.get("email")
     google_sub = google_user.get("sub")
+
     if not email or not google_sub or not google_user.get("email_verified", False):
         raise HTTPException(status_code=400, detail="Google account email is not verified")
+
     email = _normalized_email(email)
 
     user = db.query(User).filter(User.google_sub == google_sub).first()
+
     if not user:
         user = db.query(User).filter(func.lower(User.email) == email).first()
 
     if user:
         user.google_sub = google_sub
         user.email_verified = True
-        if user.statut == "en_attente_approbation":
-            user.statut = "actif"
+
+        if user.status == "en_attente_approbation":
+            user.status = "actif"
+
         db.query(VerificationToken).filter(
             VerificationToken.user_id == user.id,
             VerificationToken.purpose == EMAIL_VERIFICATION_PURPOSE,
         ).delete(synchronize_session=False)
+
         db.commit()
         db.refresh(user)
+
     else:
         user = User(
-            nom=google_user.get("family_name") or "Google",
-            prenom=google_user.get("given_name") or "User",
+            name=google_user.get("family_name") or "Google",
+            first_name=google_user.get("given_name") or "User",
             email=email,
-            mot_de_passe=hash_password(secrets.token_urlsafe(32)),
+            password_hash=hash_password(secrets.token_urlsafe(32)),
             google_sub=google_sub,
             job_title="Other",
             role="responsable_conformite",
-            statut="actif",
+            status="actif",
             email_verified=True,
         )
+
         db.add(user)
         db.commit()
         db.refresh(user)
 
-    access_token = create_access_token(data={"sub": str(user.id), "role": user.role})
+    access_token = create_access_token(
+        data={"sub": str(user.id), "role": user.role}
+    )
+
     return RedirectResponse(
         f"{FRONTEND_URL}/auth/google/callback#access_token={access_token}",
         status_code=303,
     )
+
 
 # Register a new password-based user and send an email verification code.
 @router.post("/register")
@@ -254,14 +273,14 @@ def register(user: UserCreate, request: Request, db: Session = Depends(get_db)):
         return REGISTRATION_RESPONSE
 
     new_user = User(
-        nom=user.nom,
-        prenom=user.prenom,
+        name=user.name,
+        first_name=user.first_name,
         email=email,
-        mot_de_passe=hash_password(user.mot_de_passe),
+        password_hash=hash_password(user.password),
         job_title=user.job_title,
         role="responsable_conformite",
-        organisation_id=user.organisation_id,
-        statut="actif",
+        organization_id=user.organization_id,
+        status="en_attente_approbation",
         email_verified=False,
     )
     try:
@@ -325,7 +344,7 @@ def verify_email(data: EmailVerificationRequest, db: Session = Depends(get_db)):
         raise HTTPException(status_code=400, detail="Invalid or expired verification code")
 
     user.email_verified = True
-    user.statut = "actif"
+    user.status = "actif"
     db.delete(challenge)
     db.commit()
     return {"message": "Email verified. You can now sign in."}
@@ -370,7 +389,7 @@ def login(credentials: UserLogin, db: Session = Depends(get_db)):
     email = _normalized_email(str(credentials.email))
     user = db.query(User).filter(func.lower(User.email) == email).first()
 
-    if not user or not verify_password(credentials.mot_de_passe, user.mot_de_passe):
+    if not user or not verify_password(credentials.password, user.password_hash):
         raise HTTPException(status_code=401, detail="Incorrect email or password")
     if not user.email_verified:
         raise HTTPException(status_code=403, detail="Please verify your email before signing in")
@@ -384,8 +403,8 @@ def login(credentials: UserLogin, db: Session = Depends(get_db)):
         "token_type": "bearer",
         "utilisateur": {
             "id": str(user.id),
-            "nom": user.nom,
-            "prenom": user.prenom,
+            "name": user.name,
+            "first_name": user.first_name,
             "email": user.email,
             "role": user.role
         }
@@ -398,7 +417,7 @@ def login_for_swagger(form_data: OAuth2PasswordRequestForm = Depends(), db: Sess
     email = _normalized_email(form_data.username)
     user = db.query(User).filter(func.lower(User.email) == email).first()
 
-    if not user or not verify_password(form_data.password, user.mot_de_passe):
+    if not user or not verify_password(form_data.password, user.password_hash):
         raise HTTPException(status_code=401, detail="Incorrect email or password")
     if not user.email_verified:
         raise HTTPException(status_code=403, detail="Please verify your email before signing in")
@@ -411,8 +430,8 @@ def login_for_swagger(form_data: OAuth2PasswordRequestForm = Depends(), db: Sess
 from pydantic import BaseModel
 
 class ChangementMotDePasse(BaseModel):
-    ancien_mot_de_passe: str
-    nouveau_mot_de_passe: str
+    current_password: str
+    new_password: str
 
 
 @router.get("/moi", response_model=UserOut)
@@ -428,13 +447,13 @@ def change_password(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    if not verify_password(data.ancien_mot_de_passe, current_user.mot_de_passe):
+    if not verify_password(data.current_password, current_user.password_hash):
         raise HTTPException(status_code=400, detail="Current password is incorrect")
 
-    if len(data.nouveau_mot_de_passe) < 6:
+    if len(data.new_password) < 6:
         raise HTTPException(status_code=400, detail="The new password must contain at least 6 characters")
 
-    current_user.mot_de_passe = hash_password(data.nouveau_mot_de_passe)
+    current_user.password_hash = hash_password(data.new_password)
     db.commit()
 
     return {"message": "Password changed successfully"}

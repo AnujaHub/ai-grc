@@ -1,15 +1,15 @@
 import api from './api'
 
 export const getOrganisations = async () => {
-  const response = await api.get('/organisations/')
+  const response = await api.get('/organizations/')
   return response.data
 }
 
-export const createOrganisation = async (nom, secteur, pays) => {
-  const response = await api.post('/organisations/', {
-    nom: nom,
-    secteur: secteur,
-    pays: pays,
+export const createOrganisation = async (name, sector, country) => {
+  const response = await api.post('/organizations/', {
+    name: name,
+    sector: sector,
+    country: country,
   })
   return response.data
 }

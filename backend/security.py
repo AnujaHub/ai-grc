@@ -1,24 +1,21 @@
 from passlib.context import CryptContext
 from datetime import datetime, timedelta
 from jose import jwt
+from config import JWT_SECRET_KEY
 
-# Password hashing configuration
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-# Implementation note.
-SECRET_KEY = "keystone_stage"
+SECRET_KEY = JWT_SECRET_KEY
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60
 
-# Hash a password before storing it in the database
-def hash_password(mot_de_passe: str) -> str:
-    return pwd_context.hash(mot_de_passe)
+def hash_password(password: str) -> str:
+    return pwd_context.hash(password)
 
 # Implementation note.
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     return pwd_context.verify(plain_password, hashed_password)
 
-# Implementation note.
 def create_access_token(data: dict):
     to_encode = data.copy()
     expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)

@@ -13,11 +13,11 @@ router = APIRouter(prefix="/journal-audit", tags=["Audit Log"])
 @router.get("/", response_model=List[AuditLogOut])
 def list_audit_log(
     limite: int = 100,
-    ressource_type: Optional[str] = None,
+    resource_type: Optional[str] = None,
     db: Session = Depends(get_db),
     current_user: User = Depends(require_roles("super_admin", "administrateur", "auditeur"))
 ):
     query = db.query(AuditLog)
-    if ressource_type:
-        query = query.filter(AuditLog.ressource_type == ressource_type)
+    if resource_type:
+        query = query.filter(AuditLog.resource_type == resource_type)
     return query.order_by(AuditLog.action_date.desc()).limit(limite).all()

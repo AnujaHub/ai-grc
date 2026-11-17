@@ -3,21 +3,24 @@ import api from './api'
 export const login = async (email, password) => {
   const response = await api.post('/auth/login', {
     email: email,
-    mot_de_passe: password,
+    password: password,
   })
   return response.data
 }
 
 export const registerUser = async (form) => {
   const response = await api.post('/auth/register', {
-    nom: form.lastName,
-    prenom: form.firstName,
+    name: form.lastName,
+    first_name: form.firstName,
     email: form.email,
-    mot_de_passe: form.password,
+    password: form.password,
     job_title: form.jobTitle,
   })
   return response.data
 }
+
+export const register = (name, first_name, email, password, jobTitle) =>
+  registerUser({ lastName: name, firstName: first_name, email, password, jobTitle })
 
 export const verifyEmail = async (email, code) => {
   const response = await api.post('/auth/verify-email', { email, code })
@@ -38,8 +41,8 @@ export const getGoogleLoginUrl = () => `${api.defaults.baseURL}/auth/google/logi
 
 export const changerMotDePasse = async (ancienMotDePasse, nouveauMotDePasse) => {
   const response = await api.post('/auth/changer-mot-de-passe', {
-    ancien_mot_de_passe: ancienMotDePasse,
-    nouveau_mot_de_passe: nouveauMotDePasse,
+    current_password: ancienMotDePasse,
+    new_password: nouveauMotDePasse,
   })
   return response.data
 }
